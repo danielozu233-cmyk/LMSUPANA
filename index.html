@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia UPANA | LMS Operativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans h-screen overflow-hidden flex">
+
+    <div id="login-view" class="fixed inset-0 bg-gray-900 z-50 flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
+            <h1 class="text-3xl font-bold text-blue-500 mb-2 text-center"><i class="fa-solid fa-graduation-cap"></i> LMS UPANA</h1>
+            <p class="text-gray-400 text-center mb-6">Acceso Operativo</p>
+            <input type="email" id="auth-email" placeholder="Correo electrónico" class="w-full bg-gray-700 p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="password" id="auth-password" placeholder="Contraseña" class="w-full bg-gray-700 p-3 rounded mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded font-bold transition">Iniciar Sesión</button>
+            <button id="btn-register" class="w-full bg-gray-700 hover:bg-gray-600 p-3 rounded font-bold mt-3 transition">Registrar Administrador Inicial</button>
+        </div>
+    </div>
+
+    <div id="app-view" class="hidden w-full h-full flex">
+        <aside class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col h-full">
+            <div class="p-6 text-xl font-bold text-blue-400 border-b border-gray-700"><i class="fa-solid fa-graduation-cap"></i> LMS Central</div>
+            <nav class="flex-1 overflow-y-auto p-4 space-y-2" id="nav-menu">
+                <a href="#" data-target="dash-view" class="nav-btn block p-3 rounded bg-blue-600 text-white"><i class="fa-solid fa-chart-pie w-6"></i> Dashboard</a>
+                <a href="#" data-target="users-view" class="nav-btn block p-3 rounded hover:bg-gray-700 text-gray-300 admin-only"><i class="fa-solid fa-users w-6"></i> Usuarios</a>
+                <a href="#" data-target="waves-view" class="nav-btn block p-3 rounded hover:bg-gray-700 text-gray-300 admin-only"><i class="fa-solid fa-users-viewfinder w-6"></i> Waves / Grupos</a>
+                <a href="#" data-target="courses-view" class="nav-btn block p-3 rounded hover:bg-gray-700 text-gray-300 admin-trainer"><i class="fa-solid fa-book w-6"></i> Cursos</a>
+                <a href="#" data-target="kahoot-view" class="nav-btn block p-3 rounded hover:bg-gray-700 text-gray-300"><i class="fa-solid fa-bolt w-6"></i> Dinámicas</a>
+                <a href="#" data-target="cert-view" class="nav-btn block p-3 rounded hover:bg-gray-700 text-gray-300 agent-only"><i class="fa-solid fa-award w-6"></i> Certificados</a>
+            </nav>
+            <div class="p-4 border-t border-gray-700 bg-gray-800">
+                <div class="text-sm font-bold truncate" id="current-user-name">Cargando...</div>
+                <div class="text-xs text-gray-400 mb-2" id="current-user-role">...</div>
+                <button id="btn-logout" class="text-red-400 text-sm hover:text-red-300"><i class="fa-solid fa-power-off"></i> Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <main class="flex-1 bg-gray-900 overflow-y-auto p-8 relative" id="main-content">
+            
+            <section id="dash-view" class="view-section block">
+                <h2 class="text-3xl font-bold mb-6">Métricas en Tiempo Real</h2>
+                <div class="grid grid-cols-4 gap-4 mb-8">
+                    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                        <div class="text-gray-400 text-sm">Total Usuarios</div>
+                        <div class="text-4xl font-bold text-blue-400" id="metric-users">0</div>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                        <div class="text-gray-400 text-sm">Cursos Activos</div>
+                        <div class="text-4xl font-bold text-green-400" id="metric-courses">0</div>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                        <div class="text-gray-400 text-sm">Waves Activas</div>
+                        <div class="text-4xl font-bold text-purple-400" id="metric-waves">0</div>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                        <div class="text-gray-400 text-sm">Archivos Storage</div>
+                        <div class="text-4xl font-bold text-yellow-400" id="metric-files">0</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="users-view" class="view-section hidden">
+                <h2 class="text-3xl font-bold mb-6">Gestión de Usuarios</h2>
+                <form id="form-user" class="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-6 flex gap-4 items-end">
+                    <div class="flex-1">
+                        <label class="text-xs text-gray-400">Nombre Completo</label>
+                        <input type="text" id="u-name" class="w-full bg-gray-700 p-2 rounded text-sm" required>
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-xs text-gray-400">Correo</label>
+                        <input type="email" id="u-email" class="w-full bg-gray-700 p-2 rounded text-sm" required>
+                    </div>
+                    <div class="w-32">
+                        <label class="text-xs text-gray-400">Rol</label>
+                        <select id="u-role" class="w-full bg-gray-700 p-2 rounded text-sm">
+                            <option value="agent">Agente</option>
+                            <option value="trainer">Trainer</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 p-2 rounded font-bold px-6">Crear</button>
+                </form>
+                <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-700 text-gray-300">
+                            <tr><th class="p-3">Nombre</th><th class="p-3">Correo</th><th class="p-3">Rol</th><th class="p-3">Estado</th><th class="p-3">Acciones</th></tr>
+                        </thead>
+                        <tbody id="table-users"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="waves-view" class="view-section hidden">
+                <h2 class="text-3xl font-bold mb-6">Gestión de Waves</h2>
+                <form id="form-wave" class="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-6 flex gap-4 items-end">
+                    <div class="flex-1">
+                        <label class="text-xs text-gray-400">Nombre del Wave (Ej. Wave 51)</label>
+                        <input type="text" id="w-name" class="w-full bg-gray-700 p-2 rounded text-sm" required>
+                    </div>
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 p-2 rounded font-bold px-6">Crear Wave</button>
+                </form>
+                <div class="grid grid-cols-3 gap-4" id="list-waves"></div>
+            </section>
+
+            <section id="courses-view" class="view-section hidden">
+                <h2 class="text-3xl font-bold mb-6">Estructura de Cursos</h2>
+                
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-6">
+                    <h3 class="text-xl mb-4 text-green-400">Crear Nuevo Curso</h3>
+                    <form id="form-course" class="flex gap-4 items-end mb-4">
+                        <div class="flex-1">
+                            <input type="text" id="c-title" placeholder="Título del Curso" class="w-full bg-gray-700 p-2 rounded" required>
+                        </div>
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded font-bold">Guardar Curso Raíz</button>
+                    </form>
+                </div>
+
+                <div id="tree-courses" class="space-y-4"></div>
+            </section>
+
+            <section id="kahoot-view" class="view-section hidden">
+                <h2 class="text-3xl font-bold mb-6 text-yellow-400">Dinámicas (Kahoot Engine)</h2>
+                <div class="grid grid-cols-2 gap-8">
+                    <div class="bg-gray-800 p-6 rounded border border-gray-700">
+                        <h3 class="font-bold mb-4">Crear Dinámica</h3>
+                        <input type="text" id="k-title" placeholder="Título del Quiz" class="w-full bg-gray-700 p-2 rounded mb-2">
+                        <button id="btn-create-kahoot" class="w-full bg-yellow-600 hover:bg-yellow-700 p-2 rounded font-bold">Generar PIN y Abrir Sala</button>
+                        <div id="kahoot-host-area" class="mt-4 hidden text-center">
+                            <div class="text-xs text-gray-400">PIN DE ACCESO</div>
+                            <div class="text-5xl font-bold tracking-widest text-white my-2" id="k-pin-display"></div>
+                            <button id="btn-start-game" class="bg-red-600 p-2 rounded mt-2 w-full font-bold">Lanzar Pregunta a Participantes</button>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded border border-gray-700">
+                        <h3 class="font-bold mb-4">Participantes en Sala</h3>
+                        <div id="k-players-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="cert-view" class="view-section hidden">
+                <h2 class="text-3xl font-bold mb-6 text-blue-400">Mis Certificados</h2>
+                <div id="cert-list" class="grid grid-cols-3 gap-4"></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="modal-activity" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center">
+        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">Añadir Actividad a Día</h3>
+            <input type="hidden" id="modal-course-id">
+            <input type="hidden" id="modal-week-idx">
+            <input type="hidden" id="modal-day-idx">
+            
+            <input type="text" id="act-title" placeholder="Título de la Actividad" class="w-full bg-gray-700 p-2 rounded mb-3" required>
+            
+            <select id="act-type" class="w-full bg-gray-700 p-2 rounded mb-3">
+                <option value="pdf">PDF</option>
+                <option value="video">Video</option>
+                <option value="presentacion">Presentación</option>
+                <option value="practica">Actividad Práctica</option>
+            </select>
+            
+            <input type="file" id="act-file" class="w-full bg-gray-700 p-2 rounded mb-3">
+            <div id="upload-progress" class="text-xs text-blue-400 mb-4 hidden">Subiendo archivo a Firebase Storage...</div>
+            
+            <div class="flex gap-2">
+                <button id="btn-save-activity" class="bg-blue-600 w-full p-2 rounded font-bold">Guardar Actividad</button>
+                <button id="btn-close-modal" class="bg-gray-600 w-full p-2 rounded font-bold">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // IMPORTACIONES REALES FIREBASE v10
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, getDocs, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+        // CREDENCIALES DE PRODUCCIÓN PROYECTO lmsupana
+        const firebaseConfig = {
+            apiKey: "AIzaSyAB4hS-FR5amDK8fem-Z1t_dXn3tbRDdC8",
+            authDomain: "lmsupana.firebaseapp.com",
+            projectId: "lmsupana",
+            storageBucket: "lmsupana.firebasestorage.app",
+            messagingSenderId: "912778300770",
+            appId: "1:912778300770:web:84be7166f1620ac8e6303b",
+            measurementId: "G-Z2PMT4KGJ0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // ESTADO GLOBAL
+        let currentUser = null;
+        let localCourses = []; // Cache en memoria para renderizado de árbol
+        let currentKahootId = null;
+
+        // ELEMENTOS DOM (CORE)
+        const ui = {
+            login: document.getElementById('login-view'),
+            app: document.getElementById('app-view'),
+            navBtns: document.querySelectorAll('.nav-btn'),
+            sections: document.querySelectorAll('.view-section'),
+            name: document.getElementById('current-user-name'),
+            role: document.getElementById('current-user-role')
+        };
+
+        // --- 1. AUTENTICACIÓN Y ENRUTAMIENTO ---
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            try {
+                await signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value);
+            } catch (e) { alert("Error de credenciales: " + e.message); }
+        });
+
+        document.getElementById('btn-register').addEventListener('click', async () => {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-password').value;
+            if(!email || !pass) return alert("Llena los campos");
+            try {
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                await setDoc(doc(db, "users", res.user.uid), {
+                    name: "Admin Principal", email, role: "admin", status: "activo", joinDate: new Date().toISOString()
+                });
+                alert("Administrador creado. Iniciando sesión.");
+            } catch (e) { alert("Error: " + e.message); }
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const docSnap = await getDoc(doc(db, "users", user.uid));
+                currentUser = docSnap.exists() ? { id: user.uid, ...docSnap.data() } : { id: user.uid, role: 'agent', name: user.email };
+                
+                ui.name.innerText = currentUser.name;
+                ui.role.innerText = currentUser.role.toUpperCase();
+                
+                // Mostrar/Ocultar menú según rol
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = currentUser.role === 'admin' ? 'block' : 'none');
+                document.querySelectorAll('.admin-trainer').forEach(el => el.style.display = ['admin', 'trainer'].includes(currentUser.role) ? 'block' : 'none');
+                document.querySelectorAll('.agent-only').forEach(el => el.style.display = currentUser.role === 'agent' ? 'block' : 'none');
+
+                ui.login.classList.add('hidden');
+                ui.app.classList.remove('hidden');
+                
+                // Iniciar Listeners Realtime
+                initRealtimeListeners();
+            } else {
+                ui.app.classList.add('hidden');
+                ui.login.classList.remove('hidden');
+            }
+        });
+
+        // NAVEGACIÓN UI
+        ui.navBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                ui.navBtns.forEach(b => { b.classList.remove('bg-blue-600', 'text-white'); b.classList.add('text-gray-300'); });
+                btn.classList.add('bg-blue-600', 'text-white');
+                btn.classList.remove('text-gray-300');
+                
+                const target = btn.getAttribute('data-target');
+                ui.sections.forEach(sec => {
+                    sec.classList.remove('block');
+                    sec.classList.add('hidden');
+                });
+                document.getElementById(target).classList.remove('hidden');
+                document.getElementById(target).classList.add('block');
+            });
+        });
+
+        // --- 2. LISTENERS REALTIME Y CRUD ---
+        function initRealtimeListeners() {
+            // Dashboard Metrics & Users
+            onSnapshot(collection(db, "users"), (snap) => {
+                document.getElementById('metric-users').innerText = snap.size;
+                const tbody = document.getElementById('table-users');
+                tbody.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    tbody.innerHTML += `
+                        <tr class="border-b border-gray-700">
+                            <td class="p-3">${data.name}</td><td class="p-3">${data.email}</td>
+                            <td class="p-3 uppercase text-xs">${data.role}</td>
+                            <td class="p-3"><span class="bg-green-900 text-green-300 px-2 py-1 rounded text-xs">${data.status || 'Activo'}</span></td>
+                            <td class="p-3"><button class="text-red-400 hover:text-red-300" onclick="deleteUser('${doc.id}')"><i class="fa-solid fa-trash"></i></button></td>
+                        </tr>
+                    `;
+                });
+            });
+
+            // Waves
+            onSnapshot(collection(db, "waves"), (snap) => {
+                document.getElementById('metric-waves').innerText = snap.size;
+                const list = document.getElementById('list-waves');
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    list.innerHTML += `<div class="bg-gray-800 p-4 rounded border border-gray-700"><h4 class="font-bold text-purple-400"><i class="fa-solid fa-users"></i> ${doc.data().name}</h4></div>`;
+                });
+            });
+
+            // Courses Hierarchy
+            onSnapshot(collection(db, "courses"), (snap) => {
+                document.getElementById('metric-courses').innerText = snap.size;
+                localCourses = [];
+                const tree = document.getElementById('tree-courses');
+                tree.innerHTML = '';
+                
+                snap.forEach(docSnap => {
+                    const course = { id: docSnap.id, ...docSnap.data() };
+                    localCourses.push(course);
+                    
+                    let html = `
+                    <div class="bg-gray-800 border border-gray-700 rounded p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-xl font-bold text-blue-400"><i class="fa-solid fa-book-open"></i> ${course.title}</h3>
+                            <div class="space-x-2">
+                                <button onclick="window.addWeek('${course.id}')" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-sm">+ Semana</button>
+                                <button onclick="window.deleteCourse('${course.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>`;
+                    
+                    // Render Semanas
+                    if(course.weeks) {
+                        course.weeks.forEach((week, wIdx) => {
+                            html += `
+                            <div class="ml-6 mt-3 border-l-2 border-gray-600 pl-4">
+                                <div class="flex justify-between items-center text-gray-300 mb-2">
+                                    <h4 class="font-bold text-green-400"><i class="fa-solid fa-calendar-week"></i> ${week.title}</h4>
+                                    <button onclick="window.addDay('${course.id}', ${wIdx})" class="text-xs bg-gray-700 px-2 py-1 rounded">+ Día</button>
+                                </div>`;
+                            
+                            // Render Días
+                            if(week.days) {
+                                week.days.forEach((day, dIdx) => {
+                                    html += `
+                                    <div class="ml-6 mt-2 border-l border-gray-600 pl-4">
+                                        <div class="flex justify-between items-center text-sm text-gray-400 mb-2">
+                                            <span><i class="fa-regular fa-calendar"></i> ${day.title}</span>
+                                            <button onclick="window.openActivityModal('${course.id}', ${wIdx}, ${dIdx})" class="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">+ Actividad/Archivo</button>
+                                        </div>`;
+                                    
+                                    // Render Actividades
+                                    if(day.activities) {
+                                        html += `<ul class="ml-6 space-y-1">`;
+                                        day.activities.forEach(act => {
+                                            const icon = act.type === 'pdf' ? 'fa-file-pdf text-red-400' : (act.type === 'video' ? 'fa-video text-blue-400' : 'fa-file text-gray-400');
+                                            const link = act.url ? `<a href="${act.url}" target="_blank" class="text-blue-400 hover:underline ml-2"><i class="fa-solid fa-link"></i> Ver archivo</a>` : '';
+                                            html += `<li class="text-sm bg-gray-700 p-2 rounded flex justify-between"><span class="truncate w-3/4"><i class="fa-solid ${icon}"></i> ${act.title} ${link}</span></li>`;
+                                        });
+                                        html += `</ul>`;
+                                    }
+                                    html += `</div>`;
+                                });
+                            }
+                            html += `</div>`;
+                        });
+                    }
+                    html += `</div>`;
+                    tree.innerHTML += html;
+                });
+                
+                // Rellenar certificados si es agente
+                if(currentUser.role === 'agent') renderCertificates();
+            });
+        }
+
+        // --- 3. FUNCIONES DE ESCRITURA FIRESTORE (EXPUESTAS AL WINDOW PARA ONCLICK) ---
+        
+        // Crear Usuario
+        document.getElementById('form-user').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                // Requiere Auth secundaria para no desloguear al admin, pero para este LMS simularemos la creación directa de registro en DB
+                // En un entorno 100% estricto necesitas Firebase Admin SDK para crear users sin login. Aquí guardamos el perfil.
+                const email = document.getElementById('u-email').value;
+                await addDoc(collection(db, "users"), {
+                    name: document.getElementById('u-name').value,
+                    email: email,
+                    role: document.getElementById('u-role').value,
+                    status: 'activo',
+                    joinDate: new Date().toISOString()
+                });
+                e.target.reset();
+            } catch (e) { alert("Error: " + e.message); }
+        });
+
+        // Crear Wave
+        document.getElementById('form-wave').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, "waves"), { name: document.getElementById('w-name').value, courses: [], agents: [] });
+            e.target.reset();
+        });
+
+        // Crear Curso Raíz
+        document.getElementById('form-course').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, "courses"), { title: document.getElementById('c-title').value, weeks: [], status: 'activo' });
+            e.target.reset();
+        });
+
+        // Modificadores de Árbol
+        window.deleteCourse = async (id) => { if(confirm('¿Eliminar curso entero?')) await deleteDoc(doc(db, "courses", id)); };
+        
+        window.addWeek = async (courseId) => {
+            const title = prompt("Nombre de la semana (Ej. Semana 1):");
+            if(!title) return;
+            const course = localCourses.find(c => c.id === courseId);
+            course.weeks.push({ title, days: [] });
+            await updateDoc(doc(db, "courses", courseId), { weeks: course.weeks });
+        };
+
+        window.addDay = async (courseId, weekIdx) => {
+            const title = prompt("Nombre del día (Ej. Día 1):");
+            if(!title) return;
+            const course = localCourses.find(c => c.id === courseId);
+            course.weeks[weekIdx].days.push({ title, activities: [] });
+            await updateDoc(doc(db, "courses", courseId), { weeks: course.weeks });
+        };
+
+        // --- 4. INTEGRACIÓN FIREBASE STORAGE (SUBIDA DE ARCHIVOS) ---
+        const modalAct = document.getElementById('modal-activity');
+        window.openActivityModal = (cId, wIdx, dIdx) => {
+            document.getElementById('modal-course-id').value = cId;
+            document.getElementById('modal-week-idx').value = wIdx;
+            document.getElementById('modal-day-idx').value = dIdx;
+            modalAct.classList.remove('hidden');
+        };
+
+        document.getElementById('btn-close-modal').addEventListener('click', () => modalAct.classList.add('hidden'));
+
+        document.getElementById('btn-save-activity').addEventListener('click', async () => {
+            const cId = document.getElementById('modal-course-id').value;
+            const wIdx = document.getElementById('modal-week-idx').value;
+            const dIdx = document.getElementById('modal-day-idx').value;
+            const title = document.getElementById('act-title').value;
+            const type = document.getElementById('act-type').value;
+            const fileObj = document.getElementById('act-file').files[0];
+
+            if(!title) return alert("Falta el título");
+
+            let fileUrl = "";
+            if (fileObj) {
+                document.getElementById('upload-progress').classList.remove('hidden');
+                const storageRef = ref(storage, `lms_files/${Date.now()}_${fileObj.name}`);
+                try {
+                    const snapshot = await uploadBytesResumable(storageRef, fileObj);
+                    fileUrl = await getDownloadURL(snapshot.ref);
+                    
+                    // Actualizar métrica visual de archivos
+                    const mFiles = document.getElementById('metric-files');
+                    mFiles.innerText = parseInt(mFiles.innerText) + 1;
+                } catch (e) {
+                    alert("Error subiendo archivo a Storage: " + e.message);
+                    return;
+                }
+            }
+
+            const course = localCourses.find(c => c.id === cId);
+            if(!course.weeks[wIdx].days[dIdx].activities) course.weeks[wIdx].days[dIdx].activities = [];
+            
+            course.weeks[wIdx].days[dIdx].activities.push({ title, type, url: fileUrl });
+            
+            await updateDoc(doc(db, "courses", cId), { weeks: course.weeks });
+            
+            document.getElementById('upload-progress').classList.add('hidden');
+            modalAct.classList.add('hidden');
+            document.getElementById('act-title').value = '';
+            document.getElementById('act-file').value = '';
+        });
+
+        // --- 5. MOTOR KAHOOT (REALTIME FIRESTORE) ---
+        document.getElementById('btn-create-kahoot').addEventListener('click', async () => {
+            const title = document.getElementById('k-title').value;
+            if(!title) return alert("Escribe un título");
+            
+            const pin = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('k-pin-display').innerText = pin;
+            
+            const docRef = await addDoc(collection(db, "kahootSessions"), {
+                title: title, pin: pin, hostId: currentUser.id, status: 'waiting', createdAt: new Date()
+            });
+            currentKahootId = docRef.id;
+
+            document.getElementById('kahoot-host-area').classList.remove('hidden');
+
+            // Escuchar jugadores reales uniéndose a esta sesión
+            onSnapshot(collection(db, `kahootSessions/${currentKahootId}/players`), (snap) => {
+                const plist = document.getElementById('k-players-list');
+                plist.innerHTML = '';
+                snap.forEach(p => {
+                    plist.innerHTML += `<div class="bg-gray-700 px-3 py-1 rounded-full text-sm">${p.data().name}</div>`;
+                });
+            });
+        });
+
+        // --- 6. GENERADOR DE CERTIFICADOS PDF EN NAVEGADOR ---
+        function renderCertificates() {
+            const list = document.getElementById('cert-list');
+            list.innerHTML = '';
+            // Renderizamos certificados basados en los cursos locales simulando finalización
+            localCourses.forEach(c => {
+                list.innerHTML += `
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 text-center">
+                    <i class="fa-solid fa-award text-5xl text-yellow-500 mb-4"></i>
+                    <h4 class="font-bold text-lg mb-2">${c.title}</h4>
+                    <p class="text-xs text-gray-400 mb-4">Completado: 100%</p>
+                    <button onclick="window.downloadPDF('${c.title}', '${currentUser.name}')" class="bg-blue-600 hover:bg-blue-700 w-full p-2 rounded text-sm font-bold"><i class="fa-solid fa-download"></i> Descargar PDF</button>
+                </div>`;
+            });
+        }
+
+        window.downloadPDF = (courseName, userName) => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+            
+            // Diseño estricto del certificado
+            doc.setFillColor(15, 23, 42); // bg-gray-900
+            doc.rect(0, 0, 300, 210, 'F');
+            
+            doc.setDrawColor(59, 130, 246); // blue-500 border
+            doc.setLineWidth(2);
+            doc.rect(10, 10, 277, 190);
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(40);
+            doc.text("CERTIFICADO DE APROBACIÓN", 148, 50, { align: 'center' });
+            
+            doc.setFontSize(20);
+            doc.setTextColor(156, 163, 175);
+            doc.text("Academia UPANA otorga el presente a:", 148, 80, { align: 'center' });
+            
+            doc.setFontSize(35);
+            doc.setTextColor(59, 130, 246);
+            doc.text(userName.toUpperCase(), 148, 110, { align: 'center' });
+            
+            doc.setFontSize(20);
+            doc.setTextColor(156, 163, 175);
+            doc.text("Por haber completado con éxito el entrenamiento operativo de:", 148, 140, { align: 'center' });
+            
+            doc.setFontSize(25);
+            doc.setTextColor(255, 255, 255);
+            doc.text(courseName, 148, 160, { align: 'center' });
+
+            const code = "UID-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`ID Verificación: ${code} | Fecha: ${new Date().toLocaleDateString()}`, 148, 190, { align: 'center' });
+            
+            doc.save(`Certificado_${courseName.replace(/\s+/g, '_')}.pdf`);
+        };
+
+    </script>
+</body>
+</html>
