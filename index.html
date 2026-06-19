@@ -51,6 +51,32 @@
         #pres-sidebar.open { transform: translateX(0); }
         .upanahoot-projection-card { width: 100%; max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere; }
         .upanahoot-answer-card { min-width: 0; overflow-wrap: anywhere; }
+        .soft-card { border-radius: 14px; border: 1px solid rgba(148, 163, 184, .25); box-shadow: 0 12px 30px rgba(15, 23, 42, .06); }
+        .course-mode-pill { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; padding: .3rem .6rem; font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+        .learning-content img { max-width: 100%; border-radius: 12px; margin: 1rem auto; display: block; }
+        .learning-content iframe, .learning-content video { width: 100%; min-height: 420px; border-radius: 12px; }
+        @media (max-width: 768px) {
+            body { overflow: auto; }
+            #app-view { min-height: 100vh; flex-direction: column; }
+            #app-view > aside { width: 100%; max-height: none; border-right: 0; border-bottom: 1px solid rgba(148, 163, 184, .25); }
+            #app-view > aside > div:first-child > div:first-child { padding: .9rem 1rem; }
+            #app-view > aside nav { max-height: 220px; overflow-y: auto; }
+            #app-view > aside nav a { padding: .65rem .75rem; font-size: .82rem; }
+            #app-view > aside > div:last-child { padding: .75rem 1rem; }
+            main { padding: 1rem !important; overflow: visible !important; }
+            #agent-view h2 { font-size: 1.45rem; line-height: 1.2; }
+            #agent-view p { margin-bottom: 1rem; }
+            #agent-courses-area .grid { grid-template-columns: minmax(0, 1fr) !important; gap: .9rem; }
+            #agent-courses-area .rounded-xl { border-radius: 14px; }
+            #agent-courses-area .p-6 { padding: 1rem; }
+            #agent-courses-area .grid.grid-cols-2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; }
+            #self-study-view { overflow: hidden; }
+            #self-study-view > .grid { display: flex; flex-direction: column; overflow: hidden; }
+            #self-study-nav { max-height: 34vh; border-right: 0; border-bottom: 1px solid rgba(148, 163, 184, .25); }
+            #self-study-content { max-width: 100%; }
+            .learning-content iframe, .learning-content video { min-height: 260px; }
+            .upanahoot-answer-card { min-height: 84px; padding: 1rem; }
+        }
         
         /* Ocultar elementos de scrollbars nativos en iframes si es posible */
         iframe { border-radius: 0.5rem; background: white; }
@@ -66,10 +92,11 @@
             <h1 class="text-2xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Plataforma LMS</h1>
             <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">Consola operativa institucional UPANA</p>
             <div class="space-y-4">
+                <input type="text" id="auth-name" placeholder="Nombre completo (para registro inicial)" class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none transition text-gray-900 dark:text-white">
                 <input type="email" id="auth-email" placeholder="Correo electrónico" class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none transition text-gray-900 dark:text-white">
                 <input type="password" id="auth-password" placeholder="Contraseña" class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none transition text-gray-900 dark:text-white">
                 <button id="btn-login" class="w-full bg-accent hover:bg-accent/90 text-white p-3 rounded-lg font-medium text-sm transition shadow-lg shadow-accent/20">Iniciar Sesión</button>
-                <button id="btn-register" class="w-full bg-transparent border border-light-border dark:border-border hover:bg-gray-50 dark:hover:bg-surface text-gray-600 dark:text-gray-300 p-3 rounded-lg text-sm transition">Registrar Cuenta Administrativa Inicial</button>
+                <button id="btn-register" class="w-full bg-transparent border border-light-border dark:border-border hover:bg-gray-50 dark:hover:bg-surface text-gray-600 dark:text-gray-300 p-3 rounded-lg text-sm transition">Registrar cuenta inicial</button>
             </div>
         </div>
     </div>
@@ -230,9 +257,13 @@
                 <h2 class="text-2xl font-bold tracking-tight mb-6 text-gray-900 dark:text-white">Diseño Curricular del Programa</h2>
                 <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl mb-8">
                     <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Estructurar Nuevo Programa de Capacitación</h3>
-                    <form id="form-course" class="grid grid-cols-1 md:grid-cols-[1fr_1.5fr_auto] gap-4 items-center">
+                    <form id="form-course" class="grid grid-cols-1 md:grid-cols-[1fr_1.3fr_.8fr_auto] gap-4 items-center">
                         <input type="text" id="c-title" placeholder="Nombre completo del curso corporativo" class="bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required>
                         <input type="text" id="c-desc" placeholder="Descripción breve del curso" class="bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
+                        <select id="c-mode" class="bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
+                            <option value="guided" class="bg-white dark:bg-dark">Presencial guiado</option>
+                            <option value="self" class="bg-white dark:bg-dark">Autoaprendizaje</option>
+                        </select>
                         <button type="submit" class="bg-accent text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-accent/90 transition">Crear Curso Base</button>
                     </form>
                 </div>
@@ -265,6 +296,11 @@
                 </div>
 
                 <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 text-sm text-gray-500 dark:text-gray-400">Selecciona una Wave, curso y día para proyectar la capacitación presencial.</div>
+
+                <div class="mt-8">
+                    <h3 class="text-lg font-bold text-accent mb-4 border-b border-light-border dark:border-border pb-2"><i class="fa-solid fa-clipboard-check mr-2"></i> Revisión de Autoaprendizaje</h3>
+                    <div id="self-study-review-panel" class="space-y-3"></div>
+                </div>
             </section>
 
             <section id="agent-view" class="view-section hidden">
@@ -398,6 +434,7 @@
                         <option value="pdf" class="bg-white dark:bg-dark">Documento PDF Embebido</option>
                         <option value="kahoot" class="bg-white dark:bg-dark">UPANAHOOT (Evaluación)</option>
                         <option value="practica" class="bg-white dark:bg-dark">Actividad Práctica / Lectura</option>
+                        <option value="evaluacion" class="bg-white dark:bg-dark">Evaluación escrita revisable</option>
                     </select>
                 </div>
 
@@ -501,6 +538,22 @@
         </div>
     </div>
 
+    <div id="self-study-view" class="fixed inset-0 z-[70] bg-light-bg dark:bg-dark hidden flex-col">
+        <div class="h-16 bg-light-surface dark:bg-surface border-b border-light-border dark:border-border flex items-center justify-between px-5 shadow-sm">
+            <div>
+                <h3 id="self-study-title" class="font-black text-gray-900 dark:text-white leading-tight">Curso</h3>
+                <p id="self-study-subtitle" class="text-xs text-gray-500"></p>
+            </div>
+            <button onclick="window.closeSelfStudy()" class="w-9 h-9 rounded-lg bg-gray-100 dark:bg-dark text-gray-500 hover:text-danger flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-[320px_1fr] overflow-hidden">
+            <aside class="bg-light-surface dark:bg-surface border-r border-light-border dark:border-border overflow-y-auto custom-scrollbar p-4" id="self-study-nav"></aside>
+            <main class="overflow-y-auto custom-scrollbar p-4 md:p-8">
+                <div id="self-study-content" class="max-w-5xl mx-auto"></div>
+            </main>
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -532,11 +585,13 @@
         let localUPANAHOOTs = []; // Bank
         let localUPANAHOOTSessions = [];
         let localDayClosures = [];
+        let localSelfStudySubmissions = [];
         let agentUPANAHOOTTimerHandle = null;
         let selectedCourseId = null;
         let selectedDashboardCourseId = null;
         let selectedDashboardDayKey = null;
         let dayClosureState = null;
+        let selfStudyState = { courseId: null, wIdx: 0, dIdx: 0, aIdx: 0 };
 
         // ESTADO DE MODO PRESENTACIÓN (TRAINER)
         let presState = {
@@ -645,13 +700,15 @@
         });
 
         document.getElementById('btn-register').addEventListener('click', async () => {
+            const name = document.getElementById('auth-name')?.value.trim();
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-password').value;
+            if(!name) return alert("Ingrese su nombre completo para usarlo en el sistema.");
             if(!email || !pass) return alert("Ingrese credenciales válidas.");
             try {
                 const res = await createUserWithEmailAndPassword(auth, email, pass);
                 await setDoc(doc(db, "users", res.user.uid), {
-                    name: "Administrador Corporativo", email, role: "admin", status: "activo", joinDate: new Date().toISOString()
+                    name, email, role: "admin", status: "activo", joinDate: new Date().toISOString()
                 });
                 alert("Cuenta máster creada exitosamente.");
             } catch (e) { alert("Error de registro: " + e.message); }
@@ -665,6 +722,7 @@
                 if(docSnap.exists()){ currentUser = { id: user.uid, ...docSnap.data() }; } 
                 else { currentUser = { id: user.uid, role: 'admin', name: user.email, email: user.email }; }
                 
+                currentUser.name = currentUser.name || currentUser.email || user.email || 'Usuario';
                 document.getElementById('user-name').innerText = currentUser.name;
                 document.getElementById('user-role').innerText = currentUser.role;
                 document.getElementById('user-avatar').innerText = currentUser.name.charAt(0).toUpperCase();
@@ -752,6 +810,12 @@
                     renderAdminSupervision();
                 }
             });
+
+            onSnapshot(collection(db, "selfStudySubmissions"), (snap) => {
+                localSelfStudySubmissions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if(currentUser?.role === 'agent') renderSelfStudyContent();
+                if(['admin', 'trainer'].includes(currentUser?.role)) renderSelfStudyReviews();
+            });
         }
 
         // ==========================================
@@ -836,6 +900,7 @@
                 await addDoc(collection(db, "courses"), {
                     title: document.getElementById('c-title').value,
                     description: document.getElementById('c-desc')?.value || '',
+                    mode: document.getElementById('c-mode')?.value || 'guided',
                     weeks: [],
                     status: "activo"
                 });
@@ -856,6 +921,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
                     ${localCourses.map(course => {
                         const isActive = course.id === selectedCourseId;
+                        const isSelf = course.mode === 'self';
                         return `
                             <button onclick="window.selectCourseForManagement('${safeText(course.id)}')" class="text-left bg-light-surface dark:bg-surface border ${isActive ? 'border-accent ring-2 ring-accent/20' : 'border-light-border dark:border-border'} rounded-xl p-5 shadow-sm hover:border-accent transition">
                                 <div class="flex items-start justify-between gap-3 mb-3">
@@ -865,6 +931,7 @@
                                     </div>
                                     <span class="text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded ${course.status === 'activo' ? 'bg-success/15 text-success' : 'bg-gray-100 dark:bg-dark text-gray-500'}">${safeText(course.status || 'activo')}</span>
                                 </div>
+                                <div class="mb-3"><span class="course-mode-pill ${isSelf ? 'bg-accent/10 text-accent' : 'bg-warning/15 text-warning'}"><i class="fa-solid ${isSelf ? 'fa-laptop-file' : 'fa-person-chalkboard'}"></i>${isSelf ? 'Autoaprendizaje' : 'Presencial'}</span></div>
                                 <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                                     <span><i class="fa-solid fa-calendar-week text-warning mr-1"></i>${(course.weeks || []).length} semana(s)</span>
                                     <span class="text-accent font-bold">Gestionar <i class="fa-solid fa-arrow-right ml-1"></i></span>
@@ -1120,7 +1187,7 @@
         };
 
         window.addUPANAHOOTQuestion = () => {
-            currentUPANAHOOTQuestions.push({ q: "", options: ["", "", "", ""], correct: 0, time: 20, points: 1000 });
+            currentUPANAHOOTQuestions.push({ q: "", imageUrl: "", options: ["", "", "", ""], correct: 0, time: 20, points: 1000 });
             renderUPANAHOOTQuestionsList();
         };
 
@@ -1133,6 +1200,18 @@
             const dup = JSON.parse(JSON.stringify(currentUPANAHOOTQuestions[idx]));
             currentUPANAHOOTQuestions.splice(idx + 1, 0, dup);
             renderUPANAHOOTQuestionsList();
+        };
+
+        window.uploadUPANAHOOTQuestionImage = async (idx, fileObj) => {
+            if(!fileObj) return;
+            try {
+                const storageRef = ref(storage, `kahoot_question_images/${Date.now()}_${fileObj.name}`);
+                const snap = await uploadBytesResumable(storageRef, fileObj);
+                currentUPANAHOOTQuestions[idx].imageUrl = await getDownloadURL(snap.ref);
+                renderUPANAHOOTQuestionsList();
+            } catch(e) {
+                alert("No se pudo subir la imagen: " + e.message);
+            }
         };
 
         function renderUPANAHOOTQuestionsList() {
@@ -1151,6 +1230,15 @@
                         <div class="mb-4 pr-16">
                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Pregunta ${idx + 1}</label>
                             <input type="text" onchange="currentUPANAHOOTQuestions[${idx}].q = this.value" value="${safeText(q.q || '')}" class="w-full bg-transparent border-b border-light-border dark:border-border focus:border-warning py-1 outline-none text-lg font-bold text-gray-900 dark:text-white" placeholder="Escribe la pregunta aqui...">
+                        </div>
+
+                        <div class="mb-4 bg-gray-50 dark:bg-surface border border-light-border dark:border-border rounded-lg p-3">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Imagen opcional de la pregunta</label>
+                            ${q.imageUrl ? `<img src="${safeText(q.imageUrl)}" class="max-h-40 rounded-lg border border-light-border dark:border-border mb-3 object-contain bg-white mx-auto">` : ''}
+                            <div class="flex flex-col md:flex-row gap-2">
+                                <input type="url" onchange="currentUPANAHOOTQuestions[${idx}].imageUrl = this.value" value="${safeText(q.imageUrl || '')}" placeholder="URL de imagen" class="flex-1 bg-transparent border border-light-border dark:border-border rounded p-2 text-xs text-gray-900 dark:text-white outline-none focus:border-warning">
+                                <input type="file" accept="image/*" onchange="window.uploadUPANAHOOTQuestionImage(${idx}, this.files[0])" class="text-xs text-gray-500">
+                            </div>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
@@ -1290,6 +1378,7 @@
                         <div class="flex-1 overflow-y-auto p-5 md:p-10 flex flex-col items-center justify-center text-center">
                             <div class="text-xs uppercase tracking-widest font-black opacity-75 mb-2">${safeText(statusText)}</div>
                             <h2 class="text-3xl md:text-5xl font-black leading-tight max-w-5xl">${safeText(q?.q || k?.title || joinedSession.upanahootTitle || 'UPANAHOOT')}</h2>
+                            ${q?.imageUrl ? `<img src="${safeText(q.imageUrl)}" class="mt-5 max-h-64 max-w-full rounded-xl shadow-2xl object-contain bg-white/10">` : ''}
                             ${joinedSession.status === 'question' ? `<div class="mt-5 w-24 h-24 rounded-full bg-white text-[#46178f] flex items-center justify-center text-4xl font-black shadow-2xl">${remaining}</div>` : ''}
                             ${questionHtml}
                             ${resultHtml}
@@ -1398,6 +1487,7 @@
                             currentDay = lastDay?.title || 'Completado';
                         }
                         const pct = total ? Math.round((done / total) * 100) : 0;
+                        const isSelf = course.mode === 'self';
                         return `
                             <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-6 shadow">
                                 <div class="flex items-start justify-between gap-3 mb-4">
@@ -1405,7 +1495,7 @@
                                         <h3 class="text-lg font-black text-gray-900 dark:text-white">${safeText(course.title || 'Curso')}</h3>
                                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">${safeText(course.description || 'Curso asignado por tu trainer')}</p>
                                     </div>
-                                    <span class="text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded ${pct === 100 ? 'bg-success/15 text-success' : 'bg-accent/10 text-accent'}">${pct === 100 ? 'Completado' : 'Asignado'}</span>
+                                    <span class="text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded ${isSelf ? 'bg-accent/10 text-accent' : pct === 100 ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning'}">${isSelf ? 'Autoaprendizaje' : pct === 100 ? 'Completado' : 'Presencial'}</span>
                                 </div>
                                 <div class="mb-4">
                                     <div class="flex justify-between text-xs font-bold mb-1"><span class="text-gray-500">Avance validado</span><span class="text-accent">${pct}%</span></div>
@@ -1415,19 +1505,201 @@
                                     <div class="bg-gray-50 dark:bg-dark/40 rounded p-3"><div class="text-gray-400 font-bold uppercase">Semana actual</div><div class="font-bold text-gray-900 dark:text-white">${safeText(currentWeek)}</div></div>
                                     <div class="bg-gray-50 dark:bg-dark/40 rounded p-3"><div class="text-gray-400 font-bold uppercase">Día actual</div><div class="font-bold text-gray-900 dark:text-white">${safeText(currentDay)}</div></div>
                                 </div>
-                                <div class="text-[11px] text-gray-400 mt-4">El avance lo registra tu trainer durante la capacitación presencial.</div>
+                                ${isSelf ? `<button onclick="window.openSelfStudy('${safeText(course.id)}')" class="mt-4 w-full bg-accent text-white rounded-lg py-2.5 text-sm font-black hover:bg-accent/90 transition"><i class="fa-solid fa-play mr-2"></i>Entrar al curso</button>` : `<div class="text-[11px] text-gray-400 mt-4">El avance lo registra tu trainer durante la capacitación presencial.</div>`}
                             </div>
                         `;
                     }).join('')}
                 </div>
             `;
         }
+
+        function flattenCourseActivities(course) {
+            const items = [];
+            (course.weeks || []).forEach((week, wIdx) => (week.days || []).forEach((day, dIdx) => (day.activities || []).forEach((act, aIdx) => {
+                items.push({ course, week, day, act, wIdx, dIdx, aIdx, key: `${wIdx}:${dIdx}:${aIdx}` });
+            })));
+            return items;
+        }
+
+        function renderLearningMedia(act) {
+            if(act.type === 'video') {
+                if(act.youtube) {
+                    const ytId = act.youtube.split('v=')[1]?.split('&')[0] || act.youtube.split('/').pop();
+                    return `<iframe src="https://www.youtube.com/embed/${safeText(ytId)}" allowfullscreen></iframe>`;
+                }
+                if(act.url) return `<video controls><source src="${safeText(act.url)}"></video>`;
+            }
+            if(act.type === 'pdf' && act.url) return `<iframe src="${safeText(getPdfViewerUrl(act.url))}"></iframe>`;
+            if(act.type === 'imagen' && act.url) return `<img src="${safeText(act.url)}" alt="${safeText(act.title || 'Imagen del tema')}">`;
+            if(act.url) return `<a href="${safeText(act.url)}" target="_blank" class="text-accent font-bold underline">Abrir recurso</a>`;
+            return '';
+        }
+
+        window.openSelfStudy = (courseId) => {
+            const course = localCourses.find(c => c.id === courseId);
+            if(!course) return;
+            const items = flattenCourseActivities(course);
+            const firstPending = items.find(item => !hasActivityProgress(currentUser.id, course.id, item.wIdx, item.dIdx, item.aIdx)) || items[0];
+            selfStudyState = { courseId, wIdx: firstPending?.wIdx || 0, dIdx: firstPending?.dIdx || 0, aIdx: firstPending?.aIdx || 0 };
+            document.getElementById('self-study-view').classList.remove('hidden');
+            document.getElementById('self-study-view').classList.add('flex');
+            renderSelfStudyContent();
+        };
+
+        window.closeSelfStudy = () => {
+            document.getElementById('self-study-view').classList.add('hidden');
+            document.getElementById('self-study-view').classList.remove('flex');
+        };
+
+        window.selectSelfStudyActivity = (wIdx, dIdx, aIdx) => {
+            selfStudyState = { ...selfStudyState, wIdx, dIdx, aIdx };
+            renderSelfStudyContent();
+        };
+
+        window.completeSelfStudyActivity = async () => {
+            if(!currentUser || !selfStudyState.courseId) return;
+            const { courseId, wIdx, dIdx, aIdx } = selfStudyState;
+            const docId = progressKey(currentUser.id, courseId, wIdx, dIdx, aIdx);
+            await setDoc(doc(db, "userProgress", docId), {
+                userId: currentUser.id,
+                courseId,
+                weekId: wIdx,
+                dayId: dIdx,
+                activityId: aIdx,
+                source: 'self-study',
+                status: 'completed',
+                completedAt: new Date().toISOString()
+            });
+            renderAgentPortal();
+            renderSelfStudyContent();
+        };
+
+        window.submitSelfStudyAnswer = async () => {
+            const answer = document.getElementById('self-study-answer')?.value.trim();
+            if(!answer) return alert("Escribe tu respuesta antes de enviar.");
+            const { courseId, wIdx, dIdx, aIdx } = selfStudyState;
+            const course = localCourses.find(c => c.id === courseId);
+            const act = course?.weeks?.[wIdx]?.days?.[dIdx]?.activities?.[aIdx];
+            await addDoc(collection(db, "selfStudySubmissions"), {
+                userId: currentUser.id,
+                userName: currentUser.name || currentUser.email || 'Agente',
+                courseId,
+                courseTitle: course?.title || '',
+                weekId: wIdx,
+                dayId: dIdx,
+                activityId: aIdx,
+                activityTitle: act?.title || '',
+                answer,
+                status: 'pendiente',
+                points: null,
+                createdAt: new Date().toISOString()
+            });
+            await window.completeSelfStudyActivity();
+            alert("Respuesta enviada para revisión.");
+        };
+
+        function renderSelfStudyContent() {
+            const view = document.getElementById('self-study-view');
+            if(!view || view.classList.contains('hidden')) return;
+            const course = localCourses.find(c => c.id === selfStudyState.courseId);
+            if(!course) return;
+            const items = flattenCourseActivities(course);
+            const current = items.find(item => item.wIdx === Number(selfStudyState.wIdx) && item.dIdx === Number(selfStudyState.dIdx) && item.aIdx === Number(selfStudyState.aIdx)) || items[0];
+            document.getElementById('self-study-title').innerText = course.title || 'Curso';
+            document.getElementById('self-study-subtitle').innerText = 'Autoaprendizaje';
+            document.getElementById('self-study-nav').innerHTML = (course.weeks || []).map((week, wIdx) => `
+                <div class="mb-4">
+                    <div class="text-xs uppercase tracking-widest font-black text-gray-400 mb-2">${safeText(week.title || `Semana ${wIdx + 1}`)}</div>
+                    ${(week.days || []).map((day, dIdx) => `
+                        <div class="mb-3 pl-3 border-l border-light-border dark:border-border">
+                            <div class="text-sm font-black text-gray-900 dark:text-white mb-2">${safeText(day.title || `Día ${dIdx + 1}`)}</div>
+                            ${(day.activities || []).map((act, aIdx) => {
+                                const done = hasActivityProgress(currentUser.id, course.id, wIdx, dIdx, aIdx);
+                                const active = current && current.wIdx === wIdx && current.dIdx === dIdx && current.aIdx === aIdx;
+                                return `<button onclick="window.selectSelfStudyActivity(${wIdx},${dIdx},${aIdx})" class="w-full text-left rounded-lg border px-3 py-2 mb-1 text-xs font-bold ${active ? 'border-accent bg-accent/10 text-accent' : 'border-light-border dark:border-border text-gray-600 dark:text-gray-300'}">
+                                    <i class="fa-solid ${done ? 'fa-circle-check text-success' : 'fa-circle text-warning'} mr-2"></i>${safeText(act.title || 'Actividad')}
+                                </button>`;
+                            }).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+            if(!current) {
+                document.getElementById('self-study-content').innerHTML = `<div class="soft-card bg-light-surface dark:bg-surface p-6 text-gray-500">Este curso aún no tiene contenido.</div>`;
+                return;
+            }
+            const act = current.act;
+            const completed = hasActivityProgress(currentUser.id, course.id, current.wIdx, current.dIdx, current.aIdx);
+            const submission = localSelfStudySubmissions
+                .filter(s => s.userId === currentUser.id && s.courseId === course.id && Number(s.weekId) === current.wIdx && Number(s.dayId) === current.dIdx && Number(s.activityId) === current.aIdx)
+                .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
+            const mediaHtml = renderLearningMedia(act);
+            const textHtml = act.description ? `<div class="learning-content text-gray-800 dark:text-gray-200 leading-relaxed">${renderRichHtml(act.description)}</div>` : '';
+            const ordered = act.contentOrder === 'text-first' ? `${textHtml}${mediaHtml}` : `${mediaHtml}${textHtml}`;
+            document.getElementById('self-study-content').innerHTML = `
+                <article class="soft-card bg-light-surface dark:bg-surface p-5 md:p-8">
+                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+                        <div>
+                            <div class="text-xs uppercase tracking-widest font-black text-accent mb-2">${safeText(current.week.title || '')} / ${safeText(current.day.title || '')}</div>
+                            <h2 class="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">${safeText(act.title || 'Actividad')}</h2>
+                            ${act.objectives ? `<p class="text-warning font-bold mt-2">${safeText(act.objectives)}</p>` : ''}
+                        </div>
+                        <span class="course-mode-pill ${completed ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning'}">${completed ? 'Completado' : 'Pendiente'}</span>
+                    </div>
+                    <div class="space-y-5">${ordered || `<div class="text-gray-500">Sin contenido registrado.</div>`}</div>
+                    ${['practica', 'evaluacion'].includes(act.type) ? `
+                        <div class="mt-6 border-t border-light-border dark:border-border pt-5">
+                            <label class="text-xs uppercase tracking-widest font-black text-gray-500">Respuesta para revisión</label>
+                            <textarea id="self-study-answer" class="mt-2 w-full min-h-32 bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl p-3 text-sm outline-none focus:border-accent text-gray-900 dark:text-white" ${submission ? 'disabled' : ''}>${safeText(submission?.answer || '')}</textarea>
+                            <div class="mt-3 flex items-center justify-between gap-3">
+                                <div class="text-xs text-gray-500">${submission ? `Estado: ${safeText(submission.status || 'pendiente')} ${submission.points != null ? `- ${Number(submission.points)} pts` : ''}` : 'Tu trainer revisará esta respuesta.'}</div>
+                                ${submission ? '' : `<button onclick="window.submitSelfStudyAnswer()" class="bg-accent text-white px-5 py-2.5 rounded-lg text-sm font-black">Enviar respuesta</button>`}
+                            </div>
+                        </div>
+                    ` : `
+                        <button onclick="window.completeSelfStudyActivity()" ${completed ? 'disabled' : ''} class="mt-6 bg-success text-white px-5 py-2.5 rounded-lg text-sm font-black disabled:opacity-60"><i class="fa-solid fa-check mr-2"></i>${completed ? 'Actividad completada' : 'Marcar como completada'}</button>
+                    `}
+                </article>
+            `;
+        }
+
+        function renderSelfStudyReviews() {
+            const panel = document.getElementById('self-study-review-panel');
+            if(!panel) return;
+            const pending = [...localSelfStudySubmissions].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            panel.innerHTML = pending.map(s => `
+                <div class="soft-card bg-light-surface dark:bg-surface p-4">
+                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                        <div>
+                            <div class="font-black text-gray-900 dark:text-white">${safeText(s.userName)} - ${safeText(s.activityTitle)}</div>
+                            <div class="text-xs text-gray-500">${safeText(s.courseTitle)} · ${safeText(new Date(s.createdAt || Date.now()).toLocaleString())}</div>
+                            <p class="mt-3 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">${safeText(s.answer || '')}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input id="points_${safeText(s.id)}" type="number" min="0" placeholder="Pts" value="${s.points ?? ''}" class="w-20 bg-transparent border border-light-border dark:border-border rounded p-2 text-sm text-gray-900 dark:text-white">
+                            <button onclick="window.gradeSelfStudy('${safeText(s.id)}')" class="bg-success text-white px-3 py-2 rounded text-xs font-black">Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('') || `<div class="soft-card bg-light-surface dark:bg-surface p-5 text-sm text-gray-500">No hay entregas de autoaprendizaje pendientes.</div>`;
+        }
+
+        window.gradeSelfStudy = async (id) => {
+            const points = Number(document.getElementById(`points_${id}`)?.value || 0);
+            await updateDoc(doc(db, "selfStudySubmissions", id), {
+                points,
+                status: 'revisado',
+                reviewedBy: currentUser?.id || '',
+                reviewedAt: new Date().toISOString()
+            });
+        };
+
         function renderTrainerPresenterSelector() {
             const container = document.getElementById('trainer-presenter-selector');
             if(!container) return;
             container.innerHTML = localWaves.map(wave => {
                 const cIds = localAssignments.filter(a => a.type === 'wave_course' && a.targetId === wave.id).map(a => a.assignId);
-                const courses = localCourses.filter(c => cIds.includes(c.id));
+                const courses = localCourses.filter(c => cIds.includes(c.id) && c.mode !== 'self');
                 if(courses.length === 0) return '';
                 return `<div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-5 rounded-xl shadow">
                         <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-4">${wave.name}</h4>
@@ -2157,6 +2429,7 @@
                     <div class="w-24 h-24 rounded-full bg-[#46178f] text-white flex items-center justify-center text-4xl font-black shadow-2xl mb-6">${remaining}</div>
                     <div class="bg-white text-black p-8 rounded shadow text-center w-full max-w-4xl mb-8">
                         <h2 class="text-4xl font-bold">${safeText(q.q || '')}</h2>
+                        ${q.imageUrl ? `<img src="${safeText(q.imageUrl)}" class="mt-5 max-h-72 max-w-full object-contain rounded-xl mx-auto">` : ''}
                     </div>
                     <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4">
                         ${[0,1,2,3].map(i => `
