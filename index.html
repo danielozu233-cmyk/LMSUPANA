@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,26 +56,44 @@
         .learning-content img { max-width: 100%; border-radius: 12px; margin: 1rem auto; display: block; }
         .learning-content iframe, .learning-content video { width: 100%; min-height: 420px; border-radius: 12px; }
         @media (max-width: 768px) {
-            body { overflow: auto; }
-            #app-view { min-height: 100vh; flex-direction: column; }
-            #app-view > aside { width: 100%; max-height: none; border-right: 0; border-bottom: 1px solid rgba(148, 163, 184, .25); }
+            html, body { height: auto !important; min-height: 100% !important; overflow-y: auto !important; overscroll-behavior-y: auto; }
+            body { display: block !important; overflow-x: hidden !important; padding-bottom: 2rem; }
+            #app-view { min-height: 100vh; height: auto; flex-direction: column; overflow: visible; }
+            #app-view > aside { width: 100%; max-height: none; border-right: 0; border-bottom: 1px solid rgba(148, 163, 184, .25); flex-shrink: 0; display: block; box-shadow: 0 6px 18px rgba(15, 23, 42, .08); }
             #app-view > aside > div:first-child > div:first-child { padding: .9rem 1rem; }
-            #app-view > aside nav { max-height: 220px; overflow-y: auto; }
-            #app-view > aside nav a { padding: .65rem .75rem; font-size: .82rem; }
-            #app-view > aside > div:last-child { padding: .75rem 1rem; }
-            main { padding: 1rem !important; overflow: visible !important; }
+            #app-view > aside nav { max-height: none; overflow-x: auto; overflow-y: hidden; padding: .65rem 1rem; display: flex; gap: .5rem; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+            #app-view > aside nav > div { display: contents; }
+            #app-view > aside nav > div[style*="display: none"],
+            #app-view > aside nav > a[style*="display: none"] { display: none !important; }
+            #app-view > aside nav > div > div { display: none !important; }
+            #app-view > aside nav a { flex: 0 0 auto; padding: .65rem .85rem; font-size: .8rem; margin: 0 !important; border: 1px solid rgba(148, 163, 184, .25); border-radius: 999px; background: rgba(255,255,255,.72); scroll-snap-align: start; }
+            .dark #app-view > aside nav a { background: rgba(17, 24, 39, .72); }
+            #app-view > aside > div:last-child { padding: .7rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+            #app-view > aside > div:last-child .mb-3 { margin-bottom: 0 !important; min-width: 0; }
+            #app-view > aside > div:last-child #user-avatar { width: 2rem; height: 2rem; border-radius: .65rem; }
+            #app-view > aside > div:last-child #user-name { font-size: .8rem; max-width: 8.5rem; }
+            #app-view > aside > div:last-child #user-role { font-size: .62rem; }
+            #app-view > aside > div:last-child button { width: auto; white-space: nowrap; }
+            main { padding: 1rem !important; overflow: visible !important; min-height: auto; padding-bottom: 5rem !important; }
             #agent-view h2 { font-size: 1.45rem; line-height: 1.2; }
             #agent-view p { margin-bottom: 1rem; }
             #agent-courses-area .grid { grid-template-columns: minmax(0, 1fr) !important; gap: .9rem; }
             #agent-courses-area .rounded-xl { border-radius: 14px; }
             #agent-courses-area .p-6 { padding: 1rem; }
             #agent-courses-area .grid.grid-cols-2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; }
-            #self-study-view { overflow: hidden; }
-            #self-study-view > .grid { display: flex; flex-direction: column; overflow: hidden; }
-            #self-study-nav { max-height: 34vh; border-right: 0; border-bottom: 1px solid rgba(148, 163, 184, .25); }
+            #self-study-view { overflow-y: auto; }
+            #self-study-view > .grid { display: flex; flex-direction: column; overflow: visible; min-height: auto; }
+            #self-study-nav { max-height: none; overflow-x: auto; overflow-y: visible; border-right: 0; border-bottom: 1px solid rgba(148, 163, 184, .25); }
+            #self-study-view main { overflow: visible !important; padding-bottom: 5rem !important; }
             #self-study-content { max-width: 100%; }
             .learning-content iframe, .learning-content video { min-height: 260px; }
             .upanahoot-answer-card { min-height: 84px; padding: 1rem; }
+            #presentation-view { overflow-y: auto; }
+            #pres-slide-container { min-height: auto !important; padding-top: 3.25rem; }
+            .projection-media, .projection-image-wrap { min-height: 0; }
+            .projection-pdf-frame { height: 72vh; }
+            .projection-stack { gap: .75rem; }
+            .projection-text-block { padding: 1rem !important; font-size: 1rem !important; }
         }
         
         /* Ocultar elementos de scrollbars nativos en iframes si es posible */
@@ -113,7 +131,7 @@
                     <button id="btn-theme-toggle" class="text-gray-500 hover:text-accent transition"><i class="fa-solid fa-moon"></i></button>
                 </div>
                 <nav class="p-4 space-y-1" id="nav-menu">
-                    <a href="#" data-target="dash-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-accent bg-accent/10 font-medium mb-1"><i class="fa-solid fa-chart-pie w-5"></i> Dashboard</a>
+                    <a href="#" data-target="dash-view" class="nav-btn admin-trainer-control hidden flex items-center gap-3 p-2.5 rounded-lg text-sm text-accent bg-accent/10 font-medium mb-1"><i class="fa-solid fa-chart-pie w-5"></i> Dashboard</a>
                     
                     <div class="admin-trainer-control hidden">
                         <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-4 px-3">Gestión de Contenido</div>
@@ -336,6 +354,9 @@
             
             <div class="absolute top-4 left-4 z-10">
                 <button onclick="window.togglePresentationSidebar(true)" class="bg-accent text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm font-bold"><i class="fa-solid fa-bars"></i><span class="hidden sm:inline">Temario</span></button>
+            </div>
+            <div class="absolute top-4 right-4 z-10">
+                <button onclick="window.closePresentation()" class="bg-white dark:bg-surface border border-light-border dark:border-border text-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm font-bold hover:text-danger"><i class="fa-solid fa-xmark"></i><span class="hidden sm:inline">Salir</span></button>
             </div>
 
             <div class="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-8 flex flex-col items-center justify-start relative bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiMzMzMiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiMzMzMiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PC9zdmc+')] custom-scrollbar">
@@ -657,12 +678,12 @@
         const htmlEl = document.documentElement;
         const themeToggleBtn = document.getElementById('btn-theme-toggle');
         
-        if (localStorage.theme === 'light') {
-            htmlEl.classList.remove('dark');
-            themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-        } else {
+        if (localStorage.theme === 'dark') {
             htmlEl.classList.add('dark');
             themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+        } else {
+            htmlEl.classList.remove('dark');
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
         }
 
         themeToggleBtn.addEventListener('click', () => {
@@ -678,17 +699,22 @@
         });
 
         // NAVIGATION ROUTER
+        function activateView(target) {
+            views.navBtns.forEach(b => { b.classList.remove('bg-accent/10', 'text-accent'); b.classList.add('text-gray-600', 'dark:text-gray-400'); });
+            const btn = [...views.navBtns].find(b => b.getAttribute('data-target') === target);
+            if(btn) {
+                btn.classList.add('bg-accent/10', 'text-accent');
+                btn.classList.remove('text-gray-600', 'dark:text-gray-400');
+            }
+            views.sections.forEach(sec => { sec.classList.remove('block'); sec.classList.add('hidden'); });
+            document.getElementById(target)?.classList.remove('hidden');
+            document.getElementById(target)?.classList.add('block');
+        }
+
         views.navBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                views.navBtns.forEach(b => { b.classList.remove('bg-accent/10', 'text-accent'); b.classList.add('text-gray-600', 'dark:text-gray-400'); });
-                btn.classList.add('bg-accent/10', 'text-accent');
-                btn.classList.remove('text-gray-600', 'dark:text-gray-400');
-                
-                const target = btn.getAttribute('data-target');
-                views.sections.forEach(sec => { sec.classList.remove('block'); sec.classList.add('hidden'); });
-                document.getElementById(target).classList.remove('hidden');
-                document.getElementById(target).classList.add('block');
+                activateView(btn.getAttribute('data-target'));
             });
         });
 
@@ -735,6 +761,7 @@
 
                 views.login.classList.add('hidden');
                 views.app.classList.remove('hidden');
+                activateView(currentUser.role === 'agent' ? 'agent-view' : 'dash-view');
                 
                 initRealtimePipeline();
             } else {
@@ -2508,15 +2535,3 @@
         }    </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
