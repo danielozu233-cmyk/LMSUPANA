@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LMS UPANA | Enterprise Console</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -20,8 +18,6 @@
                         success: '#10b981',
                         warning: '#f59e0b',
                         danger: '#ef4444',
-                        upanaBlue: '#0b4a99',
-                        upanaBlueDark: '#083670',
                         // Light mode equivalents
                         'light-bg': '#f9fafb',
                         'light-surface': '#ffffff',
@@ -43,16 +39,18 @@
         
         .trainer-notes-container { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
         .trainer-notes-trigger:hover + .trainer-notes-container, .trainer-notes-container:hover { max-height: 300px; overflow-y: auto; }
-        .projection-stack { width: 100%; display: flex; flex-direction: column; gap: 1.5rem; }
+        .projection-stack { width: 100%; display: flex; flex-direction: column; gap: 1rem; }
         .projection-block { width: 100%; border-radius: 0.75rem; overflow: visible; }
-        .projection-media { width: 100%; min-height: 72vh; }
-        .projection-pdf-frame { width: 100%; height: 82vh; border: 0; background: #fff; }
-        .projection-image-wrap { width: 100%; min-height: 72vh; display: flex; align-items: center; justify-content: center; overflow: visible; }
+        .projection-media { width: 100%; min-height: 58vh; }
+        .projection-pdf-frame { width: 100%; height: 68vh; border: 0; background: #fff; }
+        .projection-image-wrap { width: 100%; min-height: 52vh; display: flex; align-items: center; justify-content: center; overflow: visible; }
         .projection-image { width: auto; max-width: 100%; height: auto; max-height: none; object-fit: contain; }
         .projection-text-block { width: 100%; max-height: none; overflow: visible; }
         .projection-shell { min-width: 0; overflow-x: hidden; }
-        .kahoot-projection-card { width: 100%; max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere; }
-        .kahoot-answer-card { min-width: 0; overflow-wrap: anywhere; }
+        #pres-sidebar { position: absolute; top: 0; bottom: 0; left: 0; transform: translateX(-100%); }
+        #pres-sidebar.open { transform: translateX(0); }
+        .upanahoot-projection-card { width: 100%; max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere; }
+        .upanahoot-answer-card { min-width: 0; overflow-wrap: anywhere; }
         
         /* Ocultar elementos de scrollbars nativos en iframes si es posible */
         iframe { border-radius: 0.5rem; background: white; }
@@ -104,7 +102,7 @@
                     <div class="trainer-control hidden">
                         <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-4 px-3">Operaciones</div>
                         <a href="#" data-target="trainer-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-chalkboard-user w-5"></i> Consola Trainer</a>
-                        <a href="#" data-target="kahoot-bank-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-bolt w-5"></i> Banco de Kahoots</a>
+                        <a href="#" data-target="upanahoot-bank-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-bolt w-5"></i> Banco de UPANAHOOTs</a>
                     </div>
 
                     <div class="agent-control hidden">
@@ -137,6 +135,9 @@
                     <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl"><div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Waves Activas</div><div class="text-3xl font-bold text-gray-900 dark:text-white" id="stat-waves">0</div></div>
                     <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl"><div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Tu Perfil Operativo</div><div class="text-lg font-bold text-accent uppercase mt-1" id="stat-myrole">-</div></div>
                 </div>
+                <div id="dashboard-course-progress" class="admin-trainer-control hidden mt-8"></div>
+                <div id="dashboard-course-detail" class="admin-trainer-control hidden mt-6"></div>
+                <div id="admin-supervision-panel" class="admin-control hidden mt-8"></div>
             </section>
 
             <section id="users-view" class="view-section hidden">
@@ -229,22 +230,29 @@
                 <h2 class="text-2xl font-bold tracking-tight mb-6 text-gray-900 dark:text-white">Diseño Curricular del Programa</h2>
                 <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl mb-8">
                     <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Estructurar Nuevo Programa de Capacitación</h3>
-                    <form id="form-course" class="flex gap-4 items-center">
-                        <input type="text" id="c-title" placeholder="Nombre completo del curso corporativo" class="flex-1 bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required>
+                    <form id="form-course" class="grid grid-cols-1 md:grid-cols-[1fr_1.5fr_auto] gap-4 items-center">
+                        <input type="text" id="c-title" placeholder="Nombre completo del curso corporativo" class="bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required>
+                        <input type="text" id="c-desc" placeholder="Descripción breve del curso" class="bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
                         <button type="submit" class="bg-accent text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-accent/90 transition">Crear Curso Base</button>
                     </form>
                 </div>
                 <div id="tree-courses" class="space-y-4"></div>
+                <div id="admin-course-supervision-panel" class="admin-control hidden mt-8"></div>
             </section>
 
-            <section id="kahoot-bank-view" class="view-section hidden">
+            <section id="upanahoot-bank-view" class="view-section hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold tracking-tight text-warning"><i class="fa-solid fa-bolt mr-2"></i> Banco de Dinámicas Kahoot</h2>
-                    <button onclick="window.openKahootEditorModal()" class="bg-warning text-dark font-bold px-6 py-2.5 rounded-lg text-sm hover:bg-yellow-400 transition shadow-lg shadow-warning/20"><i class="fa-solid fa-plus mr-2"></i> Crear Nuevo Kahoot</button>
+                    <h2 class="text-2xl font-bold tracking-tight text-accent"><i class="fa-solid fa-bolt mr-2"></i> Banco de Dinámicas UPANAHOOT</h2>
+                    <button onclick="window.openUPANAHOOTEditorModal()" class="bg-accent text-white font-bold px-6 py-2.5 rounded-lg text-sm hover:bg-yellow-400 transition shadow-lg shadow-warning/20"><i class="fa-solid fa-plus mr-2"></i> Crear Nuevo UPANAHOOT</button>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="kahoots-grid">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="upanahoots-grid">
                     </div>
+
+                <div class="mt-8">
+                    <h3 class="text-lg font-bold text-accent mb-4 border-b border-light-border dark:border-border pb-2"><i class="fa-solid fa-trophy mr-2"></i> Resultados UPANAHOOT Guardados</h3>
+                    <div id="trainer-upanahoot-results" class="space-y-3"></div>
+                </div>
             </section>
 
             <section id="trainer-view" class="view-section hidden">
@@ -256,28 +264,13 @@
                     <div id="trainer-presenter-selector" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 </div>
 
-                <div class="mb-8">
-                    <h3 class="text-lg font-bold text-warning mb-4 border-b border-light-border dark:border-border pb-2"><i class="fa-solid fa-trophy mr-2"></i> Resultados Kahoot Guardados</h3>
-                    <div id="trainer-kahoot-results" class="space-y-3"></div>
-                </div>
-
-                <div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b border-light-border dark:border-border pb-2"><i class="fa-solid fa-chart-line mr-2"></i> Mapeo de Progreso de Agentes</h3>
-                    <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl overflow-hidden shadow-xl">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-gray-50 dark:bg-dark/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider border-b border-light-border dark:border-border">
-                                <tr><th class="p-4">Agente</th><th class="p-4">Wave</th><th class="p-4">Programa Académico</th><th class="p-4 w-1/3">Progreso Global Evaluado</th><th class="p-4 text-right">Última Actividad Registrada</th></tr>
-                            </thead>
-                            <tbody id="table-trainer-tracking" class="divide-y divide-light-border dark:divide-border"></tbody>
-                        </table>
-                    </div>
-                </div>
+                <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 text-sm text-gray-500 dark:text-gray-400">Selecciona una Wave, curso y día para proyectar la capacitación presencial.</div>
             </section>
 
             <section id="agent-view" class="view-section hidden">
                 <h2 class="text-2xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Ruta Estratégica de Aprendizaje</h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">El avance es validado y actualizado automáticamente por tu Trainer durante las sesiones presenciales.</p>
-                <div id="agent-kahoot-area" class="mb-6"></div>
+                <div id="agent-upanahoot-area" class="mb-6"></div>
                 <div id="agent-courses-area" class="space-y-6"></div>
             </section>
 
@@ -286,13 +279,13 @@
 
     <div id="presentation-view" class="fixed inset-0 z-50 bg-light-bg dark:bg-dark hidden flex-row">
         
-        <div class="w-80 bg-light-surface dark:bg-surface border-r border-light-border dark:border-border flex flex-col shadow-2xl z-20 transition-all" id="pres-sidebar">
+        <div class="w-80 bg-light-surface dark:bg-surface border-r border-light-border dark:border-border flex flex-col shadow-2xl z-20 transition-all duration-300" id="pres-sidebar">
             <div class="p-6 border-b border-light-border dark:border-border flex items-center justify-between">
                 <div>
                     <h2 class="font-bold text-accent text-lg leading-tight truncate" id="pres-course-title">Cargando...</h2>
                     <p class="text-xs text-gray-500 font-medium mt-1" id="pres-wave-title">Wave --</p>
                 </div>
-                <button onclick="window.closePresentation()" class="w-8 h-8 rounded bg-gray-100 dark:bg-dark text-gray-500 hover:text-danger hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="window.togglePresentationSidebar(false)" class="w-8 h-8 rounded bg-gray-100 dark:bg-dark text-gray-500 hover:text-danger hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4" id="pres-sidebar-nav">
@@ -305,8 +298,8 @@
 
         <div class="flex-1 flex flex-col relative projection-shell">
             
-            <div class="absolute top-4 left-4 z-10 md:hidden">
-                <button class="bg-accent text-white p-2 rounded shadow-lg"><i class="fa-solid fa-bars"></i></button>
+            <div class="absolute top-4 left-4 z-10">
+                <button onclick="window.togglePresentationSidebar(true)" class="bg-accent text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm font-bold"><i class="fa-solid fa-bars"></i><span class="hidden sm:inline">Temario</span></button>
             </div>
 
             <div class="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-8 flex flex-col items-center justify-start relative bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiMzMzMiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiMzMzMiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PC9zdmc+')] custom-scrollbar">
@@ -316,7 +309,7 @@
 
             </div>
 
-            <div class="h-20 bg-light-surface dark:bg-surface border-t border-light-border dark:border-border flex items-center justify-between px-8 z-10">
+            <div class="h-16 bg-light-surface dark:bg-surface border-t border-light-border dark:border-border flex items-center justify-between px-4 md:px-8 z-10">
                 <button id="btn-pres-prev" onclick="window.navigatePresentation(-1)" class="bg-gray-100 dark:bg-dark border border-light-border dark:border-border hover:bg-gray-200 dark:hover:bg-border px-6 py-3 rounded-lg text-gray-900 dark:text-white font-medium transition flex items-center gap-2"><i class="fa-solid fa-chevron-left"></i> Anterior</button>
                 
                 <div class="text-center flex-1 mx-4">
@@ -333,32 +326,32 @@
         </div>
     </div>
 
-    <div id="kahoot-execution-view" class="fixed inset-0 z-[60] bg-dark hidden flex-col font-sans">
+    <div id="upanahoot-execution-view" class="fixed inset-0 z-[60] bg-dark hidden flex-col font-sans">
         <div class="h-16 bg-[#46178f] flex justify-between items-center px-6 text-white shadow-md">
-            <div class="font-black text-2xl tracking-tighter">UPANA<span class="text-yellow-400">Kahoot!</span></div>
+            <div class="font-black text-2xl tracking-tighter">UPANA<span class="text-cyan-200">HOOT</span></div>
             <div class="text-lg font-bold" id="k-exec-pin">PIN: 000000</div>
-            <button onclick="window.closeKahootExecution()" class="bg-black/20 hover:bg-black/40 px-4 py-2 rounded text-sm font-bold transition">Cerrar Kahoot</button>
+            <button onclick="window.closeUPANAHOOTExecution()" class="bg-black/20 hover:bg-black/40 px-4 py-2 rounded text-sm font-bold transition">Cerrar UPANAHOOT</button>
         </div>
         <div class="flex-1 flex flex-col items-center justify-center relative p-8 bg-[#f2f2f2] dark:bg-gray-900 overflow-y-auto" id="k-exec-content">
             </div>
         <div class="h-20 bg-white dark:bg-gray-800 border-t border-gray-300 dark:border-gray-700 flex justify-between items-center px-8">
             <div class="font-bold text-gray-600 dark:text-gray-300" id="k-exec-status">Esperando jugadores...</div>
-            <button id="btn-k-exec-next" onclick="window.advanceKahoot()" class="bg-[#1368ce] hover:bg-[#0f55a8] text-white font-bold text-lg px-8 py-3 rounded shadow transition">Empezar</button>
+            <button id="btn-k-exec-next" onclick="window.advanceUPANAHOOT()" class="bg-[#1368ce] hover:bg-[#0f55a8] text-white font-bold text-lg px-8 py-3 rounded shadow transition">Empezar</button>
         </div>
     </div>
 
-    <div id="modal-kahoot-editor" class="fixed inset-0 bg-black/80 hidden z-[70] flex items-center justify-center p-4">
+    <div id="modal-upanahoot-editor" class="fixed inset-0 bg-black/80 hidden z-[70] flex items-center justify-center p-4">
         <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
             <div class="p-6 border-b border-light-border dark:border-border flex justify-between items-center">
-                <h3 class="text-xl font-bold text-warning"><i class="fa-solid fa-pen-to-square mr-2"></i> Editor de Kahoot</h3>
-                <button onclick="document.getElementById('modal-kahoot-editor').classList.add('hidden')" class="text-gray-400 hover:text-danger"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <h3 class="text-xl font-bold text-warning"><i class="fa-solid fa-pen-to-square mr-2"></i> Editor de UPANAHOOT</h3>
+                <button onclick="document.getElementById('modal-upanahoot-editor').classList.add('hidden')" class="text-gray-400 hover:text-danger"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
             <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-gray-50 dark:bg-dark/50">
                 <input type="hidden" id="ke-id">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 uppercase">Título del Kahoot</label>
+                        <label class="text-xs font-semibold text-gray-500 uppercase">Título del UPANAHOOT</label>
                         <input type="text" id="ke-title" class="w-full bg-white dark:bg-dark border border-light-border dark:border-border p-3 rounded-lg mt-1 outline-none focus:border-warning text-gray-900 dark:text-white font-bold" placeholder="Ej. Examen Cultura Upana">
                     </div>
                     <div>
@@ -369,7 +362,7 @@
 
                 <div class="flex justify-between items-center mb-4">
                     <h4 class="font-bold text-gray-900 dark:text-white">Preguntas (<span id="ke-q-count">0</span>)</h4>
-                    <button onclick="window.addKahootQuestion()" class="bg-dark text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition"><i class="fa-solid fa-plus mr-2"></i> Agregar Pregunta</button>
+                    <button onclick="window.addUPANAHOOTQuestion()" class="bg-dark text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition"><i class="fa-solid fa-plus mr-2"></i> Agregar Pregunta</button>
                 </div>
 
                 <div id="ke-questions-container" class="space-y-6">
@@ -377,7 +370,7 @@
             </div>
 
             <div class="p-6 border-t border-light-border dark:border-border bg-light-surface dark:bg-surface">
-                <button onclick="window.saveKahootToBank()" class="w-full bg-warning text-dark font-bold py-3 rounded-lg text-lg hover:bg-yellow-400 transition shadow-lg">Guardar Kahoot en Banco</button>
+                <button onclick="window.saveUPANAHOOTToBank()" class="w-full bg-accent text-white font-bold py-3 rounded-lg text-lg hover:bg-yellow-400 transition shadow-lg">Guardar UPANAHOOT en Banco</button>
             </div>
         </div>
     </div>
@@ -403,7 +396,7 @@
                         <option value="imagen" class="bg-white dark:bg-dark">Imagen Estática Embebida</option>
                         <option value="video" class="bg-white dark:bg-dark">Video (MP4 / YouTube) Embebido</option>
                         <option value="pdf" class="bg-white dark:bg-dark">Documento PDF Embebido</option>
-                        <option value="kahoot" class="bg-white dark:bg-dark">Dinámica Kahoot (Eval)</option>
+                        <option value="kahoot" class="bg-white dark:bg-dark">UPANAHOOT (Evaluación)</option>
                         <option value="practica" class="bg-white dark:bg-dark">Actividad Práctica / Lectura</option>
                     </select>
                 </div>
@@ -420,7 +413,24 @@
 
                 <div class="md:col-span-2" id="field-desc">
                     <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Contenido a Proyectar (Texto Principal)</label>
-                    <textarea id="act-desc" rows="4" placeholder="Escribe aquí el contenido que se proyectará..." class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none custom-scrollbar text-gray-900 dark:text-white"></textarea>
+                    <div class="flex flex-wrap gap-2 mb-2 bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-lg p-2">
+                        <button type="button" onclick="window.richCommand('bold')" class="px-2 py-1 rounded bg-white dark:bg-surface border border-light-border dark:border-border text-xs font-bold">B</button>
+                        <button type="button" onclick="window.richCommand('italic')" class="px-2 py-1 rounded bg-white dark:bg-surface border border-light-border dark:border-border text-xs italic">I</button>
+                        <button type="button" onclick="window.richCommand('underline')" class="px-2 py-1 rounded bg-white dark:bg-surface border border-light-border dark:border-border text-xs underline">U</button>
+                        <button type="button" onclick="window.richCommand('formatBlock','H2')" class="px-2 py-1 rounded bg-white dark:bg-surface border border-light-border dark:border-border text-xs font-bold">H2</button>
+                        <button type="button" onclick="window.richCommand('insertUnorderedList')" class="px-2 py-1 rounded bg-white dark:bg-surface border border-light-border dark:border-border text-xs"><i class="fa-solid fa-list-ul"></i></button>
+                        <button type="button" onclick="window.addRichLink()" class="px-2 py-1 rounded bg-white dark:bg-surface border border-light-border dark:border-border text-xs"><i class="fa-solid fa-link"></i></button>
+                    </div>
+                    <div id="act-desc-editor" contenteditable="true" class="w-full min-h-40 bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none custom-scrollbar text-gray-900 dark:text-white leading-relaxed overflow-y-auto"></div>
+                    <textarea id="act-desc" rows="4" class="hidden"></textarea>
+                </div>
+
+                <div class="md:col-span-2" id="field-content-order">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Orden de Presentación</label>
+                    <select id="act-content-order" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
+                        <option value="media-first" class="bg-white dark:bg-dark">Mostrar archivo / imagen / video / PDF primero y texto después</option>
+                        <option value="text-first" class="bg-white dark:bg-dark">Mostrar texto primero y archivo / imagen / video / PDF después</option>
+                    </select>
                 </div>
 
                 <div class="md:col-span-2" id="field-notes">
@@ -434,8 +444,8 @@
                 </div>
 
                 <div id="field-kahoot" class="md:col-span-2 hidden">
-                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold text-warning">Seleccionar Kahoot del Banco</label>
-                    <select id="act-kahoot-id" class="w-full bg-transparent border border-warning p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold text-accent">Seleccionar UPANAHOOT del Banco</label>
+                    <select id="act-kahoot-id" class="w-full bg-transparent border border-accent p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
                         </select>
                 </div>
 
@@ -451,6 +461,43 @@
                 <button id="btn-save-activity" class="flex-1 bg-accent text-white py-3 rounded-lg text-sm font-medium transition shadow-lg shadow-accent/20">Añadir Tema/Actividad al Día</button>
                 <button id="btn-close-modal" class="flex-1 bg-transparent border border-light-border dark:border-border hover:bg-gray-50 dark:hover:bg-surface text-gray-600 dark:text-gray-400 py-3 rounded-lg text-sm transition">Descartar</button>
             </div>
+        </div>
+    </div>
+
+    <div id="modal-day-close" class="fixed inset-0 bg-black/80 hidden z-[75] flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl w-full max-w-4xl shadow-2xl my-8">
+            <div class="p-6 border-b border-light-border dark:border-border flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-success"><i class="fa-solid fa-clipboard-check mr-2"></i>Finalizar Día</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="day-close-context">Registrar asistencia y comentarios</p>
+                </div>
+                <button onclick="document.getElementById('modal-day-close').classList.add('hidden')" class="text-gray-400 hover:text-danger"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-5">
+                <div id="day-close-agents" class="space-y-2 max-h-80 overflow-y-auto custom-scrollbar"></div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400">Comentarios del Trainer</label>
+                    <textarea id="day-close-comments" rows="4" class="mt-2 w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-success outline-none text-gray-900 dark:text-white" placeholder="Observaciones generales de la sesión, dudas frecuentes, temas reforzados..."></textarea>
+                </div>
+            </div>
+            <div class="p-6 border-t border-light-border dark:border-border flex gap-3">
+                <button onclick="window.saveDayClosure()" class="flex-1 bg-success text-white py-3 rounded-lg text-sm font-bold"><i class="fa-solid fa-floppy-disk mr-2"></i>Guardar asistencia y finalizar</button>
+                <button onclick="document.getElementById('modal-day-close').classList.add('hidden')" class="flex-1 border border-light-border dark:border-border py-3 rounded-lg text-sm text-gray-600 dark:text-gray-300">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="modal-attendance-detail" class="fixed inset-0 bg-black/80 hidden z-[80] flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl w-full max-w-3xl shadow-2xl">
+            <div class="p-6 border-b border-light-border dark:border-border flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-accent"><i class="fa-solid fa-users-viewfinder mr-2"></i>Detalle de Asistencia</h3>
+                    <p id="attendance-detail-context" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+                <button onclick="document.getElementById('modal-attendance-detail').classList.add('hidden')" class="text-gray-400 hover:text-danger"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div id="attendance-detail-body" class="p-6 space-y-4"></div>
         </div>
     </div>
 
@@ -482,9 +529,14 @@
         let localWaves = [];
         let localAssignments = [];
         let localProgress = [];
-        let localKahoots = []; // Bank
-        let localKahootSessions = [];
-        let agentKahootTimerHandle = null;
+        let localUPANAHOOTs = []; // Bank
+        let localUPANAHOOTSessions = [];
+        let localDayClosures = [];
+        let agentUPANAHOOTTimerHandle = null;
+        let selectedCourseId = null;
+        let selectedDashboardCourseId = null;
+        let selectedDashboardDayKey = null;
+        let dayClosureState = null;
 
         // ESTADO DE MODO PRESENTACIÓN (TRAINER)
         let presState = {
@@ -503,6 +555,22 @@
             .replace(/'/g, "&#039;");
 
         const toHtml = (value = "") => safeText(value).replace(/\n/g, '<br>');
+
+        function renderRichHtml(value = "") {
+            const raw = String(value || "");
+            if(!raw.includes("<")) return toHtml(raw);
+            const template = document.createElement('template');
+            template.innerHTML = raw;
+            template.content.querySelectorAll('script,style,iframe,object,embed').forEach(el => el.remove());
+            template.content.querySelectorAll('*').forEach(el => {
+                [...el.attributes].forEach(attr => {
+                    const name = attr.name.toLowerCase();
+                    const val = attr.value || '';
+                    if(name.startsWith('on') || (['href','src'].includes(name) && val.trim().toLowerCase().startsWith('javascript:'))) el.removeAttribute(attr.name);
+                });
+            });
+            return template.innerHTML;
+        }
 
         function progressKey(userId, courseId, wIdx, dIdx, aIdx) {
             return `${userId}_${courseId}_${wIdx}_${dIdx}_${aIdx}`;
@@ -657,23 +725,31 @@
             });
 
             onSnapshot(collection(db, "kahoots"), (snap) => {
-                localKahoots = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                renderKahootBank();
-                populateKahootSelect(document.getElementById('act-kahoot-id')?.value || "");
-                if(currentUser?.role === 'agent') renderAgentKahootArea();
+                localUPANAHOOTs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderUPANAHOOTBank();
+                populateUPANAHOOTSelect(document.getElementById('act-kahoot-id')?.value || "");
+                if(currentUser?.role === 'agent') renderAgentUPANAHOOTArea();
                 if(!document.getElementById('presentation-view').classList.contains('hidden')) renderCurrentSlide();
             });
 
             onSnapshot(collection(db, "kahootSessions"), (snap) => {
-                localKahootSessions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                if(currentUser?.role === 'agent') renderAgentKahootArea();
-                if(['admin', 'trainer'].includes(currentUser?.role)) renderTrainerKahootResults();
-                if(kahootExecState.sessionId) {
-                    const liveSession = localKahootSessions.find(s => s.id === kahootExecState.sessionId);
+                localUPANAHOOTSessions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if(currentUser?.role === 'agent') renderAgentUPANAHOOTArea();
+                if(['admin', 'trainer'].includes(currentUser?.role)) renderTrainerUPANAHOOTResults();
+                if(upanahootExecState.sessionId) {
+                    const liveSession = localUPANAHOOTSessions.find(s => s.id === upanahootExecState.sessionId);
                     if(liveSession) {
-                        kahootExecState = { ...kahootExecState, ...liveSession };
-                        renderKahootExecutionStep();
+                        upanahootExecState = { ...upanahootExecState, ...liveSession };
+                        renderUPANAHOOTExecutionStep();
                     }
+                }
+            });
+
+            onSnapshot(collection(db, "dayClosures"), (snap) => {
+                localDayClosures = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if(['admin', 'trainer'].includes(currentUser?.role)) {
+                    renderTrainerMatrix();
+                    renderAdminSupervision();
                 }
             });
         }
@@ -756,51 +832,90 @@
         // ==========================================
         document.getElementById('form-course').addEventListener('submit', async (e) => {
             e.preventDefault();
-            try { await addDoc(collection(db, "courses"), { title: document.getElementById('c-title').value, weeks: [], status: "activo" }); e.target.reset(); } catch(err) { alert(err.message); }
+            try {
+                await addDoc(collection(db, "courses"), {
+                    title: document.getElementById('c-title').value,
+                    description: document.getElementById('c-desc')?.value || '',
+                    weeks: [],
+                    status: "activo"
+                });
+                e.target.reset();
+            } catch(err) { alert(err.message); }
         });
 
         function renderHierarchicalTree() {
             const container = document.getElementById('tree-courses');
             if(!container) return;
-            container.innerHTML = localCourses.map(course => `
+            if(localCourses.length === 0) {
+                container.innerHTML = `<div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-6 text-sm text-gray-500">No hay cursos registrados.</div>`;
+                return;
+            }
+            if(!selectedCourseId || !localCourses.some(c => c.id === selectedCourseId)) selectedCourseId = localCourses[0]?.id || null;
+            const selectedCourse = localCourses.find(c => c.id === selectedCourseId);
+            const cardsHtml = `
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+                    ${localCourses.map(course => {
+                        const isActive = course.id === selectedCourseId;
+                        return `
+                            <button onclick="window.selectCourseForManagement('${safeText(course.id)}')" class="text-left bg-light-surface dark:bg-surface border ${isActive ? 'border-accent ring-2 ring-accent/20' : 'border-light-border dark:border-border'} rounded-xl p-5 shadow-sm hover:border-accent transition">
+                                <div class="flex items-start justify-between gap-3 mb-3">
+                                    <div>
+                                        <h3 class="font-black text-gray-900 dark:text-white text-lg">${safeText(course.title || 'Curso sin título')}</h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">${safeText(course.description || 'Sin descripción registrada')}</p>
+                                    </div>
+                                    <span class="text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded ${course.status === 'activo' ? 'bg-success/15 text-success' : 'bg-gray-100 dark:bg-dark text-gray-500'}">${safeText(course.status || 'activo')}</span>
+                                </div>
+                                <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                                    <span><i class="fa-solid fa-calendar-week text-warning mr-1"></i>${(course.weeks || []).length} semana(s)</span>
+                                    <span class="text-accent font-bold">Gestionar <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                                </div>
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            const detailHtml = selectedCourse ? `
                 <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 shadow-sm">
-                    <div class="flex justify-between items-center border-b border-light-border dark:border-border pb-3 mb-3">
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-book text-accent"></i> ${course.title}</h3>
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-light-border dark:border-border pb-3 mb-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-book text-accent"></i> ${safeText(selectedCourse.title || 'Curso sin título')}</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${safeText(selectedCourse.description || 'Sin descripción registrada')}</p>
+                        </div>
                         <div class="flex gap-2">
-                            <button onclick="window.addWeekUnit('${course.id}')" class="bg-gray-100 dark:bg-dark border border-light-border dark:border-border hover:border-accent px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 transition">+ Añadir Semana</button>
-                            <button onclick="window.deleteCourseUnit('${course.id}')" class="text-danger text-xs px-2"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="window.addWeekUnit('${selectedCourse.id}')" class="bg-gray-100 dark:bg-dark border border-light-border dark:border-border hover:border-accent px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 transition">+ Añadir Semana</button>
+                            <button onclick="window.deleteCourseUnit('${selectedCourse.id}')" class="text-danger text-xs px-2"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                     <div class="space-y-3">
-                        ${(course.weeks || []).map((week, wIdx) => `
-                            <div class="ml-6 border-l-2 border-light-border dark:border-border pl-4">
+                        ${(selectedCourse.weeks || []).map((week, wIdx) => `
+                            <div class="ml-0 md:ml-6 border-l-2 border-light-border dark:border-border pl-4">
                                 <div class="flex justify-between items-center bg-gray-50 dark:bg-dark/40 p-2 rounded-lg mb-2">
-                                    <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200"><i class="fa-solid fa-calendar-week text-warning mr-2"></i>${week.title}</h4>
+                                    <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200"><i class="fa-solid fa-calendar-week text-warning mr-2"></i>${safeText(week.title)}</h4>
                                     <div class="flex gap-2">
-                                        <button onclick="window.addDayUnit('${course.id}', ${wIdx})" class="text-[11px] bg-white dark:bg-dark border border-light-border dark:border-border px-2 py-1 rounded text-gray-600 dark:text-gray-400">+ Día</button>
-                                        <button onclick="window.deleteWeekUnit('${course.id}', ${wIdx})" class="text-danger text-[11px] px-1"><i class="fa-solid fa-circle-minus"></i></button>
+                                        <button onclick="window.addDayUnit('${selectedCourse.id}', ${wIdx})" class="text-[11px] bg-white dark:bg-dark border border-light-border dark:border-border px-2 py-1 rounded text-gray-600 dark:text-gray-400">+ Día</button>
+                                        <button onclick="window.deleteWeekUnit('${selectedCourse.id}', ${wIdx})" class="text-danger text-[11px] px-1"><i class="fa-solid fa-circle-minus"></i></button>
                                     </div>
                                 </div>
                                 <div class="space-y-2">
                                     ${(week.days || []).map((day, dIdx) => `
-                                        <div class="ml-6 border-l-2 border-dashed border-gray-300 dark:border-border/60 pl-4">
+                                        <div class="ml-0 md:ml-6 border-l-2 border-dashed border-gray-300 dark:border-border/60 pl-4">
                                             <div class="flex justify-between items-center bg-white dark:bg-dark/20 p-2 rounded border border-light-border dark:border-border/40 text-xs mb-1 shadow-sm">
-                                                <span class="font-medium text-gray-800 dark:text-gray-300"><i class="fa-regular fa-calendar-check text-success mr-1.5"></i>${day.title}</span>
+                                                <span class="font-medium text-gray-800 dark:text-gray-300"><i class="fa-regular fa-calendar-check text-success mr-1.5"></i>${safeText(day.title)}</span>
                                                 <div class="flex gap-1">
-                                                    <button onclick="window.openActivityModal('${course.id}', ${wIdx}, ${dIdx})" class="text-[10px] bg-accent/10 text-accent border border-accent/30 px-2 py-0.5 rounded hover:bg-accent/20 transition">+ Tema/Actividad</button>
-                                                    <button onclick="window.deleteDayUnit('${course.id}', ${wIdx}, ${dIdx})" class="text-danger text-[10px] px-1"><i class="fa-solid fa-xmark"></i></button>
+                                                    <button onclick="window.openActivityModal('${selectedCourse.id}', ${wIdx}, ${dIdx})" class="text-[10px] bg-accent/10 text-accent border border-accent/30 px-2 py-0.5 rounded hover:bg-accent/20 transition">+ Tema/Actividad</button>
+                                                    <button onclick="window.deleteDayUnit('${selectedCourse.id}', ${wIdx}, ${dIdx})" class="text-danger text-[10px] px-1"><i class="fa-solid fa-xmark"></i></button>
                                                 </div>
                                             </div>
-                                            <ul class="ml-4 space-y-1.5 mt-2">
+                                            <ul class="ml-0 md:ml-4 space-y-1.5 mt-2">
                                                 ${(day.activities || []).map((act, aIdx) => `
                                                     <li class="text-xs bg-gray-50 dark:bg-dark/60 border border-light-border dark:border-border p-2 rounded-md flex justify-between items-center group">
-                                                        <span class="text-gray-600 dark:text-gray-400 truncate w-2/3"><strong class="text-gray-900 dark:text-gray-200">[${act.type.toUpperCase()}]</strong> ${act.title}</span>
+                                                        <span class="text-gray-600 dark:text-gray-400 truncate w-2/3"><strong class="text-gray-900 dark:text-gray-200">[${safeText((act.type || '').toUpperCase())}]</strong> ${safeText(act.title || '')}</span>
                                                         <div class="flex gap-2 items-center">
                                                             <div class="flex flex-col opacity-0 group-hover:opacity-100 transition px-2 border-r border-light-border dark:border-border">
-                                                                <button onclick="window.moveActivity('${course.id}', ${wIdx}, ${dIdx}, ${aIdx}, -1)" class="text-gray-400 hover:text-accent"><i class="fa-solid fa-caret-up"></i></button>
-                                                                <button onclick="window.moveActivity('${course.id}', ${wIdx}, ${dIdx}, ${aIdx}, 1)" class="text-gray-400 hover:text-accent"><i class="fa-solid fa-caret-down"></i></button>
+                                                                <button onclick="window.moveActivity('${selectedCourse.id}', ${wIdx}, ${dIdx}, ${aIdx}, -1)" class="text-gray-400 hover:text-accent"><i class="fa-solid fa-caret-up"></i></button>
+                                                                <button onclick="window.moveActivity('${selectedCourse.id}', ${wIdx}, ${dIdx}, ${aIdx}, 1)" class="text-gray-400 hover:text-accent"><i class="fa-solid fa-caret-down"></i></button>
                                                             </div>
-                                                            <button onclick="window.deleteActivityUnit('${course.id}', ${wIdx}, ${dIdx}, ${aIdx})" class="text-danger text-[11px] p-1"><i class="fa-regular fa-trash-can"></i></button>
+                                                            <button onclick="window.deleteActivityUnit('${selectedCourse.id}', ${wIdx}, ${dIdx}, ${aIdx})" class="text-danger text-[11px] p-1"><i class="fa-regular fa-trash-can"></i></button>
                                                         </div>
                                                     </li>
                                                 `).join('')}
@@ -809,11 +924,17 @@
                                     `).join('')}
                                 </div>
                             </div>
-                        `).join('')}
+                        `).join('') || `<div class="text-sm text-gray-500">Este curso aún no tiene semanas configuradas.</div>`}
                     </div>
                 </div>
-            `).join('');
+            ` : '';
+            container.innerHTML = cardsHtml + detailHtml;
         }
+
+        window.selectCourseForManagement = (id) => {
+            selectedCourseId = id;
+            renderHierarchicalTree();
+        };
 
         window.addWeekUnit = async (cId) => {
             const title = prompt("Nombre de la Semana:"); if(!title) return;
@@ -849,27 +970,30 @@
 
 
         // ==========================================
-        // MÓDULO 4: CREADOR AVANZADO Y ASIGNACIÓN (Incluye lógica Kahoot select)
+        // MÓDULO 4: CREADOR AVANZADO Y ASIGNACIÓN (Incluye lógica UPANAHOOT select)
         // ==========================================
         const modalActivity = document.getElementById('modal-activity');
-        function populateKahootSelect(selectedId = "") {
+        function populateUPANAHOOTSelect(selectedId = "") {
             const kSelect = document.getElementById('act-kahoot-id');
             if(!kSelect) return;
-            if(localKahoots.length === 0) {
-                kSelect.innerHTML = `<option value="" class="bg-white dark:bg-dark">No hay Kahoots en el banco</option>`;
+            if(localUPANAHOOTs.length === 0) {
+                kSelect.innerHTML = `<option value="" class="bg-white dark:bg-dark">No hay UPANAHOOTs en el banco</option>`;
                 kSelect.disabled = true;
                 return;
             }
             kSelect.disabled = false;
-            kSelect.innerHTML = localKahoots.map(k => `<option value="${safeText(k.id)}" ${k.id === selectedId ? 'selected' : ''} class="bg-white dark:bg-dark">${safeText(k.title || 'Kahoot sin titulo')}</option>`).join('');
+            kSelect.innerHTML = localUPANAHOOTs.map(k => `<option value="${safeText(k.id)}" ${k.id === selectedId ? 'selected' : ''} class="bg-white dark:bg-dark">${safeText(k.title || 'UPANAHOOT sin título')}</option>`).join('');
         }
 
         window.openActivityModal = (cId, wIdx, dIdx) => {
             document.getElementById('modal-course-id').value = cId;
             document.getElementById('modal-week-idx').value = wIdx;
             document.getElementById('modal-day-idx').value = dIdx;
+            document.getElementById('act-desc-editor').innerHTML = '';
+            document.getElementById('act-desc').value = '';
+            document.getElementById('act-content-order').value = 'media-first';
             
-            populateKahootSelect();
+            populateUPANAHOOTSelect();
             
             modalActivity.classList.remove('hidden');
             window.toggleActivityFields();
@@ -881,12 +1005,26 @@
             document.getElementById('field-youtube').style.display = type === 'video' ? 'block' : 'none';
             document.getElementById('field-kahoot').style.display = type === 'kahoot' ? 'block' : 'none';
             document.getElementById('field-desc').style.display = type !== 'kahoot' ? 'block' : 'none';
+            document.getElementById('field-content-order').style.display = type !== 'kahoot' ? 'block' : 'none';
         };
 
         document.getElementById('btn-close-modal').addEventListener('click', () => {
             modalActivity.classList.add('hidden');
             ['act-title','act-desc','act-objectives','act-youtube','act-notes','act-duration','act-file'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('act-content-order').value = 'media-first';
+            document.getElementById('act-desc-editor').innerHTML = '';
         });
+
+        window.richCommand = (command, value = null) => {
+            document.getElementById('act-desc-editor').focus();
+            document.execCommand(command, false, value);
+        };
+
+        window.addRichLink = () => {
+            const url = prompt("URL del enlace:");
+            if(!url) return;
+            window.richCommand('createLink', url);
+        };
 
         document.getElementById('btn-save-activity').addEventListener('click', async () => {
             const cId = document.getElementById('modal-course-id').value;
@@ -895,16 +1033,18 @@
             
             const title = document.getElementById('act-title').value;
             const type = document.getElementById('act-type').value;
-            const description = document.getElementById('act-desc').value;
+            const description = document.getElementById('act-desc-editor').innerHTML.trim();
+            document.getElementById('act-desc').value = description;
             const objectives = document.getElementById('act-objectives').value;
             const youtube = document.getElementById('act-youtube').value;
             const notes = document.getElementById('act-notes').value;
             const duration = document.getElementById('act-duration').value || 0;
             const fileObj = document.getElementById('act-file').files[0];
             const kahootId = document.getElementById('act-kahoot-id').value;
+            const contentOrder = document.getElementById('act-content-order').value || 'media-first';
 
             if(!title) return alert("Título obligatorio.");
-            if(type === 'kahoot' && !kahootId) return alert("Seleccione un Kahoot del banco antes de guardar la actividad.");
+            if(type === 'kahoot' && !kahootId) return alert("Seleccione un UPANAHOOT del banco antes de guardar la actividad.");
             document.getElementById('upload-progress').classList.remove('hidden');
 
             let fileUrl = "";
@@ -920,7 +1060,7 @@
             if(!c.weeks[wIdx].days[dIdx].activities) c.weeks[wIdx].days[dIdx].activities = [];
             
             c.weeks[wIdx].days[dIdx].activities.push({ 
-                title, type, url: fileUrl, description, objectives, youtube, notes, duration, kahootId
+                title, type, url: fileUrl, description, objectives, youtube, notes, duration, kahootId, contentOrder
             });
 
             await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
@@ -939,85 +1079,85 @@
         // ==========================================
         // MÓDULO 5: KAHOOT BANK (Banco, Creador de Preguntas)
         // ==========================================
-        let currentKahootQuestions = [];
-        window.currentKahootQuestions = currentKahootQuestions;
+        let currentUPANAHOOTQuestions = [];
+        window.currentUPANAHOOTQuestions = currentUPANAHOOTQuestions;
 
-        function renderKahootBank() {
-            const grid = document.getElementById('kahoots-grid');
+        function renderUPANAHOOTBank() {
+            const grid = document.getElementById('upanahoots-grid');
             if(!grid) return;
-            grid.innerHTML = localKahoots.map(k => `
+            grid.innerHTML = localUPANAHOOTs.map(k => `
                 <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-5 rounded-xl shadow-lg relative overflow-hidden group">
                     <div class="absolute top-0 right-0 bg-warning text-dark text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">${k.questions?.length || 0} Pregs</div>
-                    <h3 class="font-bold text-gray-900 dark:text-white mb-2 text-lg truncate pr-8">${safeText(k.title || 'Kahoot sin titulo')}</h3>
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2 text-lg truncate pr-8">${safeText(k.title || 'UPANAHOOT sin título')}</h3>
                     <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 h-8 mb-4">${safeText(k.description || 'Sin descripción')}</p>
                     <div class="flex gap-2">
-                        <button onclick="window.editKahoot('${safeText(k.id)}')" class="flex-1 bg-gray-100 dark:bg-dark border border-light-border dark:border-border text-xs font-semibold py-2 rounded text-gray-700 dark:text-gray-300 hover:border-warning transition"><i class="fa-solid fa-pen"></i> Editar</button>
-                        <button onclick="window.deleteKahoot('${safeText(k.id)}')" class="w-10 bg-red-50 dark:bg-red-900/20 text-danger border border-red-200 dark:border-red-900/30 rounded flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/50 transition"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="window.editUPANAHOOT('${safeText(k.id)}')" class="flex-1 bg-gray-100 dark:bg-dark border border-light-border dark:border-border text-xs font-semibold py-2 rounded text-gray-700 dark:text-gray-300 hover:border-warning transition"><i class="fa-solid fa-pen"></i> Editar</button>
+                        <button onclick="window.deleteUPANAHOOT('${safeText(k.id)}')" class="w-10 bg-red-50 dark:bg-red-900/20 text-danger border border-red-200 dark:border-red-900/30 rounded flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/50 transition"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
         }
 
-        window.editKahoot = (id) => window.openKahootEditorModal(id);
+        window.editUPANAHOOT = (id) => window.openUPANAHOOTEditorModal(id);
 
-        window.openKahootEditorModal = (id = null) => {
-            document.getElementById('modal-kahoot-editor').classList.remove('hidden');
+        window.openUPANAHOOTEditorModal = (id = null) => {
+            document.getElementById('modal-upanahoot-editor').classList.remove('hidden');
             if(id) {
-                const k = localKahoots.find(x => x.id === id);
+                const k = localUPANAHOOTs.find(x => x.id === id);
                 document.getElementById('ke-id').value = k.id;
                 document.getElementById('ke-title').value = k.title;
                 document.getElementById('ke-desc').value = k.description || '';
-                currentKahootQuestions = [...(k.questions || [])];
-                window.currentKahootQuestions = currentKahootQuestions;
+                currentUPANAHOOTQuestions = [...(k.questions || [])];
+                window.currentUPANAHOOTQuestions = currentUPANAHOOTQuestions;
             } else {
                 document.getElementById('ke-id').value = '';
                 document.getElementById('ke-title').value = '';
                 document.getElementById('ke-desc').value = '';
-                currentKahootQuestions = [];
-                window.currentKahootQuestions = currentKahootQuestions;
+                currentUPANAHOOTQuestions = [];
+                window.currentUPANAHOOTQuestions = currentUPANAHOOTQuestions;
             }
-            renderKahootQuestionsList();
+            renderUPANAHOOTQuestionsList();
         };
 
-        window.addKahootQuestion = () => {
-            currentKahootQuestions.push({ q: "", options: ["", "", "", ""], correct: 0, time: 20, points: 1000 });
-            renderKahootQuestionsList();
+        window.addUPANAHOOTQuestion = () => {
+            currentUPANAHOOTQuestions.push({ q: "", options: ["", "", "", ""], correct: 0, time: 20, points: 1000 });
+            renderUPANAHOOTQuestionsList();
         };
 
-        window.removeKahootQuestion = (idx) => {
-            currentKahootQuestions.splice(idx, 1);
-            renderKahootQuestionsList();
+        window.removeUPANAHOOTQuestion = (idx) => {
+            currentUPANAHOOTQuestions.splice(idx, 1);
+            renderUPANAHOOTQuestionsList();
         };
 
-        window.duplicateKahootQuestion = (idx) => {
-            const dup = JSON.parse(JSON.stringify(currentKahootQuestions[idx]));
-            currentKahootQuestions.splice(idx + 1, 0, dup);
-            renderKahootQuestionsList();
+        window.duplicateUPANAHOOTQuestion = (idx) => {
+            const dup = JSON.parse(JSON.stringify(currentUPANAHOOTQuestions[idx]));
+            currentUPANAHOOTQuestions.splice(idx + 1, 0, dup);
+            renderUPANAHOOTQuestionsList();
         };
 
-        function renderKahootQuestionsList() {
-            document.getElementById('ke-q-count').innerText = currentKahootQuestions.length;
+        function renderUPANAHOOTQuestionsList() {
+            document.getElementById('ke-q-count').innerText = currentUPANAHOOTQuestions.length;
             const container = document.getElementById('ke-questions-container');
-            container.innerHTML = currentKahootQuestions.map((q, idx) => {
+            container.innerHTML = currentUPANAHOOTQuestions.map((q, idx) => {
                 const options = Array.isArray(q.options) ? q.options : ["", "", "", ""];
                 while(options.length < 4) options.push("");
                 return `
                     <div class="bg-white dark:bg-dark border border-light-border dark:border-border rounded-xl p-5 shadow-sm relative">
                         <div class="absolute top-4 right-4 flex gap-2">
-                            <button onclick="window.duplicateKahootQuestion(${idx})" title="Duplicar" class="text-gray-400 hover:text-accent"><i class="fa-solid fa-copy"></i></button>
-                            <button onclick="window.removeKahootQuestion(${idx})" title="Eliminar" class="text-gray-400 hover:text-danger"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="window.duplicateUPANAHOOTQuestion(${idx})" title="Duplicar" class="text-gray-400 hover:text-accent"><i class="fa-solid fa-copy"></i></button>
+                            <button onclick="window.removeUPANAHOOTQuestion(${idx})" title="Eliminar" class="text-gray-400 hover:text-danger"><i class="fa-solid fa-trash"></i></button>
                         </div>
                         
                         <div class="mb-4 pr-16">
                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Pregunta ${idx + 1}</label>
-                            <input type="text" onchange="currentKahootQuestions[${idx}].q = this.value" value="${safeText(q.q || '')}" class="w-full bg-transparent border-b border-light-border dark:border-border focus:border-warning py-1 outline-none text-lg font-bold text-gray-900 dark:text-white" placeholder="Escribe la pregunta aqui...">
+                            <input type="text" onchange="currentUPANAHOOTQuestions[${idx}].q = this.value" value="${safeText(q.q || '')}" class="w-full bg-transparent border-b border-light-border dark:border-border focus:border-warning py-1 outline-none text-lg font-bold text-gray-900 dark:text-white" placeholder="Escribe la pregunta aqui...">
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                             ${[0,1,2,3].map(optIdx => `
                                 <div class="flex items-center gap-2 bg-gray-50 dark:bg-surface border ${Number(q.correct) === optIdx ? 'border-success' : 'border-light-border dark:border-border'} rounded p-2 transition-colors">
-                                    <input type="radio" name="kq_correct_${idx}" ${Number(q.correct) === optIdx ? 'checked' : ''} onchange="currentKahootQuestions[${idx}].correct = ${optIdx}; window.renderKahootQuestionsList()" class="w-4 h-4 text-success focus:ring-success accent-success">
-                                    <input type="text" onchange="currentKahootQuestions[${idx}].options[${optIdx}] = this.value" value="${safeText(options[optIdx] || '')}" class="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-200" placeholder="Respuesta ${['A','B','C','D'][optIdx]}">
+                                    <input type="radio" name="kq_correct_${idx}" ${Number(q.correct) === optIdx ? 'checked' : ''} onchange="currentUPANAHOOTQuestions[${idx}].correct = ${optIdx}; window.renderUPANAHOOTQuestionsList()" class="w-4 h-4 text-success focus:ring-success accent-success">
+                                    <input type="text" onchange="currentUPANAHOOTQuestions[${idx}].options[${optIdx}] = this.value" value="${safeText(options[optIdx] || '')}" class="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-200" placeholder="Respuesta ${['A','B','C','D'][optIdx]}">
                                 </div>
                             `).join('')}
                         </div>
@@ -1025,7 +1165,7 @@
                         <div class="flex gap-4 border-t border-light-border dark:border-border pt-3">
                             <div class="flex items-center gap-2">
                                 <i class="fa-regular fa-clock text-gray-400"></i>
-                                <select onchange="currentKahootQuestions[${idx}].time = parseInt(this.value)" class="bg-transparent text-xs outline-none text-gray-600 dark:text-gray-300">
+                                <select onchange="currentUPANAHOOTQuestions[${idx}].time = parseInt(this.value)" class="bg-transparent text-xs outline-none text-gray-600 dark:text-gray-300">
                                     <option value="10" ${Number(q.time) === 10 ? 'selected' : ''}>10 seg</option>
                                     <option value="20" ${Number(q.time || 20) === 20 ? 'selected' : ''}>20 seg</option>
                                     <option value="30" ${Number(q.time) === 30 ? 'selected' : ''}>30 seg</option>
@@ -1034,7 +1174,7 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-star text-warning"></i>
-                                <select onchange="currentKahootQuestions[${idx}].points = parseInt(this.value)" class="bg-transparent text-xs outline-none text-gray-600 dark:text-gray-300">
+                                <select onchange="currentUPANAHOOTQuestions[${idx}].points = parseInt(this.value)" class="bg-transparent text-xs outline-none text-gray-600 dark:text-gray-300">
                                     <option value="1000" ${Number(q.points || 1000) === 1000 ? 'selected' : ''}>Estandar</option>
                                     <option value="2000" ${Number(q.points) === 2000 ? 'selected' : ''}>Doble</option>
                                     <option value="0" ${Number(q.points) === 0 ? 'selected' : ''}>Sin puntos</option>
@@ -1045,21 +1185,21 @@
                 `;
             }).join('');
         }
-        window.renderKahootQuestionsList = renderKahootQuestionsList;
-        window.saveKahootToBank = async () => {
+        window.renderUPANAHOOTQuestionsList = renderUPANAHOOTQuestionsList;
+        window.saveUPANAHOOTToBank = async () => {
             const title = document.getElementById('ke-title').value;
             const desc = document.getElementById('ke-desc').value;
             const id = document.getElementById('ke-id').value;
             if(!title) return alert("Título obligatorio.");
             
             try {
-                if(id) { await updateDoc(doc(db, "kahoots", id), { title, description: desc, questions: currentKahootQuestions }); } 
-                else { await addDoc(collection(db, "kahoots"), { title, description: desc, questions: currentKahootQuestions }); }
-                document.getElementById('modal-kahoot-editor').classList.add('hidden');
+                if(id) { await updateDoc(doc(db, "kahoots", id), { title, description: desc, questions: currentUPANAHOOTQuestions }); } 
+                else { await addDoc(collection(db, "kahoots"), { title, description: desc, questions: currentUPANAHOOTQuestions }); }
+                document.getElementById('modal-upanahoot-editor').classList.add('hidden');
             } catch(e) { alert(e.message); }
         };
 
-        window.deleteKahoot = async (id) => { if(confirm("¿Eliminar Kahoot del banco?")) await deleteDoc(doc(db, "kahoots", id)); };
+        window.deleteUPANAHOOT = async (id) => { if(confirm("¿Eliminar UPANAHOOT del banco?")) await deleteDoc(doc(db, "kahoots", id)); };
 
 
         // ==========================================
@@ -1069,12 +1209,12 @@
             return Object.entries(session?.participants || {}).map(([id, data]) => ({ id, ...(data || {}) }));
         }
 
-        function getKahootRemainingSeconds(session) {
+        function getUPANAHOOTRemainingSeconds(session) {
             if(!session?.questionEndsAt || session.status !== 'question') return 0;
             return Math.max(0, Math.ceil((new Date(session.questionEndsAt).getTime() - Date.now()) / 1000));
         }
 
-        function buildKahootPodium(session, kahoot) {
+        function buildUPANAHOOTPodium(session, upanahoot) {
             const totals = {};
             getSessionParticipants(session).forEach(p => {
                 totals[p.id] = { id: p.id, name: p.name || 'Agente', score: 0 };
@@ -1088,30 +1228,30 @@
             return Object.values(totals).sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
         }
 
-        function renderAgentKahootArea() {
-            const container = document.getElementById('agent-kahoot-area');
+        function renderAgentUPANAHOOTArea() {
+            const container = document.getElementById('agent-upanahoot-area');
             if(!container || currentUser?.role !== 'agent') return;
 
-            const joinedSession = localKahootSessions.find(s => s.status !== 'closed' && s.participants?.[currentUser.id]);
+            const joinedSession = localUPANAHOOTSessions.find(s => s.status !== 'closed' && s.participants?.[currentUser.id]);
             if(joinedSession) {
-                if(agentKahootTimerHandle) clearTimeout(agentKahootTimerHandle);
-                const k = localKahoots.find(x => x.id === joinedSession.kahootId);
+                if(agentUPANAHOOTTimerHandle) clearTimeout(agentUPANAHOOTTimerHandle);
+                const k = localUPANAHOOTs.find(x => x.id === joinedSession.kahootId);
                 const qIdx = Number(joinedSession.qIdx || 0);
                 const q = k?.questions?.[qIdx];
                 const answer = joinedSession.responses?.[qIdx]?.[currentUser.id];
                 const colors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
                 const iconClasses = ['fa-play -rotate-90', 'fa-gem', 'fa-circle', 'fa-square'];
-                const remaining = getKahootRemainingSeconds(joinedSession);
+                const remaining = getUPANAHOOTRemainingSeconds(joinedSession);
                 const statusText = joinedSession.status === 'lobby' ? 'Esperando que el trainer inicie' :
                     joinedSession.status === 'question' ? `Pregunta ${qIdx + 1}` :
                     joinedSession.status === 'results' ? 'Resultados de la pregunta' :
                     joinedSession.status === 'podium' ? 'Podio final' : 'Conectado';
-                const podium = buildKahootPodium(joinedSession, k);
+                const podium = buildUPANAHOOTPodium(joinedSession, k);
 
                 const questionHtml = q && joinedSession.status === 'question' ? `
                     <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
                         ${(q.options || []).map((opt, optIdx) => `
-                            <button onclick="window.answerKahootQuestion('${safeText(joinedSession.id)}', ${optIdx})" ${answer || remaining <= 0 ? 'disabled' : ''} class="kahoot-answer-card min-h-28 rounded-lg p-5 text-left text-white shadow-xl flex items-center gap-4 transition ${answer?.answerIndex === optIdx ? 'ring-4 ring-white scale-[1.01]' : 'hover:scale-[1.01]'} ${answer || remaining <= 0 ? 'opacity-80 cursor-default' : ''}" style="background:${colors[optIdx] || colors[0]}">
+                            <button onclick="window.answerUPANAHOOTQuestion('${safeText(joinedSession.id)}', ${optIdx})" ${answer || remaining <= 0 ? 'disabled' : ''} class="upanahoot-answer-card min-h-28 rounded-lg p-5 text-left text-white shadow-xl flex items-center gap-4 transition ${answer?.answerIndex === optIdx ? 'ring-4 ring-white scale-[1.01]' : 'hover:scale-[1.01]'} ${answer || remaining <= 0 ? 'opacity-80 cursor-default' : ''}" style="background:${colors[optIdx] || colors[0]}">
                                 <i class="fa-solid ${iconClasses[optIdx] || 'fa-circle'} text-4xl opacity-90 shrink-0"></i>
                                 <span class="text-xl md:text-2xl font-black leading-tight">${safeText(opt || '')}</span>
                             </button>
@@ -1143,13 +1283,13 @@
                 container.innerHTML = `
                     <div class="fixed inset-0 z-[65] bg-[#46178f] text-white flex flex-col">
                         <div class="h-16 bg-[#32105f] flex items-center justify-between px-4 md:px-8 shadow">
-                            <div class="font-black text-xl md:text-2xl">UPANA<span class="text-yellow-300">Kahoot!</span></div>
+                            <div class="font-black text-xl md:text-2xl">UPANA<span class="text-cyan-200">HOOT</span></div>
                             <div class="font-black text-sm md:text-lg">PIN ${safeText(joinedSession.pin)}</div>
-                            <button onclick="window.leaveKahootSession('${safeText(joinedSession.id)}')" class="bg-white/15 hover:bg-white/25 px-3 py-2 rounded text-sm font-bold">Salir</button>
+                            <button onclick="window.leaveUPANAHOOTSession('${safeText(joinedSession.id)}')" class="bg-white/15 hover:bg-white/25 px-3 py-2 rounded text-sm font-bold">Salir</button>
                         </div>
                         <div class="flex-1 overflow-y-auto p-5 md:p-10 flex flex-col items-center justify-center text-center">
                             <div class="text-xs uppercase tracking-widest font-black opacity-75 mb-2">${safeText(statusText)}</div>
-                            <h2 class="text-3xl md:text-5xl font-black leading-tight max-w-5xl">${safeText(q?.q || k?.title || joinedSession.kahootTitle || 'Kahoot')}</h2>
+                            <h2 class="text-3xl md:text-5xl font-black leading-tight max-w-5xl">${safeText(q?.q || k?.title || joinedSession.upanahootTitle || 'UPANAHOOT')}</h2>
                             ${joinedSession.status === 'question' ? `<div class="mt-5 w-24 h-24 rounded-full bg-white text-[#46178f] flex items-center justify-center text-4xl font-black shadow-2xl">${remaining}</div>` : ''}
                             ${questionHtml}
                             ${resultHtml}
@@ -1158,28 +1298,28 @@
                     </div>
                 `;
                 if(joinedSession.status === 'question' && remaining > 0) {
-                    agentKahootTimerHandle = setTimeout(renderAgentKahootArea, 1000);
+                    agentUPANAHOOTTimerHandle = setTimeout(renderAgentUPANAHOOTArea, 1000);
                 }
                 return;
             }
-            if(agentKahootTimerHandle) clearTimeout(agentKahootTimerHandle);
+            if(agentUPANAHOOTTimerHandle) clearTimeout(agentUPANAHOOTTimerHandle);
 
             container.innerHTML = `
                 <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 shadow">
                     <div class="flex flex-col md:flex-row md:items-end gap-4">
                         <div class="flex-1">
-                            <label class="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400">Unirse a Kahoot</label>
-                            <input id="agent-kahoot-pin" type="text" inputmode="numeric" maxlength="6" placeholder="PIN de 6 dígitos" class="mt-2 w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-warning outline-none text-gray-900 dark:text-white">
+                            <label class="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400">Unirse a UPANAHOOT</label>
+                            <input id="agent-upanahoot-pin" type="text" inputmode="numeric" maxlength="6" placeholder="PIN de 6 dígitos" class="mt-2 w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-warning outline-none text-gray-900 dark:text-white">
                         </div>
-                        <button onclick="window.joinKahootByPin()" class="bg-warning text-dark px-6 py-3 rounded-lg text-sm font-black hover:bg-yellow-400 transition"><i class="fa-solid fa-bolt mr-2"></i>Entrar</button>
+                        <button onclick="window.joinUPANAHOOTByPin()" class="bg-warning text-dark px-6 py-3 rounded-lg text-sm font-black hover:bg-yellow-400 transition"><i class="fa-solid fa-bolt mr-2"></i>Entrar</button>
                     </div>
                 </div>
             `;
         }
-        window.joinKahootByPin = async () => {
-            const pin = (document.getElementById('agent-kahoot-pin')?.value || '').trim();
-            if(!pin) return alert("Ingrese el PIN del Kahoot.");
-            const session = localKahootSessions.find(s => String(s.pin) === pin && !['closed', 'podium'].includes(s.status));
+        window.joinUPANAHOOTByPin = async () => {
+            const pin = (document.getElementById('agent-upanahoot-pin')?.value || '').trim();
+            if(!pin) return alert("Ingrese el PIN del UPANAHOOT.");
+            const session = localUPANAHOOTSessions.find(s => String(s.pin) === pin && !['closed', 'podium'].includes(s.status));
             if(!session) return alert("No se encontró una sesión activa con ese PIN.");
 
             await updateDoc(doc(db, "kahootSessions", session.id), {
@@ -1191,14 +1331,14 @@
             });
         };
 
-        window.answerKahootQuestion = async (sessionId, answerIndex) => {
-            const session = localKahootSessions.find(s => s.id === sessionId);
+        window.answerUPANAHOOTQuestion = async (sessionId, answerIndex) => {
+            const session = localUPANAHOOTSessions.find(s => s.id === sessionId);
             if(!session || session.status !== 'question') return alert("La pregunta no está activa.");
-            const k = localKahoots.find(x => x.id === session.kahootId);
+            const k = localUPANAHOOTs.find(x => x.id === session.kahootId);
             const qIdx = Number(session.qIdx || 0);
             const q = k?.questions?.[qIdx];
             if(!q) return alert("No se encontró la pregunta activa.");
-            if(getKahootRemainingSeconds(session) <= 0) return alert("El tiempo de esta pregunta finalizó.");
+            if(getUPANAHOOTRemainingSeconds(session) <= 0) return alert("El tiempo de esta pregunta finalizó.");
             if(session.responses?.[qIdx]?.[currentUser.id]) return;
             const isCorrect = Number(q.correct) === Number(answerIndex);
             const basePoints = Number(q.points ?? 1000);
@@ -1213,8 +1353,8 @@
                 }
             });
         };
-        window.leaveKahootSession = async (sessionId) => {
-            const session = localKahootSessions.find(s => s.id === sessionId);
+        window.leaveUPANAHOOTSession = async (sessionId) => {
+            const session = localUPANAHOOTSessions.find(s => s.id === sessionId);
             if(!session) return;
             const participants = { ...(session.participants || {}) };
             delete participants[currentUser.id];
@@ -1224,7 +1364,7 @@
         function renderAgentPortal() {
             const container = document.getElementById('agent-courses-area');
             if(!container || currentUser.role !== 'agent') return;
-            renderAgentKahootArea();
+            renderAgentUPANAHOOTArea();
 
             const bWaves = localAssignments.filter(a => a.type === 'agent_wave' && a.targetId === currentUser.id).map(a => a.assignId);
             const bCourseIds = localAssignments.filter(a => a.type === 'wave_course' && bWaves.includes(a.targetId)).map(a => a.assignId);
@@ -1235,66 +1375,52 @@
                 return;
             }
 
-            container.innerHTML = courses.map(course => {
-                let tAct = 0;
-                let cAct = 0;
-                (course.weeks || []).forEach((w, wIdx) => (w.days || []).forEach((d, dIdx) => (d.activities || []).forEach((a, aIdx) => {
-                    tAct++;
-                    if(hasActivityProgress(currentUser.id, course.id, wIdx, dIdx, aIdx)) cAct++;
-                })));
-                const pct = tAct > 0 ? Math.round((cAct / tAct) * 100) : 0;
-
-                const weeksHtml = (course.weeks || []).map((week, wIdx) => `
-                    <div class="border border-light-border dark:border-border rounded-lg overflow-hidden">
-                        <div class="bg-gray-50 dark:bg-dark/50 px-4 py-3 font-bold text-sm text-gray-800 dark:text-gray-100">${safeText(week.title || `Semana ${wIdx + 1}`)}</div>
-                        <div class="divide-y divide-light-border dark:divide-border">
-                            ${(week.days || []).map((day, dIdx) => `
-                                <div class="p-4">
-                                    <div class="text-sm font-semibold text-accent mb-3">${safeText(day.title || `Dia ${dIdx + 1}`)}</div>
-                                    <div class="space-y-2">
-                                        ${(day.activities || []).map((act, aIdx) => {
-                                            const done = hasActivityProgress(currentUser.id, course.id, wIdx, dIdx, aIdx);
-                                            const kData = act.type === 'kahoot' ? localKahoots.find(k => k.id === act.kahootId) : null;
-                                            const link = act.type === 'pdf' && act.url ? getPdfViewerUrl(act.url) : act.url;
-                                            return `
-                                                <div class="bg-white dark:bg-dark border border-light-border dark:border-border rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                                                    <div class="min-w-0">
-                                                        <div class="flex items-center gap-2 mb-1">
-                                                            <span class="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded ${done ? 'bg-success/15 text-success' : 'bg-gray-100 dark:bg-surface text-gray-500'}">${done ? 'Completado' : 'Pendiente'}</span>
-                                                            <span class="text-[10px] uppercase tracking-wider text-gray-400 font-bold">${safeText(act.type || 'actividad')}</span>
-                                                        </div>
-                                                        <div class="font-semibold text-gray-900 dark:text-white truncate">${safeText(act.title || 'Actividad sin titulo')}</div>
-                                                        ${act.objectives ? `<div class="text-xs text-warning mt-1">${safeText(act.objectives)}</div>` : ''}
-                                                        ${act.type === 'kahoot' ? `<div class="text-xs text-gray-500 mt-1">${kData ? safeText(kData.title) : 'Kahoot no encontrado en el banco'}</div>` : ''}
-                                                        ${act.description ? `<div class="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-2">${safeText(act.description)}</div>` : ''}
-                                                    </div>
-                                                    <div class="flex gap-2 shrink-0">
-                                                        ${act.type === 'video' && act.youtube ? `<a href="${safeText(act.youtube)}" target="_blank" class="bg-accent text-white px-3 py-2 rounded text-xs font-bold"><i class="fa-solid fa-play mr-1"></i> Abrir</a>` : ''}
-                                                        ${link ? `<a href="${safeText(link)}" target="_blank" class="bg-gray-100 dark:bg-surface border border-light-border dark:border-border text-gray-700 dark:text-gray-200 px-3 py-2 rounded text-xs font-bold"><i class="fa-solid fa-up-right-from-square mr-1"></i> Ver</a>` : ''}
-                                                        ${act.type === 'kahoot' && kData ? `<button onclick="window.launchKahootExecution('${safeText(act.kahootId)}')" class="bg-warning text-dark px-3 py-2 rounded text-xs font-black"><i class="fa-solid fa-bolt mr-1"></i> Kahoot</button>` : ''}
-                                                    </div>
-                                                </div>
-                                            `;
-                                        }).join('') || `<div class="text-xs text-gray-400">Sin actividades en este dia.</div>`}
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    ${courses.map(course => {
+                        let total = 0;
+                        let done = 0;
+                        let currentWeek = 'Sin semana';
+                        let currentDay = 'Sin día';
+                        (course.weeks || []).forEach((week, wIdx) => (week.days || []).forEach((day, dIdx) => (day.activities || []).forEach((act, aIdx) => {
+                            total++;
+                            const completed = hasActivityProgress(currentUser.id, course.id, wIdx, dIdx, aIdx);
+                            if(completed) done++;
+                            if(!completed && currentWeek === 'Sin semana') {
+                                currentWeek = week.title || `Semana ${wIdx + 1}`;
+                                currentDay = day.title || `Día ${dIdx + 1}`;
+                            }
+                        })));
+                        if(total && done === total) {
+                            const lastWeek = (course.weeks || [])[Math.max(0, (course.weeks || []).length - 1)];
+                            const lastDay = (lastWeek?.days || [])[Math.max(0, (lastWeek?.days || []).length - 1)];
+                            currentWeek = lastWeek?.title || 'Completado';
+                            currentDay = lastDay?.title || 'Completado';
+                        }
+                        const pct = total ? Math.round((done / total) * 100) : 0;
+                        return `
+                            <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-6 shadow">
+                                <div class="flex items-start justify-between gap-3 mb-4">
+                                    <div>
+                                        <h3 class="text-lg font-black text-gray-900 dark:text-white">${safeText(course.title || 'Curso')}</h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">${safeText(course.description || 'Curso asignado por tu trainer')}</p>
                                     </div>
+                                    <span class="text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded ${pct === 100 ? 'bg-success/15 text-success' : 'bg-accent/10 text-accent'}">${pct === 100 ? 'Completado' : 'Asignado'}</span>
                                 </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `).join('');
-
-                return `
-                    <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-6 shadow">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-light-border dark:border-border pb-4 mb-4">
-                            <h3 class="text-xl font-bold text-gray-900 dark:text-white">${safeText(course.title || 'Curso sin titulo')}</h3>
-                            <div class="w-full md:w-1/4 min-w-[180px]">
-                                <div class="text-xs text-accent font-bold mb-1">${pct}% Completado</div>
-                                <div class="w-full bg-gray-200 dark:bg-dark h-2 rounded-full overflow-hidden"><div class="bg-accent h-full" style="width: ${pct}%"></div></div>
+                                <div class="mb-4">
+                                    <div class="flex justify-between text-xs font-bold mb-1"><span class="text-gray-500">Avance validado</span><span class="text-accent">${pct}%</span></div>
+                                    <div class="w-full bg-gray-200 dark:bg-dark h-2 rounded-full overflow-hidden"><div class="bg-accent h-full" style="width:${pct}%"></div></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div class="bg-gray-50 dark:bg-dark/40 rounded p-3"><div class="text-gray-400 font-bold uppercase">Semana actual</div><div class="font-bold text-gray-900 dark:text-white">${safeText(currentWeek)}</div></div>
+                                    <div class="bg-gray-50 dark:bg-dark/40 rounded p-3"><div class="text-gray-400 font-bold uppercase">Día actual</div><div class="font-bold text-gray-900 dark:text-white">${safeText(currentDay)}</div></div>
+                                </div>
+                                <div class="text-[11px] text-gray-400 mt-4">El avance lo registra tu trainer durante la capacitación presencial.</div>
                             </div>
-                        </div>
-                        <div class="space-y-4">${weeksHtml || `<div class="text-sm text-gray-500">Este curso aun no tiene semanas configuradas.</div>`}</div>
-                    </div>`;
-            }).join('');
+                        `;
+                    }).join('')}
+                </div>
+            `;
         }
         function renderTrainerPresenterSelector() {
             const container = document.getElementById('trainer-presenter-selector');
@@ -1318,31 +1444,325 @@
             }).join('');
         }
 
-        function renderTrainerMatrix() {
-            const tbody = document.getElementById('table-trainer-tracking');
-            if(!tbody) return;
-            // Similar logic as previous iteration but styled for light/dark
-            // ... (Omitting full rewrite for brevity, keeps core logic of mapping progress)
+        function getCourseProgressRows(course) {
+            const rows = [];
+            localAssignments.filter(a => a.type === 'agent_wave').forEach(agentWave => {
+                const agent = localUsers.find(u => u.id === agentWave.targetId);
+                const wave = localWaves.find(w => w.id === agentWave.assignId);
+                const assigned = localAssignments.some(a => a.type === 'wave_course' && a.targetId === agentWave.assignId && a.assignId === course.id);
+                if(!agent || !assigned) return;
+                const acts = [];
+                (course.weeks || []).forEach((week, wIdx) => (week.days || []).forEach((day, dIdx) => (day.activities || []).forEach((act, aIdx) => {
+                    acts.push({ week, day, wIdx, dIdx, aIdx, act });
+                })));
+                const done = acts.filter(x => hasActivityProgress(agent.id, course.id, x.wIdx, x.dIdx, x.aIdx));
+                const pct = acts.length ? Math.round((done.length / acts.length) * 100) : 0;
+                const next = acts.find(x => !hasActivityProgress(agent.id, course.id, x.wIdx, x.dIdx, x.aIdx)) || acts[acts.length - 1];
+                const latestClosure = localDayClosures
+                    .filter(c => c.courseId === course.id && c.attendance?.[agent.id])
+                    .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
+                rows.push({ agent, wave, course, acts, done, pct, next, latestClosure });
+            });
+            return rows;
         }
 
-        function renderTrainerKahootResults() {
-            const container = document.getElementById('trainer-kahoot-results');
+        function renderTrainerMatrix() {
+            const container = document.getElementById('dashboard-course-progress');
+            const detail = document.getElementById('dashboard-course-detail');
+            if(!container || !detail) return;
+            if(!selectedDashboardCourseId || !localCourses.some(c => c.id === selectedDashboardCourseId)) selectedDashboardCourseId = localCourses[0]?.id || null;
+            container.innerHTML = `
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4"><i class="fa-solid fa-chart-line mr-2 text-accent"></i>Mapeo de Progreso por Curso</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    ${localCourses.map(course => {
+                        const rows = getCourseProgressRows(course);
+                        const avg = rows.length ? Math.round(rows.reduce((sum, r) => sum + r.pct, 0) / rows.length) : 0;
+                        const isActive = course.id === selectedDashboardCourseId;
+                        return `<button onclick="window.selectDashboardCourse('${safeText(course.id)}')" class="text-left bg-light-surface dark:bg-surface border ${isActive ? 'border-accent ring-2 ring-accent/20' : 'border-light-border dark:border-border'} rounded-xl p-5 shadow-sm hover:border-accent transition">
+                            <div class="flex justify-between gap-3 mb-3">
+                                <div>
+                                    <h4 class="font-black text-gray-900 dark:text-white">${safeText(course.title || 'Curso')}</h4>
+                                    <p class="text-xs text-gray-500 line-clamp-2">${safeText(course.description || 'Sin descripción')}</p>
+                                </div>
+                                <span class="text-xs font-black text-accent">${avg}%</span>
+                            </div>
+                            <div class="bg-gray-200 dark:bg-dark h-2 rounded-full overflow-hidden mb-3"><div class="bg-accent h-full" style="width:${avg}%"></div></div>
+                            <div class="text-xs text-gray-500">${rows.length} agente(s) · ${(course.weeks || []).length} semana(s)</div>
+                        </button>`;
+                    }).join('') || `<div class="text-sm text-gray-500">No hay cursos registrados.</div>`}
+                </div>
+            `;
+            renderDashboardCourseDetail();
+        }
+
+        window.selectDashboardCourse = (courseId) => {
+            selectedDashboardCourseId = courseId;
+            selectedDashboardDayKey = null;
+            renderTrainerMatrix();
+        };
+
+        function renderDashboardCourseDetailLegacy() {
+            const detail = document.getElementById('dashboard-course-detail');
+            if(!detail) return;
+            const course = localCourses.find(c => c.id === selectedDashboardCourseId);
+            if(!course) { detail.innerHTML = ''; return; }
+            const rows = getCourseProgressRows(course);
+            detail.innerHTML = `
+                <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl overflow-hidden shadow">
+                    <div class="p-5 border-b border-light-border dark:border-border">
+                        <h4 class="font-black text-gray-900 dark:text-white">${safeText(course.title || 'Curso')}</h4>
+                        <p class="text-xs text-gray-500 mt-1">${safeText(course.description || '')}</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 dark:bg-dark/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
+                                <tr><th class="p-4">Agente</th><th class="p-4">Wave</th><th class="p-4">Semana actual</th><th class="p-4">Día actual</th><th class="p-4 w-1/3">Porcentaje</th><th class="p-4 text-right">Estado</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-light-border dark:divide-border">
+                                ${rows.map(r => `
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-dark/40">
+                                        <td class="p-4 font-bold text-gray-900 dark:text-white">${safeText(r.agent.name || r.agent.email || 'Agente')}</td>
+                                        <td class="p-4 text-gray-500">${safeText(r.wave?.name || '-')}</td>
+                                        <td class="p-4">${safeText(r.next?.week?.title || 'Sin semana')}</td>
+                                        <td class="p-4">${safeText(r.next?.day?.title || 'Sin día')}</td>
+                                        <td class="p-4"><div class="flex items-center gap-3"><div class="flex-1 bg-gray-200 dark:bg-dark h-2 rounded-full overflow-hidden"><div class="bg-accent h-full" style="width:${r.pct}%"></div></div><span class="text-xs font-black text-accent w-10">${r.pct}%</span></div></td>
+                                        <td class="p-4 text-right text-xs"><span class="px-2 py-1 rounded ${r.pct === 100 ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning'} font-bold">${r.pct === 100 ? 'Completado' : 'En capacitación'}</span>${r.latestClosure ? `<div class="text-gray-500 mt-1">Asistencia: ${safeText(r.latestClosure.attendance[r.agent.id]?.status || '-')}</div>` : ''}</td>
+                                    </tr>
+                                `).join('') || `<tr><td colspan="6" class="p-6 text-center text-gray-500">Sin agentes asignados a este curso.</td></tr>`}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getCourseDayItems(course) {
+            const items = [];
+            (course.weeks || []).forEach((week, wIdx) => (week.days || []).forEach((day, dIdx) => {
+                const closure = localDayClosures
+                    .filter(c => c.courseId === course.id && Number(c.wIdx) === wIdx && Number(c.dIdx) === dIdx)
+                    .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
+                items.push({ course, week, day, wIdx, dIdx, closure, key: `${course.id}:${wIdx}:${dIdx}` });
+            }));
+            return items;
+        }
+
+        window.selectDashboardDay = (key) => {
+            selectedDashboardDayKey = key;
+            renderDashboardCourseDetail();
+        };
+
+        function renderDashboardCourseDetail() {
+            const detail = document.getElementById('dashboard-course-detail');
+            if(!detail) return;
+            const course = localCourses.find(c => c.id === selectedDashboardCourseId);
+            if(!course) { detail.innerHTML = ''; return; }
+            const rows = getCourseProgressRows(course);
+            const dayItems = getCourseDayItems(course);
+            if(dayItems.length && !dayItems.some(item => item.key === selectedDashboardDayKey)) {
+                selectedDashboardDayKey = (dayItems.find(item => !item.closure) || dayItems[0]).key;
+            }
+            const selectedDay = dayItems.find(item => item.key === selectedDashboardDayKey);
+            const attendance = Object.values(selectedDay?.closure?.attendance || {});
+            const present = attendance.filter(a => a.status === 'presente').length;
+            const absent = attendance.filter(a => a.status === 'ausente').length;
+            const late = attendance.filter(a => a.status === 'tardanza').length;
+            const completedDays = dayItems.filter(item => item.closure).length;
+            const courseAvg = rows.length ? Math.round(rows.reduce((sum, r) => sum + r.pct, 0) / rows.length) : 0;
+            detail.innerHTML = `
+                <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl overflow-hidden shadow">
+                    <div class="p-5 border-b border-light-border dark:border-border">
+                        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                            <div>
+                                <h4 class="font-black text-gray-900 dark:text-white">${safeText(course.title || 'Curso')}</h4>
+                                <p class="text-xs text-gray-500 mt-1">${safeText(course.description || '')}</p>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-center min-w-full lg:min-w-[360px]">
+                                <div class="bg-gray-50 dark:bg-dark/40 rounded-lg p-3"><div class="text-[10px] uppercase font-black text-gray-400">Progreso</div><div class="text-xl font-black text-accent">${courseAvg}%</div></div>
+                                <div class="bg-gray-50 dark:bg-dark/40 rounded-lg p-3"><div class="text-[10px] uppercase font-black text-gray-400">Dias</div><div class="text-xl font-black text-success">${completedDays}/${dayItems.length}</div></div>
+                                <div class="bg-gray-50 dark:bg-dark/40 rounded-lg p-3"><div class="text-[10px] uppercase font-black text-gray-400">Agentes</div><div class="text-xl font-black text-warning">${rows.length}</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-5 space-y-5">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h5 class="text-sm font-black text-gray-900 dark:text-white">Ruta de capacitacion</h5>
+                                <div class="flex gap-3 text-[11px] font-bold text-gray-500">
+                                    <span><i class="fa-solid fa-circle text-success mr-1"></i>Finalizado</span>
+                                    <span><i class="fa-solid fa-circle text-warning mr-1"></i>Pendiente</span>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                ${(course.weeks || []).map((week, wIdx) => `
+                                    <div class="border border-light-border dark:border-border rounded-lg p-3">
+                                        <div class="text-xs uppercase tracking-widest font-black text-gray-400 mb-2">${safeText(week.title || `Semana ${wIdx + 1}`)}</div>
+                                        <div class="flex flex-wrap gap-2">
+                                            ${(week.days || []).map((day, dIdx) => {
+                                                const item = dayItems.find(x => x.wIdx === wIdx && x.dIdx === dIdx);
+                                                const isSelected = item?.key === selectedDashboardDayKey;
+                                                const done = Boolean(item?.closure);
+                                                return `<button onclick="window.selectDashboardDay('${safeText(item?.key || `${course.id}:${wIdx}:${dIdx}`)}')" class="flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-bold transition ${isSelected ? 'border-accent bg-accent/10 text-accent' : 'border-light-border dark:border-border text-gray-600 dark:text-gray-300 hover:border-accent'}">
+                                                    <i class="fa-solid fa-circle ${done ? 'text-success' : 'text-warning'}"></i>
+                                                    ${safeText(day.title || `Dia ${dIdx + 1}`)}
+                                                </button>`;
+                                            }).join('') || `<span class="text-xs text-gray-500">Sin dias.</span>`}
+                                        </div>
+                                    </div>
+                                `).join('') || `<div class="text-sm text-gray-500">Este curso no tiene semanas configuradas.</div>`}
+                            </div>
+                        </div>
+
+                        ${selectedDay ? `
+                            <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                                <div class="xl:col-span-1 bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl p-4">
+                                    <div class="text-xs uppercase tracking-widest font-black text-gray-400 mb-1">Detalle del dia</div>
+                                    <h5 class="font-black text-gray-900 dark:text-white">${safeText(selectedDay.day?.title || `Dia ${selectedDay.dIdx + 1}`)}</h5>
+                                    <p class="text-xs text-gray-500 mt-1">${safeText(selectedDay.week?.title || `Semana ${selectedDay.wIdx + 1}`)}</p>
+                                    <div class="mt-4 space-y-2 text-sm">
+                                        <div>Estado: <span class="font-black ${selectedDay.closure ? 'text-success' : 'text-warning'}">${selectedDay.closure ? 'Finalizado' : 'Pendiente'}</span></div>
+                                        <div>Trainer: <strong>${safeText(selectedDay.closure?.trainerName || '-')}</strong></div>
+                                        <div>Fecha: <strong>${selectedDay.closure?.date ? safeText(new Date(selectedDay.closure.date).toLocaleString()) : '-'}</strong></div>
+                                        <div>${selectedDay.closure ? `<button onclick="window.showAttendanceDetail('${safeText(selectedDay.closure.id)}')" class="text-accent font-black hover:underline">Asistencia: P:${present} A:${absent} T:${late}</button>` : `Asistencia: <strong>Sin cierre</strong>`}</div>
+                                    </div>
+                                    <div class="mt-4 pt-4 border-t border-light-border dark:border-border">
+                                        <div class="text-xs uppercase tracking-widest font-black text-gray-400 mb-2">Comentario trainer</div>
+                                        <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">${safeText(selectedDay.closure?.comments || 'Aun no hay comentario registrado para este dia.')}</p>
+                                    </div>
+                                </div>
+                                <div class="xl:col-span-2 border border-light-border dark:border-border rounded-xl overflow-hidden">
+                                    <div class="px-4 py-3 bg-gray-50 dark:bg-dark/40 border-b border-light-border dark:border-border text-xs uppercase tracking-widest font-black text-gray-500">Agentes asignados</div>
+                                    <div class="divide-y divide-light-border dark:divide-border">
+                                        ${rows.map(r => {
+                                            const dayActs = r.acts.filter(x => x.wIdx === selectedDay.wIdx && x.dIdx === selectedDay.dIdx);
+                                            const dayDone = dayActs.filter(x => hasActivityProgress(r.agent.id, course.id, x.wIdx, x.dIdx, x.aIdx)).length;
+                                            const dayPct = dayActs.length ? Math.round((dayDone / dayActs.length) * 100) : 0;
+                                            const attStatus = selectedDay.closure?.attendance?.[r.agent.id]?.status;
+                                            return `<div class="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                                <div>
+                                                    <div class="font-black text-gray-900 dark:text-white">${safeText(r.agent.name || r.agent.email || 'Agente')}</div>
+                                                    <div class="text-xs text-gray-500">${safeText(r.wave?.name || 'Sin wave')} - ${safeText(r.next?.week?.title || 'Sin avance')} / ${safeText(r.next?.day?.title || 'Sin dia')}</div>
+                                                </div>
+                                                <div class="flex items-center gap-3 md:min-w-[320px]">
+                                                    <div class="flex-1 bg-gray-200 dark:bg-dark h-2 rounded-full overflow-hidden"><div class="${dayPct === 100 ? 'bg-success' : 'bg-accent'} h-full" style="width:${dayPct}%"></div></div>
+                                                    <span class="text-xs font-black text-accent w-10">${dayPct}%</span>
+                                                    <span class="text-[11px] px-2 py-1 rounded font-black ${attStatus === 'presente' ? 'bg-success/15 text-success' : attStatus === 'ausente' ? 'bg-danger/15 text-danger' : attStatus === 'tardanza' ? 'bg-warning/15 text-warning' : 'bg-gray-200 dark:bg-dark text-gray-500'}">${safeText(attStatus || 'sin cierre')}</span>
+                                                </div>
+                                            </div>`;
+                                        }).join('') || `<div class="p-6 text-center text-gray-500">Sin agentes asignados a este curso.</div>`}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        window.showAttendanceDetail = (closureId) => {
+            const closure = localDayClosures.find(c => c.id === closureId);
+            if(!closure) return;
+            const groups = { presente: [], ausente: [], tardanza: [] };
+            Object.values(closure.attendance || {}).forEach(a => {
+                const key = groups[a.status] ? a.status : 'presente';
+                groups[key].push(a);
+            });
+            document.getElementById('attendance-detail-context').innerText = `${closure.courseTitle || ''} · ${closure.weekTitle || ''} · ${closure.dayTitle || ''}`;
+            document.getElementById('attendance-detail-body').innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    ${Object.entries(groups).map(([status, agents]) => `
+                        <div class="border border-light-border dark:border-border rounded-xl p-4">
+                            <div class="text-xs uppercase tracking-widest font-black ${status === 'presente' ? 'text-success' : status === 'ausente' ? 'text-danger' : 'text-warning'} mb-3">${status} (${agents.length})</div>
+                            <div class="space-y-2">${agents.map(a => `<div class="text-sm font-bold text-gray-900 dark:text-white">${safeText(a.name || a.email || 'Agente')}</div>`).join('') || `<div class="text-sm text-gray-400">Sin agentes</div>`}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl p-4">
+                    <div class="text-xs uppercase tracking-widest font-black text-gray-500 mb-2">Comentarios del trainer</div>
+                    <div class="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">${safeText(closure.comments || 'Sin comentarios')}</div>
+                </div>
+            `;
+            document.getElementById('modal-attendance-detail').classList.remove('hidden');
+        };
+
+        function renderAdminSupervision() {
+            const dash = document.getElementById('admin-supervision-panel');
+            const coursePanel = document.getElementById('admin-course-supervision-panel');
+            const closures = [...localDayClosures].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+            if(dash) {
+                dash.innerHTML = `
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4"><i class="fa-solid fa-eye mr-2 text-accent"></i>Resumen de Supervisión</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5"><div class="text-xs uppercase text-gray-400 font-bold">Cierres de día</div><div class="text-3xl font-black text-gray-900 dark:text-white">${closures.length}</div></div>
+                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5"><div class="text-xs uppercase text-gray-400 font-bold">Sesiones UPANAHOOT</div><div class="text-3xl font-black text-accent">${localUPANAHOOTSessions.filter(s => s.status === 'podium' || s.finishedAt).length}</div></div>
+                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5"><div class="text-xs uppercase text-gray-400 font-bold">Comentarios trainer</div><div class="text-3xl font-black text-warning">${closures.filter(c => c.comments).length}</div></div>
+                    </div>
+                `;
+            }
+            if(!coursePanel) return;
+            coursePanel.innerHTML = `
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4"><i class="fa-solid fa-clipboard-list mr-2 text-accent"></i>Supervisión Admin por Curso</h3>
+                <div class="space-y-4">
+                    ${localCourses.map(course => {
+                        const courseClosures = closures.filter(c => c.courseId === course.id);
+                        return `<div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 shadow">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                                <div>
+                                    <h4 class="font-black text-gray-900 dark:text-white">${safeText(course.title || 'Curso')}</h4>
+                                    <p class="text-xs text-gray-500">${safeText(course.description || 'Sin descripción')}</p>
+                                </div>
+                                <span class="text-xs font-black text-accent">${courseClosures.length} cierre(s)</span>
+                            </div>
+                            <div class="space-y-3">
+                                ${(course.weeks || []).map((week, wIdx) => `
+                                    <div class="border border-light-border dark:border-border rounded-lg p-3">
+                                        <div class="font-bold text-sm text-gray-900 dark:text-white mb-2">${safeText(week.title || `Semana ${wIdx + 1}`)}</div>
+                                        ${(week.days || []).map((day, dIdx) => {
+                                            const closure = courseClosures.find(c => Number(c.wIdx) === wIdx && Number(c.dIdx) === dIdx);
+                                            const attendance = Object.values(closure?.attendance || {});
+                                            const present = attendance.filter(a => a.status === 'presente').length;
+                                            const absent = attendance.filter(a => a.status === 'ausente').length;
+                                            const late = attendance.filter(a => a.status === 'tardanza').length;
+                                            const hoots = localUPANAHOOTSessions.filter(s => s.kahootId && s.courseId === course.id && Number(s.wIdx) === wIdx && Number(s.dIdx) === dIdx);
+                                            return `<div class="bg-gray-50 dark:bg-dark/40 rounded p-3 mb-2 text-xs">
+                                                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                                                    <div class="font-bold text-gray-900 dark:text-white">${safeText(day.title || `Día ${dIdx + 1}`)}</div>
+                                                    <div class="text-gray-500">${closure ? safeText(new Date(closure.date).toLocaleString()) : 'Sin cierre'}</div>
+                                                </div>
+                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-gray-600 dark:text-gray-300">
+                                                    <div>Trainer: <strong>${safeText(closure?.trainerName || '-')}</strong></div>
+                                                    <div>${closure ? `<button onclick="window.showAttendanceDetail(\'${safeText(closure.id)}\')" class="text-accent font-black hover:underline">Asistencia: P:${present} A:${absent} T:${late}</button>` : `Asistencia: <strong>Sin cierre</strong>`}</div>
+                                                    <div class="md:col-span-2">Comentarios: <strong>${closure?.comments ? safeText(closure.comments) : '-'}</strong></div>
+                                                </div>
+                                            </div>`;
+                                        }).join('') || `<div class="text-xs text-gray-500">Sin días.</div>`}
+                                    </div>
+                                `).join('') || `<div class="text-xs text-gray-500">Sin semanas.</div>`}
+                            </div>
+                        </div>`;
+                    }).join('') || `<div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 text-sm text-gray-500">Sin cursos registrados.</div>`}
+                </div>
+            `;
+        }
+
+        function renderTrainerUPANAHOOTResults() {
+            const container = document.getElementById('trainer-upanahoot-results');
             if(!container) return;
-            const finished = localKahootSessions
+            const finished = localUPANAHOOTSessions
                 .filter(s => s.status === 'podium' || s.finishedAt || (s.summary && s.summary.length))
                 .sort((a, b) => new Date(b.finishedAt || b.updatedAt || b.createdAt || 0) - new Date(a.finishedAt || a.updatedAt || a.createdAt || 0));
             if(finished.length === 0) {
-                container.innerHTML = `<div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 text-sm text-gray-500">Aún no hay resultados Kahoot finalizados.</div>`;
+                container.innerHTML = `<div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 text-sm text-gray-500">Aún no hay resultados UPANAHOOT finalizados.</div>`;
                 return;
             }
             container.innerHTML = finished.map(s => {
-                const k = localKahoots.find(x => x.id === s.kahootId);
-                const summary = (s.summary && s.summary.length) ? s.summary : buildKahootPodium(s, k);
+                const k = localUPANAHOOTs.find(x => x.id === s.kahootId);
+                const summary = (s.summary && s.summary.length) ? s.summary : buildUPANAHOOTPodium(s, k);
                 return `
                     <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 shadow">
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
                             <div>
-                                <h4 class="font-black text-gray-900 dark:text-white">${safeText(k?.title || s.kahootTitle || 'Kahoot')}</h4>
+                                <h4 class="font-black text-gray-900 dark:text-white">${safeText(k?.title || s.upanahootTitle || 'UPANAHOOT')}</h4>
                                 <p class="text-xs text-gray-500">PIN ${safeText(s.pin || '')} · ${safeText(new Date(s.finishedAt || s.updatedAt || s.createdAt || Date.now()).toLocaleString())}</p>
                             </div>
                             <span class="text-xs font-black px-3 py-1 rounded-full bg-warning/20 text-warning">${summary.length} participantes</span>
@@ -1381,12 +1801,19 @@
             
             document.getElementById('presentation-view').classList.remove('hidden');
             document.getElementById('presentation-view').classList.add('flex');
+            window.togglePresentationSidebar(false);
             
             renderPresentationSidebar();
             renderCurrentSlide();
         };
 
         window.closePresentation = () => { document.getElementById('presentation-view').classList.add('hidden'); document.getElementById('presentation-view').classList.remove('flex'); };
+        window.togglePresentationSidebar = (forceOpen = null) => {
+            const sidebar = document.getElementById('pres-sidebar');
+            if(!sidebar) return;
+            const shouldOpen = forceOpen === null ? !sidebar.classList.contains('open') : forceOpen;
+            sidebar.classList.toggle('open', shouldOpen);
+        };
 
         function renderPresentationSidebar() {
             const course = localCourses.find(c => c.id === presState.courseId);
@@ -1420,7 +1847,7 @@
             nav.innerHTML = html;
         }
 
-        window.goToSlide = (idx) => { presState.currentAIdx = idx; renderCurrentSlide(); };
+        window.goToSlide = (idx) => { presState.currentAIdx = idx; window.togglePresentationSidebar(false); renderCurrentSlide(); };
         window.navigatePresentation = (step) => {
             const newIdx = presState.currentAIdx + step;
             if(newIdx >= 0 && newIdx < presState.activities.length) { presState.currentAIdx = newIdx; renderCurrentSlide(); }
@@ -1440,6 +1867,7 @@
             
             document.getElementById('btn-pres-prev').style.visibility = presState.currentAIdx === 0 ? 'hidden' : 'visible';
             document.getElementById('btn-pres-next').style.visibility = presState.currentAIdx === total - 1 ? 'hidden' : 'visible';
+            document.getElementById('btn-pres-finish').classList.toggle('hidden', presState.currentAIdx !== total - 1);
 
             renderPresentationSidebar(); // Update active states
 
@@ -1463,34 +1891,35 @@
                                 <img src="${safeText(act.url)}" onclick="window.toggleImageFullscreen(this)" class="projection-image rounded-lg cursor-pointer hover:opacity-95 transition" title="Clic para Pantalla Completa">
                              </div>`;
             } else if (act.type === 'kahoot') {
-                // Lógica de Lanzamiento Kahoot
-                const kData = localKahoots.find(k => k.id === act.kahootId);
-                const kTitle = kData ? kData.title : "Kahoot no encontrado";
+                // Lógica de Lanzamiento UPANAHOOT
+                const kData = localUPANAHOOTs.find(k => k.id === act.kahootId);
+                const kTitle = kData ? kData.title : "UPANAHOOT no encontrado";
                 const kCount = kData ? kData.questions?.length : 0;
                 mediaHtml = `
-                    <div class="kahoot-projection-card bg-[#46178f] text-white p-6 md:p-10 rounded-2xl text-center shadow-2xl my-4 mx-auto">
-                        <div class="text-4xl md:text-6xl font-black mb-6">UPANA<span class="text-yellow-400">Kahoot!</span></div>
-                        <h3 class="text-2xl md:text-3xl font-bold mb-2">${safeText(kTitle)}</h3>
-                        <p class="text-xl opacity-80 mb-8">${kCount} Preguntas Evaluativas</p>
-                        ${kData ? `<button onclick="window.launchKahootExecution('${safeText(act.kahootId)}')" class="bg-white text-[#46178f] hover:bg-gray-100 font-black text-lg md:text-2xl py-4 px-6 md:px-12 rounded shadow-xl transition transform hover:scale-105">INICIAR DINÁMICA</button>` : `<span class="text-red-300">El Kahoot asociado fue eliminado del banco.</span>`}
+                    <div class="upanahoot-projection-card bg-[#46178f] text-white p-5 md:p-8 rounded-2xl text-center shadow-2xl my-3 mx-auto">
+                        <div class="text-3xl md:text-5xl font-black mb-4">UPANA<span class="text-cyan-200">HOOT</span></div>
+                        <h3 class="text-xl md:text-2xl font-bold mb-2">${safeText(kTitle)}</h3>
+                        <p class="text-base md:text-lg opacity-80 mb-6">${kCount} Preguntas Evaluativas</p>
+                        ${kData ? `<button onclick="window.launchUPANAHOOTExecution('${safeText(act.kahootId)}')" class="bg-white text-[#46178f] hover:bg-gray-100 font-black text-lg md:text-2xl py-4 px-6 md:px-12 rounded shadow-xl transition transform hover:scale-105">INICIAR DINÁMICA</button>` : `<span class="text-red-300">El UPANAHOOT asociado fue eliminado del banco.</span>`}
                     </div>`;
             }
 
+            const textHtml = act.description && act.type !== 'kahoot' ? `
+                        <div class="projection-text-block bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl p-5 md:p-6 text-left text-gray-800 dark:text-gray-200 text-base md:text-lg leading-relaxed shadow-inner">
+                            ${renderRichHtml(act.description)}
+                        </div>
+                    ` : '';
+            const orderedContent = act.contentOrder === 'text-first' ? `${textHtml}${mediaHtml}` : `${mediaHtml}${textHtml}`;
+
             const slideHtml = `
-                <div class="bg-white dark:bg-surface/95 border border-light-border dark:border-border rounded-2xl shadow-xl p-5 md:p-8 text-center mb-6 shrink-0">
+                <div class="bg-white dark:bg-surface/95 border border-light-border dark:border-border rounded-2xl shadow-xl p-4 md:p-6 text-center mb-4 shrink-0">
                     <span class="inline-block px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-wider border border-accent/20 mb-4">${act.type} ${act.duration ? `• ${act.duration} Min` : ''}</span>
-                    <h2 class="text-3xl md:text-5xl font-black text-gray-900 dark:text-white leading-tight mb-4 tracking-tight">${act.title}</h2>
+                    <h2 class="text-2xl md:text-4xl font-black text-gray-900 dark:text-white leading-tight mb-3 tracking-tight">${act.title}</h2>
                     ${act.objectives ? `<p class="text-warning text-lg md:text-xl font-medium max-w-3xl mx-auto"><i class="fa-solid fa-bullseye mr-2"></i>${act.objectives}</p>` : ''}
                 </div>
                 
                 <div class="projection-stack">
-                    ${mediaHtml}
-                    
-                    ${act.description && act.type !== 'kahoot' ? `
-                        <div class="projection-text-block bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl p-8 text-left text-gray-800 dark:text-gray-200 text-lg leading-relaxed shadow-inner">
-                            ${toHtml(act.description)}
-                        </div>
-                    ` : ''}
+                    ${orderedContent}
                 </div>
                 
                 ${act.notes ? `
@@ -1510,79 +1939,142 @@
         }
 
         window.markDayCompleted = async () => {
-            if(!confirm("¿Registrar el avance del día completo para todos los agentes de la Wave?")) return;
+            const agentIdsInWave = localAssignments.filter(a => a.type === 'agent_wave' && a.assignId === presState.waveId).map(a => a.targetId);
+            const agents = agentIdsInWave.map(id => localUsers.find(u => u.id === id)).filter(Boolean);
+            dayClosureState = { agents };
+            document.getElementById('day-close-context').innerText = `${presState.courseTitle} · ${presState.weekTitle} · ${presState.dayTitle}`;
+            document.getElementById('day-close-comments').value = '';
+            document.getElementById('day-close-agents').innerHTML = agents.map(agent => `
+                <div class="bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div>
+                        <div class="font-bold text-gray-900 dark:text-white">${safeText(agent.name || agent.email || 'Agente')}</div>
+                        <div class="text-xs text-gray-500">${safeText(agent.email || '')}</div>
+                    </div>
+                    <div class="flex gap-2" data-agent-attendance="${safeText(agent.id)}">
+                        ${['presente','ausente','tardanza'].map(status => `
+                            <label class="cursor-pointer text-xs font-bold border border-light-border dark:border-border rounded px-3 py-2">
+                                <input type="radio" name="attendance_${safeText(agent.id)}" value="${status}" ${status === 'presente' ? 'checked' : ''} class="mr-1 accent-success">
+                                ${status.toUpperCase()}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('') || `<div class="text-sm text-gray-500">No hay agentes asignados a esta Wave.</div>`;
+            document.getElementById('modal-day-close').classList.remove('hidden');
+        };
+
+        window.saveDayClosure = async () => {
+            if(!dayClosureState) return;
             const btn = document.getElementById('btn-pres-finish');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando...'; btn.disabled = true;
+            const attendance = {};
+            dayClosureState.agents.forEach(agent => {
+                const selected = document.querySelector(`input[name="attendance_${agent.id}"]:checked`);
+                attendance[agent.id] = {
+                    userId: agent.id,
+                    name: agent.name || agent.email || 'Agente',
+                    email: agent.email || '',
+                    status: selected?.value || 'presente'
+                };
+            });
 
-            const agentIdsInWave = localAssignments.filter(a => a.type === 'agent_wave' && a.assignId === presState.waveId).map(a => a.targetId);
             const promises = [];
-            
-            agentIdsInWave.forEach(agId => {
+            dayClosureState.agents.forEach(agent => {
                 presState.activities.forEach((act, aIdx) => {
-                    const docId = progressKey(agId, presState.courseId, presState.wIdx, presState.dIdx, aIdx);
+                    const docId = progressKey(agent.id, presState.courseId, presState.wIdx, presState.dIdx, aIdx);
                     promises.push(setDoc(doc(db, "userProgress", docId), {
-                        userId: agId, courseId: presState.courseId, weekId: presState.wIdx, dayId: presState.dIdx, activityId: aIdx,
-                        status: "completed", completionPercentage: 100, lastAccess: new Date().toISOString(), markedByTrainerId: currentUser.id
+                        userId: agent.id,
+                        courseId: presState.courseId,
+                        weekId: presState.wIdx,
+                        dayId: presState.dIdx,
+                        activityId: aIdx,
+                        status: "completed",
+                        completionPercentage: 100,
+                        lastAccess: new Date().toISOString(),
+                        markedByTrainerId: currentUser.id
                     }));
                 });
             });
 
+            const closureId = `${presState.waveId}_${presState.courseId}_${presState.wIdx}_${presState.dIdx}_${Date.now()}`;
+            promises.push(setDoc(doc(db, "dayClosures", closureId), {
+                waveId: presState.waveId,
+                waveName: presState.waveName,
+                courseId: presState.courseId,
+                courseTitle: presState.courseTitle,
+                wIdx: presState.wIdx,
+                weekTitle: presState.weekTitle,
+                dIdx: presState.dIdx,
+                dayTitle: presState.dayTitle,
+                trainerId: currentUser.id,
+                trainerName: currentUser.name || currentUser.email || 'Trainer',
+                attendance,
+                comments: document.getElementById('day-close-comments').value || '',
+                date: new Date().toISOString()
+            }));
+
             try {
-                await Promise.all(promises); alert("¡Día Completado y Registrado!"); window.closePresentation();
-            } catch (err) { alert("Error: " + err.message); } 
-            finally { btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Marcar Día Completado'; btn.disabled = false; }
+                await Promise.all(promises);
+                alert("Día completado, asistencia y comentarios guardados.");
+                document.getElementById('modal-day-close').classList.add('hidden');
+                window.closePresentation();
+            } catch (err) { alert("Error: " + err.message); }
+            finally {
+                btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Marcar Día Completado';
+                btn.disabled = false;
+            }
         };
 
         // ==========================================
         // MÓDULO 8: EJECUCIÓN KAHOOT (Trainer Interface)
         // ==========================================
-        let kahootExecState = { kahoot: null, sessionId: null, pin: null, qIdx: -1, status: 'lobby', participants: {} };
-        let kahootTimerHandle = null;
+        let upanahootExecState = { upanahoot: null, sessionId: null, pin: null, qIdx: -1, status: 'lobby', participants: {} };
+        let upanahootTimerHandle = null;
 
-        function getCurrentKahootQuestion() {
-            return kahootExecState.kahoot?.questions?.[Number(kahootExecState.qIdx || 0)];
+        function getCurrentUPANAHOOTQuestion() {
+            return upanahootExecState.upanahoot?.questions?.[Number(upanahootExecState.qIdx || 0)];
         }
 
-        function prepareKahootQuestionTiming() {
-            const q = getCurrentKahootQuestion();
+        function prepareUPANAHOOTQuestionTiming() {
+            const q = getCurrentUPANAHOOTQuestion();
             const seconds = Number(q?.time || 20);
             const now = Date.now();
-            kahootExecState.questionStartedAt = new Date(now).toISOString();
-            kahootExecState.questionEndsAt = new Date(now + seconds * 1000).toISOString();
+            upanahootExecState.questionStartedAt = new Date(now).toISOString();
+            upanahootExecState.questionEndsAt = new Date(now + seconds * 1000).toISOString();
         }
 
-        function scheduleKahootTimer() {
-            if(kahootTimerHandle) clearTimeout(kahootTimerHandle);
-            if(kahootExecState.status !== 'question' || !kahootExecState.sessionId) return;
-            const remaining = getKahootRemainingSeconds(kahootExecState);
+        function scheduleUPANAHOOTTimer() {
+            if(upanahootTimerHandle) clearTimeout(upanahootTimerHandle);
+            if(upanahootExecState.status !== 'question' || !upanahootExecState.sessionId) return;
+            const remaining = getUPANAHOOTRemainingSeconds(upanahootExecState);
             if(remaining <= 0) {
-                window.forceKahootResults();
+                window.forceUPANAHOOTResults();
                 return;
             }
-            kahootTimerHandle = setTimeout(() => {
-                renderKahootExecutionStep();
-                scheduleKahootTimer();
+            upanahootTimerHandle = setTimeout(() => {
+                renderUPANAHOOTExecutionStep();
+                scheduleUPANAHOOTTimer();
             }, 1000);
         }
 
-        window.forceKahootResults = async () => {
-            if(kahootExecState.status !== 'question' || !kahootExecState.sessionId) return;
-            kahootExecState.status = 'results';
-            await updateDoc(doc(db, "kahootSessions", kahootExecState.sessionId), {
+        window.forceUPANAHOOTResults = async () => {
+            if(upanahootExecState.status !== 'question' || !upanahootExecState.sessionId) return;
+            upanahootExecState.status = 'results';
+            await updateDoc(doc(db, "kahootSessions", upanahootExecState.sessionId), {
                 status: 'results',
                 updatedAt: new Date().toISOString()
             });
-            renderKahootExecutionStep();
+            renderUPANAHOOTExecutionStep();
         };
 
-        window.launchKahootExecution = async (kahootId) => {
-            const k = localKahoots.find(x => x.id === kahootId);
+        window.launchUPANAHOOTExecution = async (kahootId) => {
+            const k = localUPANAHOOTs.find(x => x.id === kahootId);
             if(!k) return;
             const pin = String(Math.floor(100000 + Math.random() * 900000));
             const sessionRef = doc(collection(db, "kahootSessions"));
             const sessionData = {
                 kahootId,
-                kahootTitle: k.title || 'Kahoot',
+                upanahootTitle: k.title || 'UPANAHOOT',
                 pin,
                 qIdx: -1,
                 status: 'lobby',
@@ -1592,75 +2084,75 @@
                 trainerName: currentUser?.name || currentUser?.email || 'Trainer'
             };
             await setDoc(sessionRef, sessionData);
-            kahootExecState = { kahoot: k, sessionId: sessionRef.id, ...sessionData };
+            upanahootExecState = { upanahoot: k, sessionId: sessionRef.id, ...sessionData };
             
             document.getElementById('k-exec-pin').innerText = "PIN: " + pin;
-            document.getElementById('kahoot-execution-view').classList.remove('hidden');
-            document.getElementById('kahoot-execution-view').classList.add('flex');
+            document.getElementById('upanahoot-execution-view').classList.remove('hidden');
+            document.getElementById('upanahoot-execution-view').classList.add('flex');
             
-            renderKahootExecutionStep();
+            renderUPANAHOOTExecutionStep();
         };
 
-        window.closeKahootExecution = async () => {
+        window.closeUPANAHOOTExecution = async () => {
             if(confirm("¿Cerrar dinámica interactiva?")) {
-                if(kahootExecState.sessionId) {
-                    await updateDoc(doc(db, "kahootSessions", kahootExecState.sessionId), { status: 'closed', closedAt: new Date().toISOString() });
+                if(upanahootExecState.sessionId) {
+                    await updateDoc(doc(db, "kahootSessions", upanahootExecState.sessionId), { status: 'closed', closedAt: new Date().toISOString() });
                 }
-                document.getElementById('kahoot-execution-view').classList.add('hidden');
-                document.getElementById('kahoot-execution-view').classList.remove('flex');
-                if(kahootTimerHandle) clearTimeout(kahootTimerHandle);
-                kahootExecState = { kahoot: null, sessionId: null, pin: null, qIdx: -1, status: 'lobby', participants: {} };
+                document.getElementById('upanahoot-execution-view').classList.add('hidden');
+                document.getElementById('upanahoot-execution-view').classList.remove('flex');
+                if(upanahootTimerHandle) clearTimeout(upanahootTimerHandle);
+                upanahootExecState = { upanahoot: null, sessionId: null, pin: null, qIdx: -1, status: 'lobby', participants: {} };
             }
         };
 
-        window.advanceKahoot = async () => {
-            if(kahootExecState.status === 'lobby') { kahootExecState.status = 'question'; kahootExecState.qIdx = 0; }
-            else if(kahootExecState.status === 'question') { kahootExecState.status = 'results'; }
-            else if(kahootExecState.status === 'results') {
-                kahootExecState.qIdx++;
-                if(kahootExecState.qIdx >= kahootExecState.kahoot.questions.length) kahootExecState.status = 'podium';
-                else kahootExecState.status = 'question';
+        window.advanceUPANAHOOT = async () => {
+            if(upanahootExecState.status === 'lobby') { upanahootExecState.status = 'question'; upanahootExecState.qIdx = 0; }
+            else if(upanahootExecState.status === 'question') { upanahootExecState.status = 'results'; }
+            else if(upanahootExecState.status === 'results') {
+                upanahootExecState.qIdx++;
+                if(upanahootExecState.qIdx >= upanahootExecState.upanahoot.questions.length) upanahootExecState.status = 'podium';
+                else upanahootExecState.status = 'question';
             }
-            else if(kahootExecState.status === 'podium') { await window.closeKahootExecution(); return; }
-            if(kahootExecState.status === 'question') prepareKahootQuestionTiming();
+            else if(upanahootExecState.status === 'podium') { await window.closeUPANAHOOTExecution(); return; }
+            if(upanahootExecState.status === 'question') prepareUPANAHOOTQuestionTiming();
             
-            if(kahootExecState.sessionId) {
-                const summary = kahootExecState.status === 'podium'
-                    ? buildKahootPodium(kahootExecState, kahootExecState.kahoot).map((p, idx) => ({ ...p, rank: idx + 1 }))
+            if(upanahootExecState.sessionId) {
+                const summary = upanahootExecState.status === 'podium'
+                    ? buildUPANAHOOTPodium(upanahootExecState, upanahootExecState.upanahoot).map((p, idx) => ({ ...p, rank: idx + 1 }))
                     : null;
-                await updateDoc(doc(db, "kahootSessions", kahootExecState.sessionId), {
-                    status: kahootExecState.status,
-                    qIdx: kahootExecState.qIdx,
-                    questionStartedAt: kahootExecState.questionStartedAt || null,
-                    questionEndsAt: kahootExecState.questionEndsAt || null,
+                await updateDoc(doc(db, "kahootSessions", upanahootExecState.sessionId), {
+                    status: upanahootExecState.status,
+                    qIdx: upanahootExecState.qIdx,
+                    questionStartedAt: upanahootExecState.questionStartedAt || null,
+                    questionEndsAt: upanahootExecState.questionEndsAt || null,
                     ...(summary ? { summary, finishedAt: new Date().toISOString() } : {}),
                     updatedAt: new Date().toISOString()
                 });
             }
-            renderKahootExecutionStep();
+            renderUPANAHOOTExecutionStep();
         };
-        function renderKahootExecutionStep() {
+        function renderUPANAHOOTExecutionStep() {
             const container = document.getElementById('k-exec-content');
             const btnNext = document.getElementById('btn-k-exec-next');
             const statusLabel = document.getElementById('k-exec-status');
-            document.getElementById('k-exec-pin').innerText = "PIN: " + (kahootExecState.pin || "000000");
-            if(kahootExecState.status !== 'question' && kahootTimerHandle) clearTimeout(kahootTimerHandle);
+            document.getElementById('k-exec-pin').innerText = "PIN: " + (upanahootExecState.pin || "000000");
+            if(upanahootExecState.status !== 'question' && upanahootTimerHandle) clearTimeout(upanahootTimerHandle);
 
-            if(kahootExecState.status === 'lobby') {
-                const participants = getSessionParticipants(kahootExecState);
+            if(upanahootExecState.status === 'lobby') {
+                const participants = getSessionParticipants(upanahootExecState);
                 container.innerHTML = `<h2 class="text-5xl font-black text-gray-800 dark:text-white mb-3 text-center">Únete con el PIN</h2>
-                                       <div class="text-6xl font-black text-[#46178f] bg-white px-10 py-4 rounded-xl shadow mb-8">${safeText(kahootExecState.pin || '')}</div>
+                                       <div class="text-6xl font-black text-[#46178f] bg-white px-10 py-4 rounded-xl shadow mb-8">${safeText(upanahootExecState.pin || '')}</div>
                                        <div class="text-sm font-bold text-gray-500 dark:text-gray-300 mb-4">${participants.length} participante(s) conectado(s)</div>
                                        <div class="flex gap-4 flex-wrap justify-center">
                                             ${participants.length ? participants.map(p => `<div class="bg-white dark:bg-gray-800 px-6 py-3 rounded shadow text-xl font-bold dark:text-white">${safeText(p.name || 'Agente')}</div>`).join('') : `<div class="text-gray-500 dark:text-gray-400 bg-white/70 dark:bg-gray-800/70 px-6 py-3 rounded shadow">Esperando agentes reales...</div>`}
                                        </div>`;
                 btnNext.innerText = "Empezar Dinámica"; statusLabel.innerText = "Esperando jugadores...";
             } 
-            else if (kahootExecState.status === 'question') {
-                const q = kahootExecState.kahoot.questions[kahootExecState.qIdx];
+            else if (upanahootExecState.status === 'question') {
+                const q = upanahootExecState.upanahoot.questions[upanahootExecState.qIdx];
                 const colors = ['bg-[#e21b3c]', 'bg-[#1368ce]', 'bg-[#d89e00]', 'bg-[#26890c]'];
                 const shapes = ['fa-play -rotate-90', 'fa-gem', 'fa-circle', 'fa-square'];
-                const remaining = getKahootRemainingSeconds(kahootExecState);
+                const remaining = getUPANAHOOTRemainingSeconds(upanahootExecState);
                 container.innerHTML = `
                     <div class="w-24 h-24 rounded-full bg-[#46178f] text-white flex items-center justify-center text-4xl font-black shadow-2xl mb-6">${remaining}</div>
                     <div class="bg-white text-black p-8 rounded shadow text-center w-full max-w-4xl mb-8">
@@ -1668,21 +2160,21 @@
                     </div>
                     <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4">
                         ${[0,1,2,3].map(i => `
-                            <div class="${colors[i]} kahoot-answer-card min-h-28 rounded flex items-center p-6 shadow-md shadow-black/20 text-white">
+                            <div class="${colors[i]} upanahoot-answer-card min-h-28 rounded flex items-center p-6 shadow-md shadow-black/20 text-white">
                                 <i class="fa-solid ${shapes[i]} text-4xl mr-6 opacity-80 shrink-0"></i>
                                 <span class="text-2xl md:text-3xl font-bold leading-tight">${safeText(q.options?.[i] || '')}</span>
                             </div>
                         `).join('')}
                     </div>
                 `;
-                btnNext.innerText = "Mostrar Resultados"; statusLabel.innerText = `Pregunta ${kahootExecState.qIdx + 1} de ${kahootExecState.kahoot.questions.length} • Tiempo: ${remaining}s`;
-                scheduleKahootTimer();
+                btnNext.innerText = "Mostrar Resultados"; statusLabel.innerText = `Pregunta ${upanahootExecState.qIdx + 1} de ${upanahootExecState.upanahoot.questions.length} • Tiempo: ${remaining}s`;
+                scheduleUPANAHOOTTimer();
             }
-            else if (kahootExecState.status === 'results') {
-                const q = kahootExecState.kahoot.questions[kahootExecState.qIdx];
+            else if (upanahootExecState.status === 'results') {
+                const q = upanahootExecState.upanahoot.questions[upanahootExecState.qIdx];
                 const colors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
-                const responses = Object.values(kahootExecState.responses?.[kahootExecState.qIdx] || {});
-                const participants = getSessionParticipants(kahootExecState);
+                const responses = Object.values(upanahootExecState.responses?.[upanahootExecState.qIdx] || {});
+                const participants = getSessionParticipants(upanahootExecState);
                 const counts = [0, 0, 0, 0];
                 responses.forEach(r => { if(Number.isInteger(Number(r.answerIndex))) counts[Number(r.answerIndex)] = (counts[Number(r.answerIndex)] || 0) + 1; });
                 const maxCount = Math.max(1, ...counts);
@@ -1705,7 +2197,7 @@
                         <div class="text-xs uppercase tracking-widest font-black text-gray-500 mb-3">Detalle por agente</div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             ${participants.map(p => {
-                                const r = kahootExecState.responses?.[kahootExecState.qIdx]?.[p.id];
+                                const r = upanahootExecState.responses?.[upanahootExecState.qIdx]?.[p.id];
                                 return `<div class="flex justify-between gap-3 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm dark:text-white">
                                     <span class="font-bold truncate">${safeText(p.name || 'Agente')}</span>
                                     <span class="${r?.isCorrect ? 'text-success' : 'text-danger'} font-black">${r ? `${r.isCorrect ? 'Correcta' : 'Incorrecta'} · ${Number(r.points || 0)} pts` : 'Sin respuesta'}</span>
@@ -1714,18 +2206,18 @@
                         </div>
                     </div>
                 `;
-                btnNext.innerText = kahootExecState.qIdx + 1 >= kahootExecState.kahoot.questions.length ? "Ver Podio" : "Siguiente Pregunta";
+                btnNext.innerText = upanahootExecState.qIdx + 1 >= upanahootExecState.upanahoot.questions.length ? "Ver Podio" : "Siguiente Pregunta";
                 statusLabel.innerText = "Revisión de respuestas";
             }
-            else if (kahootExecState.status === 'podium') {
-                const podium = buildKahootPodium(kahootExecState, kahootExecState.kahoot);
+            else if (upanahootExecState.status === 'podium') {
+                const podium = buildUPANAHOOTPodium(upanahootExecState, upanahootExecState.upanahoot);
                 container.innerHTML = `
                     <div class="text-center w-full max-w-5xl">
                         <h2 class="text-5xl font-black text-gray-800 dark:text-white mb-4">¡Podio Final!</h2>
                         <p class="text-gray-500 dark:text-gray-300 font-bold mb-10">Resultados guardados para evaluación de admin y trainer.</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-8">
                             ${podium.slice(0, 3).map((p, idx) => `
-                                <div class="rounded-xl p-6 shadow-2xl text-center ${idx === 0 ? 'bg-[#ffd700] md:order-2 md:min-h-64' : idx === 1 ? 'bg-[#c0c0c0] md:order-1 md:min-h-52' : 'bg-[#cd7f32] md:order-3 md:min-h-44'}">
+                                <div class="rounded-xl p-6 shadow-2xl text-center text-gray-950 ${idx === 0 ? 'bg-[#ffd700] md:order-2 md:min-h-64' : idx === 1 ? 'bg-[#c0c0c0] md:order-1 md:min-h-52' : 'bg-[#cd7f32] md:order-3 md:min-h-44'}">
                                     <div class="text-5xl font-black mb-3">${idx + 1}</div>
                                     <div class="text-2xl font-black truncate">${safeText(p.name)}</div>
                                     <div class="text-3xl font-black mt-3">${p.score} pts</div>
@@ -1743,3 +2235,15 @@
         }    </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
