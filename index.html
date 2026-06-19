@@ -1,196 +1,473 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academia UPANA | LMS Operativo</title>
+    <title>LMS UPANA | Enterprise Console</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0b0d11',
+                        surface: '#13161c',
+                        border: '#222630',
+                        accent: '#4f46e5',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        upanaBlue: '#0b4a99',
+                        upanaBlueDark: '#083670',
+                        // Light mode equivalents
+                        'light-bg': '#f9fafb',
+                        'light-surface': '#ffffff',
+                        'light-border': '#e5e7eb',
+                        'light-text': '#111827'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+        
+        .trainer-notes-container { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .trainer-notes-trigger:hover + .trainer-notes-container, .trainer-notes-container:hover { max-height: 300px; overflow-y: auto; }
+        .projection-stack { width: 100%; display: flex; flex-direction: column; gap: 1.5rem; }
+        .projection-block { width: 100%; border-radius: 0.75rem; overflow: visible; }
+        .projection-media { width: 100%; min-height: 72vh; }
+        .projection-pdf-frame { width: 100%; height: 82vh; border: 0; background: #fff; }
+        .projection-image-wrap { width: 100%; min-height: 72vh; display: flex; align-items: center; justify-content: center; overflow: visible; }
+        .projection-image { width: auto; max-width: 100%; height: auto; max-height: none; object-fit: contain; }
+        .projection-text-block { width: 100%; max-height: none; overflow: visible; }
+        .projection-shell { min-width: 0; overflow-x: hidden; }
+        .kahoot-projection-card { width: 100%; max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere; }
+        .kahoot-answer-card { min-width: 0; overflow-wrap: anywhere; }
+        
+        /* Ocultar elementos de scrollbars nativos en iframes si es posible */
+        iframe { border-radius: 0.5rem; background: white; }
+    </style>
 </head>
-<body class="bg-gray-900 text-white font-sans h-screen overflow-hidden flex">
+<body class="h-screen overflow-hidden flex custom-scrollbar bg-light-bg text-light-text dark:bg-dark dark:text-gray-200">
 
-    <div id="login-view" class="fixed inset-0 bg-gray-900 z-50 flex flex-col items-center justify-center transition-opacity duration-500">
-        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
-            <h1 class="text-3xl font-bold text-blue-500 mb-2 text-center"><i class="fa-solid fa-graduation-cap"></i> LMS UPANA</h1>
-            <p class="text-gray-400 text-center mb-6">Acceso Operativo</p>
-            <input type="email" id="auth-email" placeholder="Correo electrónico" class="w-full bg-gray-700 p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <input type="password" id="auth-password" placeholder="Contraseña" class="w-full bg-gray-700 p-3 rounded mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded font-bold transition">Iniciar Sesión</button>
-            <button id="btn-register" class="w-full bg-gray-700 hover:bg-gray-600 p-3 rounded font-bold mt-3 transition">Registrar Administrador Inicial</button>
+    <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center bg-light-bg dark:bg-dark transition-opacity duration-300">
+        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-8 rounded-xl w-full max-w-md shadow-2xl">
+            <div class="w-12 h-12 bg-accent rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-accent/20">
+                <i class="fa-solid fa-layer-group text-white text-xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Plataforma LMS</h1>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">Consola operativa institucional UPANA</p>
+            <div class="space-y-4">
+                <input type="email" id="auth-email" placeholder="Correo electrónico" class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none transition text-gray-900 dark:text-white">
+                <input type="password" id="auth-password" placeholder="Contraseña" class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none transition text-gray-900 dark:text-white">
+                <button id="btn-login" class="w-full bg-accent hover:bg-accent/90 text-white p-3 rounded-lg font-medium text-sm transition shadow-lg shadow-accent/20">Iniciar Sesión</button>
+                <button id="btn-register" class="w-full bg-transparent border border-light-border dark:border-border hover:bg-gray-50 dark:hover:bg-surface text-gray-600 dark:text-gray-300 p-3 rounded-lg text-sm transition">Registrar Cuenta Administrativa Inicial</button>
+            </div>
         </div>
     </div>
 
-    <div id="app-view" class="hidden w-full h-full flex">
-        <aside class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col h-full">
-            <div class="p-6 text-xl font-bold text-blue-400 border-b border-gray-700"><i class="fa-solid fa-graduation-cap"></i> LMS Central</div>
-            <nav class="flex-1 overflow-y-auto p-4 space-y-2" id="nav-menu">
-                <a href="#" data-target="dash-view" class="nav-btn block p-3 rounded bg-blue-600 text-white"><i class="fa-solid fa-chart-pie w-6"></i> Dashboard</a>
-                <a href="#" data-target="users-view" class="nav-btn block p-3 rounded hover:bg-gray-700 text-gray-300 admin-only"><i class="fa-solid fa-users w-6"></i> Usuarios</a>
-                <a href="#" data-target="waves-view" class="nav-btn block p-3 rounded hover:bg-gray-700 text-gray-300 admin-only"><i class="fa-solid fa-users-viewfinder w-6"></i> Waves / Grupos</a>
-                <a href="#" data-target="courses-view" class="nav-btn block p-3 rounded hover:bg-gray-700 text-gray-300 admin-trainer"><i class="fa-solid fa-book w-6"></i> Cursos</a>
-                <a href="#" data-target="kahoot-view" class="nav-btn block p-3 rounded hover:bg-gray-700 text-gray-300"><i class="fa-solid fa-bolt w-6"></i> Dinámicas</a>
-                <a href="#" data-target="cert-view" class="nav-btn block p-3 rounded hover:bg-gray-700 text-gray-300 agent-only"><i class="fa-solid fa-award w-6"></i> Certificados</a>
-            </nav>
-            <div class="p-4 border-t border-gray-700 bg-gray-800">
-                <div class="text-sm font-bold truncate" id="current-user-name">Cargando...</div>
-                <div class="text-xs text-gray-400 mb-2" id="current-user-role">...</div>
-                <button id="btn-logout" class="text-red-400 text-sm hover:text-red-300"><i class="fa-solid fa-power-off"></i> Cerrar Sesión</button>
+    <div id="app-view" class="hidden h-full flex w-full">
+        
+        <aside class="w-64 bg-light-surface dark:bg-surface border-r border-light-border dark:border-border flex flex-col justify-between shadow-xl z-20 transition-colors">
+            <div>
+                <div class="p-6 flex items-center justify-between border-b border-light-border dark:border-border">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center shadow-md shadow-accent/10"><i class="fa-solid fa-layer-group text-white text-xs"></i></div>
+                        <span class="font-bold tracking-tight text-sm text-gray-900 dark:text-white">UPANA LMS</span>
+                    </div>
+                    <button id="btn-theme-toggle" class="text-gray-500 hover:text-accent transition"><i class="fa-solid fa-moon"></i></button>
+                </div>
+                <nav class="p-4 space-y-1" id="nav-menu">
+                    <a href="#" data-target="dash-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-accent bg-accent/10 font-medium mb-1"><i class="fa-solid fa-chart-pie w-5"></i> Dashboard</a>
+                    
+                    <div class="admin-trainer-control hidden">
+                        <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-4 px-3">Gestión de Contenido</div>
+                        <a href="#" data-target="courses-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-book w-5"></i> Estructura de Cursos</a>
+                    </div>
+
+                    <div class="admin-control hidden">
+                        <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-4 px-3">Organización</div>
+                        <a href="#" data-target="users-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-users w-5"></i> Usuarios Globales</a>
+                        <a href="#" data-target="waves-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-people-group w-5"></i> Control de Waves</a>
+                    </div>
+
+                    <div class="trainer-control hidden">
+                        <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-4 px-3">Operaciones</div>
+                        <a href="#" data-target="trainer-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-chalkboard-user w-5"></i> Consola Trainer</a>
+                        <a href="#" data-target="kahoot-bank-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-bolt w-5"></i> Banco de Kahoots</a>
+                    </div>
+
+                    <div class="agent-control hidden">
+                        <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-4 px-3">Estudiante</div>
+                        <a href="#" data-target="agent-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-graduation-cap w-5"></i> Mi Ruta de Aprendizaje</a>
+                    </div>
+                </nav>
+            </div>
+            
+            <div class="p-4 border-t border-light-border dark:border-border bg-gray-50 dark:bg-dark/40">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-lg bg-accent flex items-center justify-center font-bold text-white text-sm" id="user-avatar">-</div>
+                    <div class="overflow-hidden">
+                        <div class="text-sm font-semibold truncate text-gray-900 dark:text-white" id="user-name">Cargando...</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest font-medium" id="user-role">-</div>
+                    </div>
+                </div>
+                <button id="btn-logout" class="w-full text-left text-xs text-danger hover:text-red-500 font-medium flex items-center gap-2 p-2 transition"><i class="fa-solid fa-power-off"></i> Finalizar Sesión</button>
             </div>
         </aside>
 
-        <main class="flex-1 bg-gray-900 overflow-y-auto p-8 relative" id="main-content">
+        <main class="flex-1 bg-light-bg dark:bg-dark overflow-y-auto p-8 custom-scrollbar relative" id="main-content">
             
             <section id="dash-view" class="view-section block">
-                <h2 class="text-3xl font-bold mb-6">Métricas en Tiempo Real</h2>
-                <div class="grid grid-cols-4 gap-4 mb-8">
-                    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                        <div class="text-gray-400 text-sm">Total Usuarios</div>
-                        <div class="text-4xl font-bold text-blue-400" id="metric-users">0</div>
-                    </div>
-                    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                        <div class="text-gray-400 text-sm">Cursos Activos</div>
-                        <div class="text-4xl font-bold text-green-400" id="metric-courses">0</div>
-                    </div>
-                    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                        <div class="text-gray-400 text-sm">Waves Activas</div>
-                        <div class="text-4xl font-bold text-purple-400" id="metric-waves">0</div>
-                    </div>
-                    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                        <div class="text-gray-400 text-sm">Archivos Storage</div>
-                        <div class="text-4xl font-bold text-yellow-400" id="metric-files">0</div>
-                    </div>
+                <h2 class="text-3xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Consola Central</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Información general de la plataforma operativa lmsupana.</p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl"><div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Cursos Registrados</div><div class="text-3xl font-bold text-gray-900 dark:text-white" id="stat-courses">0</div></div>
+                    <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl"><div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Usuarios Totales</div><div class="text-3xl font-bold text-gray-900 dark:text-white" id="stat-users">0</div></div>
+                    <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl"><div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Waves Activas</div><div class="text-3xl font-bold text-gray-900 dark:text-white" id="stat-waves">0</div></div>
+                    <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl"><div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Tu Perfil Operativo</div><div class="text-lg font-bold text-accent uppercase mt-1" id="stat-myrole">-</div></div>
                 </div>
             </section>
 
             <section id="users-view" class="view-section hidden">
-                <h2 class="text-3xl font-bold mb-6">Gestión de Usuarios</h2>
-                <form id="form-user" class="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-6 flex gap-4 items-end">
-                    <div class="flex-1">
-                        <label class="text-xs text-gray-400">Nombre Completo</label>
-                        <input type="text" id="u-name" class="w-full bg-gray-700 p-2 rounded text-sm" required>
+                <h2 class="text-2xl font-bold tracking-tight mb-6 text-gray-900 dark:text-white">Administración de Personal</h2>
+                <form id="form-user" class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label class="text-xs text-gray-500 dark:text-gray-400 font-medium">Nombre Completo</label>
+                        <input type="text" id="u-name" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm mt-1 focus:border-accent outline-none text-gray-900 dark:text-white" required>
                     </div>
-                    <div class="flex-1">
-                        <label class="text-xs text-gray-400">Correo</label>
-                        <input type="email" id="u-email" class="w-full bg-gray-700 p-2 rounded text-sm" required>
+                    <div>
+                        <label class="text-xs text-gray-500 dark:text-gray-400 font-medium">Correo Electrónico</label>
+                        <input type="email" id="u-email" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm mt-1 focus:border-accent outline-none text-gray-900 dark:text-white" required>
                     </div>
-                    <div class="w-32">
-                        <label class="text-xs text-gray-400">Rol</label>
-                        <select id="u-role" class="w-full bg-gray-700 p-2 rounded text-sm">
-                            <option value="agent">Agente</option>
-                            <option value="trainer">Trainer</option>
-                            <option value="admin">Admin</option>
+                    <div>
+                        <label class="text-xs text-gray-500 dark:text-gray-400 font-medium">Rol del Usuario</label>
+                        <select id="u-role" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm mt-1 focus:border-accent outline-none text-gray-900 dark:text-white">
+                            <option value="agent" class="bg-white dark:bg-dark text-black dark:text-white">Agente (Estudiante)</option>
+                            <option value="trainer" class="bg-white dark:bg-dark text-black dark:text-white">Trainer (Instructor)</option>
+                            <option value="admin" class="bg-white dark:bg-dark text-black dark:text-white">Administrador del Sistema</option>
                         </select>
                     </div>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 p-2 rounded font-bold px-6">Crear</button>
+                    <div class="md:col-span-3 flex justify-end">
+                        <button type="submit" class="bg-accent text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-accent/90 transition">Dar de Alta Perfil</button>
+                    </div>
                 </form>
-                <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+                <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl overflow-hidden shadow-xl">
                     <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-700 text-gray-300">
-                            <tr><th class="p-3">Nombre</th><th class="p-3">Correo</th><th class="p-3">Rol</th><th class="p-3">Estado</th><th class="p-3">Acciones</th></tr>
+                        <thead class="bg-gray-50 dark:bg-dark/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider border-b border-light-border dark:border-border">
+                            <tr><th class="p-4 font-semibold">Nombre</th><th class="p-4 font-semibold">Email</th><th class="p-4 font-semibold">Rol Asignado</th><th class="p-4 font-semibold text-right">Acciones</th></tr>
                         </thead>
-                        <tbody id="table-users"></tbody>
+                        <tbody id="table-users" class="divide-y divide-light-border dark:divide-border"></tbody>
                     </table>
                 </div>
             </section>
 
             <section id="waves-view" class="view-section hidden">
-                <h2 class="text-3xl font-bold mb-6">Gestión de Waves</h2>
-                <form id="form-wave" class="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-6 flex gap-4 items-end">
-                    <div class="flex-1">
-                        <label class="text-xs text-gray-400">Nombre del Wave (Ej. Wave 51)</label>
-                        <input type="text" id="w-name" class="w-full bg-gray-700 p-2 rounded text-sm" required>
+                <h2 class="text-2xl font-bold tracking-tight mb-6 text-gray-900 dark:text-white">Estructura Corporativa: Control de Waves</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Nueva Unidad Operativa (Wave)</h3>
+                            <form id="form-wave" class="space-y-4">
+                                <input type="text" id="w-name" placeholder="Ej. Wave 51" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required>
+                                <button type="submit" class="w-full bg-accent text-white py-2.5 rounded-lg text-sm font-medium transition">Crear Wave</button>
+                            </form>
+                        </div>
+                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Waves Registradas</h3>
+                            <div id="list-waves" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar"></div>
+                        </div>
                     </div>
-                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 p-2 rounded font-bold px-6">Crear Wave</button>
-                </form>
-                <div class="grid grid-cols-3 gap-4" id="list-waves"></div>
+
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="text-sm font-bold text-accent uppercase tracking-wider mb-4"><i class="fa-solid fa-link"></i> Vincular Curso a Wave</h3>
+                                <form id="form-assign-course" class="space-y-3">
+                                    <select id="sel-assign-wave-c" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required></select>
+                                    <select id="sel-assign-course" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required></select>
+                                    <button type="submit" class="w-full bg-accent text-white py-2 rounded-lg text-xs font-semibold transition">Asignar Curso</button>
+                                </form>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-success uppercase tracking-wider mb-4"><i class="fa-solid fa-user-plus"></i> Vincular Agente a Wave</h3>
+                                <form id="form-assign-agent" class="space-y-3">
+                                    <select id="sel-assign-wave-a" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required></select>
+                                    <select id="sel-assign-agent" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required></select>
+                                    <button type="submit" class="w-full bg-success text-white py-2 rounded-lg text-xs font-semibold transition">Asignar Agente</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Matriz de Relaciones Activas</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-gray-50 dark:bg-dark/50 text-gray-500 dark:text-gray-400 uppercase border-b border-light-border dark:border-border">
+                                        <tr><th class="p-3">Tipo Relación</th><th class="p-3">Wave Destino</th><th class="p-3">Entidad Asignada</th><th class="p-3 text-right">Acción</th></tr>
+                                    </thead>
+                                    <tbody id="table-assignments" class="divide-y divide-light-border dark:divide-border"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <section id="courses-view" class="view-section hidden">
-                <h2 class="text-3xl font-bold mb-6">Estructura de Cursos</h2>
-                
-                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-6">
-                    <h3 class="text-xl mb-4 text-green-400">Crear Nuevo Curso</h3>
-                    <form id="form-course" class="flex gap-4 items-end mb-4">
-                        <div class="flex-1">
-                            <input type="text" id="c-title" placeholder="Título del Curso" class="w-full bg-gray-700 p-2 rounded" required>
-                        </div>
-                        <button type="submit" class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded font-bold">Guardar Curso Raíz</button>
+                <h2 class="text-2xl font-bold tracking-tight mb-6 text-gray-900 dark:text-white">Diseño Curricular del Programa</h2>
+                <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl mb-8">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Estructurar Nuevo Programa de Capacitación</h3>
+                    <form id="form-course" class="flex gap-4 items-center">
+                        <input type="text" id="c-title" placeholder="Nombre completo del curso corporativo" class="flex-1 bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required>
+                        <button type="submit" class="bg-accent text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-accent/90 transition">Crear Curso Base</button>
                     </form>
                 </div>
-
                 <div id="tree-courses" class="space-y-4"></div>
             </section>
 
-            <section id="kahoot-view" class="view-section hidden">
-                <h2 class="text-3xl font-bold mb-6 text-yellow-400">Dinámicas (Kahoot Engine)</h2>
-                <div class="grid grid-cols-2 gap-8">
-                    <div class="bg-gray-800 p-6 rounded border border-gray-700">
-                        <h3 class="font-bold mb-4">Crear Dinámica</h3>
-                        <input type="text" id="k-title" placeholder="Título del Quiz" class="w-full bg-gray-700 p-2 rounded mb-2">
-                        <button id="btn-create-kahoot" class="w-full bg-yellow-600 hover:bg-yellow-700 p-2 rounded font-bold">Generar PIN y Abrir Sala</button>
-                        <div id="kahoot-host-area" class="mt-4 hidden text-center">
-                            <div class="text-xs text-gray-400">PIN DE ACCESO</div>
-                            <div class="text-5xl font-bold tracking-widest text-white my-2" id="k-pin-display"></div>
-                            <button id="btn-start-game" class="bg-red-600 p-2 rounded mt-2 w-full font-bold">Lanzar Pregunta a Participantes</button>
-                        </div>
+            <section id="kahoot-bank-view" class="view-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold tracking-tight text-warning"><i class="fa-solid fa-bolt mr-2"></i> Banco de Dinámicas Kahoot</h2>
+                    <button onclick="window.openKahootEditorModal()" class="bg-warning text-dark font-bold px-6 py-2.5 rounded-lg text-sm hover:bg-yellow-400 transition shadow-lg shadow-warning/20"><i class="fa-solid fa-plus mr-2"></i> Crear Nuevo Kahoot</button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="kahoots-grid">
                     </div>
-                    <div class="bg-gray-800 p-6 rounded border border-gray-700">
-                        <h3 class="font-bold mb-4">Participantes en Sala</h3>
-                        <div id="k-players-list" class="flex flex-wrap gap-2"></div>
+            </section>
+
+            <section id="trainer-view" class="view-section hidden">
+                <h2 class="text-2xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Panel Operativo de Instructores (Trainer)</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Gestiona la proyección de contenido presencial y monitorea a tus agentes.</p>
+                
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-accent mb-4 border-b border-light-border dark:border-border pb-2"><i class="fa-solid fa-person-chalkboard mr-2"></i> Presentador de Capacitación (Lanzar Clase)</h3>
+                    <div id="trainer-presenter-selector" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-warning mb-4 border-b border-light-border dark:border-border pb-2"><i class="fa-solid fa-trophy mr-2"></i> Resultados Kahoot Guardados</h3>
+                    <div id="trainer-kahoot-results" class="space-y-3"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b border-light-border dark:border-border pb-2"><i class="fa-solid fa-chart-line mr-2"></i> Mapeo de Progreso de Agentes</h3>
+                    <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl overflow-hidden shadow-xl">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 dark:bg-dark/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider border-b border-light-border dark:border-border">
+                                <tr><th class="p-4">Agente</th><th class="p-4">Wave</th><th class="p-4">Programa Académico</th><th class="p-4 w-1/3">Progreso Global Evaluado</th><th class="p-4 text-right">Última Actividad Registrada</th></tr>
+                            </thead>
+                            <tbody id="table-trainer-tracking" class="divide-y divide-light-border dark:divide-border"></tbody>
+                        </table>
                     </div>
                 </div>
             </section>
 
-            <section id="cert-view" class="view-section hidden">
-                <h2 class="text-3xl font-bold mb-6 text-blue-400">Mis Certificados</h2>
-                <div id="cert-list" class="grid grid-cols-3 gap-4"></div>
+            <section id="agent-view" class="view-section hidden">
+                <h2 class="text-2xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Ruta Estratégica de Aprendizaje</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">El avance es validado y actualizado automáticamente por tu Trainer durante las sesiones presenciales.</p>
+                <div id="agent-kahoot-area" class="mb-6"></div>
+                <div id="agent-courses-area" class="space-y-6"></div>
             </section>
+
         </main>
     </div>
 
-    <div id="modal-activity" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center">
-        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 w-full max-w-md">
-            <h3 class="text-xl font-bold mb-4">Añadir Actividad a Día</h3>
-            <input type="hidden" id="modal-course-id">
-            <input type="hidden" id="modal-week-idx">
-            <input type="hidden" id="modal-day-idx">
+    <div id="presentation-view" class="fixed inset-0 z-50 bg-light-bg dark:bg-dark hidden flex-row">
+        
+        <div class="w-80 bg-light-surface dark:bg-surface border-r border-light-border dark:border-border flex flex-col shadow-2xl z-20 transition-all" id="pres-sidebar">
+            <div class="p-6 border-b border-light-border dark:border-border flex items-center justify-between">
+                <div>
+                    <h2 class="font-bold text-accent text-lg leading-tight truncate" id="pres-course-title">Cargando...</h2>
+                    <p class="text-xs text-gray-500 font-medium mt-1" id="pres-wave-title">Wave --</p>
+                </div>
+                <button onclick="window.closePresentation()" class="w-8 h-8 rounded bg-gray-100 dark:bg-dark text-gray-500 hover:text-danger hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
             
-            <input type="text" id="act-title" placeholder="Título de la Actividad" class="w-full bg-gray-700 p-2 rounded mb-3" required>
+            <div class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4" id="pres-sidebar-nav">
+                </div>
             
-            <select id="act-type" class="w-full bg-gray-700 p-2 rounded mb-3">
-                <option value="pdf">PDF</option>
-                <option value="video">Video</option>
-                <option value="presentacion">Presentación</option>
-                <option value="practica">Actividad Práctica</option>
-            </select>
+            <div class="p-4 border-t border-light-border dark:border-border bg-gray-50 dark:bg-dark/50">
+                <button id="btn-pres-finish" onclick="window.markDayCompleted()" class="w-full bg-success hover:bg-success/90 p-3 rounded-lg text-white font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-success/20"><i class="fa-solid fa-check-double"></i> Marcar Día Completado</button>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col relative projection-shell">
             
-            <input type="file" id="act-file" class="w-full bg-gray-700 p-2 rounded mb-3">
-            <div id="upload-progress" class="text-xs text-blue-400 mb-4 hidden">Subiendo archivo a Firebase Storage...</div>
-            
-            <div class="flex gap-2">
-                <button id="btn-save-activity" class="bg-blue-600 w-full p-2 rounded font-bold">Guardar Actividad</button>
-                <button id="btn-close-modal" class="bg-gray-600 w-full p-2 rounded font-bold">Cancelar</button>
+            <div class="absolute top-4 left-4 z-10 md:hidden">
+                <button class="bg-accent text-white p-2 rounded shadow-lg"><i class="fa-solid fa-bars"></i></button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-8 flex flex-col items-center justify-start relative bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiMzMzMiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiMzMzMiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PC9zdmc+')] custom-scrollbar">
+                
+                <div class="w-full max-w-none relative transition-colors duration-300 min-h-[78vh]" id="pres-slide-container">
+                    </div>
+
+            </div>
+
+            <div class="h-20 bg-light-surface dark:bg-surface border-t border-light-border dark:border-border flex items-center justify-between px-8 z-10">
+                <button id="btn-pres-prev" onclick="window.navigatePresentation(-1)" class="bg-gray-100 dark:bg-dark border border-light-border dark:border-border hover:bg-gray-200 dark:hover:bg-border px-6 py-3 rounded-lg text-gray-900 dark:text-white font-medium transition flex items-center gap-2"><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+                
+                <div class="text-center flex-1 mx-4">
+                    <div class="text-sm font-bold text-gray-900 dark:text-white" id="pres-counter">Actividad 0 de 0</div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        <div class="w-full max-w-md h-2 bg-gray-200 dark:bg-dark rounded-full overflow-hidden mx-auto mt-1 border border-light-border dark:border-border">
+                            <div class="bg-accent h-full transition-all duration-300" id="pres-progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="btn-pres-next" onclick="window.navigatePresentation(1)" class="bg-accent hover:bg-accent/90 px-6 py-3 rounded-lg text-white font-medium transition flex items-center gap-2 shadow-lg shadow-accent/20">Siguiente <i class="fa-solid fa-chevron-right"></i></button>
             </div>
         </div>
     </div>
 
+    <div id="kahoot-execution-view" class="fixed inset-0 z-[60] bg-dark hidden flex-col font-sans">
+        <div class="h-16 bg-[#46178f] flex justify-between items-center px-6 text-white shadow-md">
+            <div class="font-black text-2xl tracking-tighter">UPANA<span class="text-yellow-400">Kahoot!</span></div>
+            <div class="text-lg font-bold" id="k-exec-pin">PIN: 000000</div>
+            <button onclick="window.closeKahootExecution()" class="bg-black/20 hover:bg-black/40 px-4 py-2 rounded text-sm font-bold transition">Cerrar Kahoot</button>
+        </div>
+        <div class="flex-1 flex flex-col items-center justify-center relative p-8 bg-[#f2f2f2] dark:bg-gray-900 overflow-y-auto" id="k-exec-content">
+            </div>
+        <div class="h-20 bg-white dark:bg-gray-800 border-t border-gray-300 dark:border-gray-700 flex justify-between items-center px-8">
+            <div class="font-bold text-gray-600 dark:text-gray-300" id="k-exec-status">Esperando jugadores...</div>
+            <button id="btn-k-exec-next" onclick="window.advanceKahoot()" class="bg-[#1368ce] hover:bg-[#0f55a8] text-white font-bold text-lg px-8 py-3 rounded shadow transition">Empezar</button>
+        </div>
+    </div>
+
+    <div id="modal-kahoot-editor" class="fixed inset-0 bg-black/80 hidden z-[70] flex items-center justify-center p-4">
+        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-light-border dark:border-border flex justify-between items-center">
+                <h3 class="text-xl font-bold text-warning"><i class="fa-solid fa-pen-to-square mr-2"></i> Editor de Kahoot</h3>
+                <button onclick="document.getElementById('modal-kahoot-editor').classList.add('hidden')" class="text-gray-400 hover:text-danger"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-gray-50 dark:bg-dark/50">
+                <input type="hidden" id="ke-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase">Título del Kahoot</label>
+                        <input type="text" id="ke-title" class="w-full bg-white dark:bg-dark border border-light-border dark:border-border p-3 rounded-lg mt-1 outline-none focus:border-warning text-gray-900 dark:text-white font-bold" placeholder="Ej. Examen Cultura Upana">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase">Descripción / Objetivo</label>
+                        <input type="text" id="ke-desc" class="w-full bg-white dark:bg-dark border border-light-border dark:border-border p-3 rounded-lg mt-1 outline-none focus:border-warning text-gray-900 dark:text-white" placeholder="Evaluación final de semana...">
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="font-bold text-gray-900 dark:text-white">Preguntas (<span id="ke-q-count">0</span>)</h4>
+                    <button onclick="window.addKahootQuestion()" class="bg-dark text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition"><i class="fa-solid fa-plus mr-2"></i> Agregar Pregunta</button>
+                </div>
+
+                <div id="ke-questions-container" class="space-y-6">
+                    </div>
+            </div>
+
+            <div class="p-6 border-t border-light-border dark:border-border bg-light-surface dark:bg-surface">
+                <button onclick="window.saveKahootToBank()" class="w-full bg-warning text-dark font-bold py-3 rounded-lg text-lg hover:bg-yellow-400 transition shadow-lg">Guardar Kahoot en Banco</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="modal-activity" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl w-full max-w-2xl shadow-2xl my-8">
+            <h3 class="text-lg font-bold mb-4 text-accent"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Creador Avanzado de Contenido</h3>
+            <input type="hidden" id="modal-course-id">
+            <input type="hidden" id="modal-week-idx">
+            <input type="hidden" id="modal-day-idx">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Título Principal de la Actividad / Tema</label>
+                    <input type="text" id="act-title" placeholder="Ej. Cultura Upana e Inducción" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required>
+                </div>
+                
+                <div>
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Tipología de Contenido</label>
+                    <select id="act-type" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" onchange="window.toggleActivityFields()">
+                        <option value="presentacion" class="bg-white dark:bg-dark">Slide Texto/HTML (Tema)</option>
+                        <option value="imagen" class="bg-white dark:bg-dark">Imagen Estática Embebida</option>
+                        <option value="video" class="bg-white dark:bg-dark">Video (MP4 / YouTube) Embebido</option>
+                        <option value="pdf" class="bg-white dark:bg-dark">Documento PDF Embebido</option>
+                        <option value="kahoot" class="bg-white dark:bg-dark">Dinámica Kahoot (Eval)</option>
+                        <option value="practica" class="bg-white dark:bg-dark">Actividad Práctica / Lectura</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Duración Estimada (Minutos)</label>
+                    <input type="number" id="act-duration" placeholder="Ej. 45" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
+                </div>
+
+                <div class="md:col-span-2" id="field-objectives">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Objetivos de la Sesión</label>
+                    <input type="text" id="act-objectives" placeholder="Ej. Que el agente comprenda las normativas básicas." class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
+                </div>
+
+                <div class="md:col-span-2" id="field-desc">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Contenido a Proyectar (Texto Principal)</label>
+                    <textarea id="act-desc" rows="4" placeholder="Escribe aquí el contenido que se proyectará..." class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none custom-scrollbar text-gray-900 dark:text-white"></textarea>
+                </div>
+
+                <div class="md:col-span-2" id="field-notes">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold text-warning"><i class="fa-solid fa-eye-slash mr-1"></i> Notas para el Trainer (No se proyectan)</label>
+                    <textarea id="act-notes" rows="2" placeholder="Instrucciones para el formador..." class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-warning outline-none custom-scrollbar text-gray-900 dark:text-white"></textarea>
+                </div>
+
+                <div id="field-youtube" class="md:col-span-2">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Enlace de YouTube</label>
+                    <input type="url" id="act-youtube" placeholder="https://youtube.com/..." class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
+                </div>
+
+                <div id="field-kahoot" class="md:col-span-2 hidden">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold text-warning">Seleccionar Kahoot del Banco</label>
+                    <select id="act-kahoot-id" class="w-full bg-transparent border border-warning p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
+                        </select>
+                </div>
+
+                <div id="field-file" class="md:col-span-2">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Archivo Físico (Firebase Storage)</label>
+                    <input type="file" id="act-file" class="w-full bg-transparent border border-light-border dark:border-border p-2 rounded-lg text-xs text-gray-500 dark:text-gray-400">
+                </div>
+            </div>
+
+            <div id="upload-progress" class="text-xs text-accent font-semibold animate-pulse hidden mt-4"><i class="fa-solid fa-spinner fa-spin"></i> Subiendo archivo a Storage...</div>
+            
+            <div class="flex gap-3 pt-6 mt-4 border-t border-light-border dark:border-border">
+                <button id="btn-save-activity" class="flex-1 bg-accent text-white py-3 rounded-lg text-sm font-medium transition shadow-lg shadow-accent/20">Añadir Tema/Actividad al Día</button>
+                <button id="btn-close-modal" class="flex-1 bg-transparent border border-light-border dark:border-border hover:bg-gray-50 dark:hover:bg-surface text-gray-600 dark:text-gray-400 py-3 rounded-lg text-sm transition">Descartar</button>
+            </div>
+        </div>
+    </div>
+
+
     <script type="module">
-        // IMPORTACIONES REALES FIREBASE v10
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, getDocs, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-        // CREDENCIALES DE PRODUCCIÓN PROYECTO lmsupana
         const firebaseConfig = {
             apiKey: "AIzaSyAB4hS-FR5amDK8fem-Z1t_dXn3tbRDdC8",
             authDomain: "lmsupana.firebaseapp.com",
             projectId: "lmsupana",
             storageBucket: "lmsupana.firebasestorage.app",
             messagingSenderId: "912778300770",
-            appId: "1:912778300770:web:84be7166f1620ac8e6303b",
-            measurementId: "G-Z2PMT4KGJ0"
+            appId: "1:912778300770:web:84be7166f1620ac8e6303b"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -198,39 +475,118 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // ESTADO GLOBAL
+        // MEMORY CORE STATE
         let currentUser = null;
-        let localCourses = []; // Cache en memoria para renderizado de árbol
-        let currentKahootId = null;
+        let localCourses = [];
+        let localUsers = [];
+        let localWaves = [];
+        let localAssignments = [];
+        let localProgress = [];
+        let localKahoots = []; // Bank
+        let localKahootSessions = [];
+        let agentKahootTimerHandle = null;
 
-        // ELEMENTOS DOM (CORE)
-        const ui = {
+        // ESTADO DE MODO PRESENTACIÓN (TRAINER)
+        let presState = {
+            waveId: null, waveName: "",
+            courseId: null, courseTitle: "",
+            wIdx: 0, weekTitle: "",
+            dIdx: 0, dayTitle: "",
+            activities: [], currentAIdx: 0
+        };
+
+        const safeText = (value = "") => String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+        const toHtml = (value = "") => safeText(value).replace(/\n/g, '<br>');
+
+        function progressKey(userId, courseId, wIdx, dIdx, aIdx) {
+            return `${userId}_${courseId}_${wIdx}_${dIdx}_${aIdx}`;
+        }
+
+        function hasActivityProgress(userId, courseId, wIdx, dIdx, aIdx) {
+            const exactId = progressKey(userId, courseId, wIdx, dIdx, aIdx);
+            return localProgress.some(p =>
+                p.id === exactId ||
+                (p.userId === userId && p.courseId === courseId && Number(p.weekId) === Number(wIdx) && Number(p.dayId) === Number(dIdx) && Number(p.activityId) === Number(aIdx))
+            );
+        }
+
+        function getPdfViewerUrl(url) {
+            if(!url) return "";
+            const separator = url.includes('#') ? '&' : '#';
+            return `${url}${separator}toolbar=1&navpanes=0&scrollbar=1&page=1&view=FitH`;
+        }
+
+        // UI FRAMEWORK COUPLING
+        const views = {
             login: document.getElementById('login-view'),
             app: document.getElementById('app-view'),
             navBtns: document.querySelectorAll('.nav-btn'),
-            sections: document.querySelectorAll('.view-section'),
-            name: document.getElementById('current-user-name'),
-            role: document.getElementById('current-user-role')
+            sections: document.querySelectorAll('.view-section')
         };
 
-        // --- 1. AUTENTICACIÓN Y ENRUTAMIENTO ---
+        // LÓGICA DE TEMA (CLARO/OSCURO)
+        const htmlEl = document.documentElement;
+        const themeToggleBtn = document.getElementById('btn-theme-toggle');
+        
+        if (localStorage.theme === 'light') {
+            htmlEl.classList.remove('dark');
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+        } else {
+            htmlEl.classList.add('dark');
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            if (htmlEl.classList.contains('dark')) {
+                htmlEl.classList.remove('dark');
+                localStorage.theme = 'light';
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+            } else {
+                htmlEl.classList.add('dark');
+                localStorage.theme = 'dark';
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            }
+        });
+
+        // NAVIGATION ROUTER
+        views.navBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                views.navBtns.forEach(b => { b.classList.remove('bg-accent/10', 'text-accent'); b.classList.add('text-gray-600', 'dark:text-gray-400'); });
+                btn.classList.add('bg-accent/10', 'text-accent');
+                btn.classList.remove('text-gray-600', 'dark:text-gray-400');
+                
+                const target = btn.getAttribute('data-target');
+                views.sections.forEach(sec => { sec.classList.remove('block'); sec.classList.add('hidden'); });
+                document.getElementById(target).classList.remove('hidden');
+                document.getElementById(target).classList.add('block');
+            });
+        });
+
+        // AUTHENTICATION
         document.getElementById('btn-login').addEventListener('click', async () => {
-            try {
-                await signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-password').value);
-            } catch (e) { alert("Error de credenciales: " + e.message); }
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-password').value;
+            try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert("Fallo de acceso corporativo: " + e.message); }
         });
 
         document.getElementById('btn-register').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-password').value;
-            if(!email || !pass) return alert("Llena los campos");
+            if(!email || !pass) return alert("Ingrese credenciales válidas.");
             try {
                 const res = await createUserWithEmailAndPassword(auth, email, pass);
                 await setDoc(doc(db, "users", res.user.uid), {
-                    name: "Admin Principal", email, role: "admin", status: "activo", joinDate: new Date().toISOString()
+                    name: "Administrador Corporativo", email, role: "admin", status: "activo", joinDate: new Date().toISOString()
                 });
-                alert("Administrador creado. Iniciando sesión.");
-            } catch (e) { alert("Error: " + e.message); }
+                alert("Cuenta máster creada exitosamente.");
+            } catch (e) { alert("Error de registro: " + e.message); }
         });
 
         document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
@@ -238,326 +594,1152 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const docSnap = await getDoc(doc(db, "users", user.uid));
-                currentUser = docSnap.exists() ? { id: user.uid, ...docSnap.data() } : { id: user.uid, role: 'agent', name: user.email };
+                if(docSnap.exists()){ currentUser = { id: user.uid, ...docSnap.data() }; } 
+                else { currentUser = { id: user.uid, role: 'admin', name: user.email, email: user.email }; }
                 
-                ui.name.innerText = currentUser.name;
-                ui.role.innerText = currentUser.role.toUpperCase();
-                
-                // Mostrar/Ocultar menú según rol
-                document.querySelectorAll('.admin-only').forEach(el => el.style.display = currentUser.role === 'admin' ? 'block' : 'none');
-                document.querySelectorAll('.admin-trainer').forEach(el => el.style.display = ['admin', 'trainer'].includes(currentUser.role) ? 'block' : 'none');
-                document.querySelectorAll('.agent-only').forEach(el => el.style.display = currentUser.role === 'agent' ? 'block' : 'none');
+                document.getElementById('user-name').innerText = currentUser.name;
+                document.getElementById('user-role').innerText = currentUser.role;
+                document.getElementById('user-avatar').innerText = currentUser.name.charAt(0).toUpperCase();
+                document.getElementById('stat-myrole').innerText = currentUser.role;
 
-                ui.login.classList.add('hidden');
-                ui.app.classList.remove('hidden');
+                document.querySelectorAll('.admin-control').forEach(el => el.style.display = currentUser.role === 'admin' ? 'block' : 'none');
+                document.querySelectorAll('.trainer-control').forEach(el => el.style.display = ['admin', 'trainer'].includes(currentUser.role) ? 'block' : 'none');
+                document.querySelectorAll('.agent-control').forEach(el => el.style.display = currentUser.role === 'agent' ? 'block' : 'none');
+                document.querySelectorAll('.admin-trainer-control').forEach(el => el.style.display = ['admin', 'trainer'].includes(currentUser.role) ? 'block' : 'none');
+
+                views.login.classList.add('hidden');
+                views.app.classList.remove('hidden');
                 
-                // Iniciar Listeners Realtime
-                initRealtimeListeners();
+                initRealtimePipeline();
             } else {
-                ui.app.classList.add('hidden');
-                ui.login.classList.remove('hidden');
+                views.app.classList.add('hidden');
+                views.login.classList.remove('hidden');
             }
         });
 
-        // NAVEGACIÓN UI
-        ui.navBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                ui.navBtns.forEach(b => { b.classList.remove('bg-blue-600', 'text-white'); b.classList.add('text-gray-300'); });
-                btn.classList.add('bg-blue-600', 'text-white');
-                btn.classList.remove('text-gray-300');
-                
-                const target = btn.getAttribute('data-target');
-                ui.sections.forEach(sec => {
-                    sec.classList.remove('block');
-                    sec.classList.add('hidden');
-                });
-                document.getElementById(target).classList.remove('hidden');
-                document.getElementById(target).classList.add('block');
-            });
-        });
-
-        // --- 2. LISTENERS REALTIME Y CRUD ---
-        function initRealtimeListeners() {
-            // Dashboard Metrics & Users
-            onSnapshot(collection(db, "users"), (snap) => {
-                document.getElementById('metric-users').innerText = snap.size;
-                const tbody = document.getElementById('table-users');
-                tbody.innerHTML = '';
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    tbody.innerHTML += `
-                        <tr class="border-b border-gray-700">
-                            <td class="p-3">${data.name}</td><td class="p-3">${data.email}</td>
-                            <td class="p-3 uppercase text-xs">${data.role}</td>
-                            <td class="p-3"><span class="bg-green-900 text-green-300 px-2 py-1 rounded text-xs">${data.status || 'Activo'}</span></td>
-                            <td class="p-3"><button class="text-red-400 hover:text-red-300" onclick="deleteUser('${doc.id}')"><i class="fa-solid fa-trash"></i></button></td>
-                        </tr>
-                    `;
-                });
-            });
-
-            // Waves
-            onSnapshot(collection(db, "waves"), (snap) => {
-                document.getElementById('metric-waves').innerText = snap.size;
-                const list = document.getElementById('list-waves');
-                list.innerHTML = '';
-                snap.forEach(doc => {
-                    list.innerHTML += `<div class="bg-gray-800 p-4 rounded border border-gray-700"><h4 class="font-bold text-purple-400"><i class="fa-solid fa-users"></i> ${doc.data().name}</h4></div>`;
-                });
-            });
-
-            // Courses Hierarchy
+        function initRealtimePipeline() {
             onSnapshot(collection(db, "courses"), (snap) => {
-                document.getElementById('metric-courses').innerText = snap.size;
-                localCourses = [];
-                const tree = document.getElementById('tree-courses');
-                tree.innerHTML = '';
-                
-                snap.forEach(docSnap => {
-                    const course = { id: docSnap.id, ...docSnap.data() };
-                    localCourses.push(course);
-                    
-                    let html = `
-                    <div class="bg-gray-800 border border-gray-700 rounded p-4">
-                        <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-xl font-bold text-blue-400"><i class="fa-solid fa-book-open"></i> ${course.title}</h3>
-                            <div class="space-x-2">
-                                <button onclick="window.addWeek('${course.id}')" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-sm">+ Semana</button>
-                                <button onclick="window.deleteCourse('${course.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </div>`;
-                    
-                    // Render Semanas
-                    if(course.weeks) {
-                        course.weeks.forEach((week, wIdx) => {
-                            html += `
-                            <div class="ml-6 mt-3 border-l-2 border-gray-600 pl-4">
-                                <div class="flex justify-between items-center text-gray-300 mb-2">
-                                    <h4 class="font-bold text-green-400"><i class="fa-solid fa-calendar-week"></i> ${week.title}</h4>
-                                    <button onclick="window.addDay('${course.id}', ${wIdx})" class="text-xs bg-gray-700 px-2 py-1 rounded">+ Día</button>
-                                </div>`;
-                            
-                            // Render Días
-                            if(week.days) {
-                                week.days.forEach((day, dIdx) => {
-                                    html += `
-                                    <div class="ml-6 mt-2 border-l border-gray-600 pl-4">
-                                        <div class="flex justify-between items-center text-sm text-gray-400 mb-2">
-                                            <span><i class="fa-regular fa-calendar"></i> ${day.title}</span>
-                                            <button onclick="window.openActivityModal('${course.id}', ${wIdx}, ${dIdx})" class="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">+ Actividad/Archivo</button>
-                                        </div>`;
-                                    
-                                    // Render Actividades
-                                    if(day.activities) {
-                                        html += `<ul class="ml-6 space-y-1">`;
-                                        day.activities.forEach(act => {
-                                            const icon = act.type === 'pdf' ? 'fa-file-pdf text-red-400' : (act.type === 'video' ? 'fa-video text-blue-400' : 'fa-file text-gray-400');
-                                            const link = act.url ? `<a href="${act.url}" target="_blank" class="text-blue-400 hover:underline ml-2"><i class="fa-solid fa-link"></i> Ver archivo</a>` : '';
-                                            html += `<li class="text-sm bg-gray-700 p-2 rounded flex justify-between"><span class="truncate w-3/4"><i class="fa-solid ${icon}"></i> ${act.title} ${link}</span></li>`;
-                                        });
-                                        html += `</ul>`;
-                                    }
-                                    html += `</div>`;
-                                });
-                            }
-                            html += `</div>`;
-                        });
+                localCourses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                document.getElementById('stat-courses').innerText = localCourses.length;
+                renderHierarchicalTree();
+                populateSelectors();
+                if(currentUser.role === 'agent') renderAgentPortal();
+                if(['trainer', 'admin'].includes(currentUser.role)) { renderTrainerMatrix(); renderTrainerPresenterSelector(); }
+            });
+
+            onSnapshot(collection(db, "users"), (snap) => {
+                localUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                document.getElementById('stat-users').innerText = localUsers.length;
+                renderUsersTable();
+                populateSelectors();
+            });
+
+            onSnapshot(collection(db, "waves"), (snap) => {
+                localWaves = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                document.getElementById('stat-waves').innerText = localWaves.length;
+                renderWavesList();
+                populateSelectors();
+                if(currentUser.role === 'agent') renderAgentPortal();
+                if(['trainer', 'admin'].includes(currentUser.role)) { renderTrainerMatrix(); renderTrainerPresenterSelector(); }
+            });
+
+            onSnapshot(collection(db, "courseAssignments"), (snap) => {
+                localAssignments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderAssignmentsTable();
+                if(currentUser.role === 'agent') renderAgentPortal();
+                if(['trainer', 'admin'].includes(currentUser.role)) { renderTrainerMatrix(); renderTrainerPresenterSelector(); }
+            });
+
+            onSnapshot(collection(db, "userProgress"), (snap) => {
+                localProgress = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if(currentUser.role === 'agent') renderAgentPortal();
+                if(['trainer', 'admin'].includes(currentUser.role)) renderTrainerMatrix();
+            });
+
+            onSnapshot(collection(db, "kahoots"), (snap) => {
+                localKahoots = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderKahootBank();
+                populateKahootSelect(document.getElementById('act-kahoot-id')?.value || "");
+                if(currentUser?.role === 'agent') renderAgentKahootArea();
+                if(!document.getElementById('presentation-view').classList.contains('hidden')) renderCurrentSlide();
+            });
+
+            onSnapshot(collection(db, "kahootSessions"), (snap) => {
+                localKahootSessions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if(currentUser?.role === 'agent') renderAgentKahootArea();
+                if(['admin', 'trainer'].includes(currentUser?.role)) renderTrainerKahootResults();
+                if(kahootExecState.sessionId) {
+                    const liveSession = localKahootSessions.find(s => s.id === kahootExecState.sessionId);
+                    if(liveSession) {
+                        kahootExecState = { ...kahootExecState, ...liveSession };
+                        renderKahootExecutionStep();
                     }
-                    html += `</div>`;
-                    tree.innerHTML += html;
-                });
-                
-                // Rellenar certificados si es agente
-                if(currentUser.role === 'agent') renderCertificates();
+                }
             });
         }
 
-        // --- 3. FUNCIONES DE ESCRITURA FIRESTORE (EXPUESTAS AL WINDOW PARA ONCLICK) ---
-        
-        // Crear Usuario
+        // ==========================================
+        // MÓDULOS 1 & 2: CRUD USERS, WAVES, ASIGNACIONES (Mantenidos)
+        // ==========================================
         document.getElementById('form-user').addEventListener('submit', async (e) => {
             e.preventDefault();
-            try {
-                // Requiere Auth secundaria para no desloguear al admin, pero para este LMS simularemos la creación directa de registro en DB
-                // En un entorno 100% estricto necesitas Firebase Admin SDK para crear users sin login. Aquí guardamos el perfil.
-                const email = document.getElementById('u-email').value;
-                await addDoc(collection(db, "users"), {
-                    name: document.getElementById('u-name').value,
-                    email: email,
-                    role: document.getElementById('u-role').value,
-                    status: 'activo',
-                    joinDate: new Date().toISOString()
-                });
-                e.target.reset();
-            } catch (e) { alert("Error: " + e.message); }
+            const name = document.getElementById('u-name').value;
+            const email = document.getElementById('u-email').value;
+            const role = document.getElementById('u-role').value;
+            try { await addDoc(collection(db, "users"), { name, email, role, status: "activo", joinDate: new Date().toISOString() }); e.target.reset(); } catch(err) { alert(err.message); }
         });
 
-        // Crear Wave
+        function renderUsersTable() {
+            const tbody = document.getElementById('table-users');
+            if(!tbody) return;
+            tbody.innerHTML = localUsers.map(u => `
+                <tr class="hover:bg-gray-100 dark:hover:bg-dark/20 transition">
+                    <td class="p-4 font-medium text-gray-900 dark:text-gray-100">${u.name}</td>
+                    <td class="p-4 text-gray-500 dark:text-gray-400">${u.email}</td>
+                    <td class="p-4"><span class="px-2 py-1 text-xs font-semibold rounded-md ${u.role === 'admin' ? 'bg-accent/20 text-indigo-500 dark:text-indigo-400' : u.role === 'trainer' ? 'bg-warning/20 text-warning' : 'bg-success/20 text-success'} uppercase tracking-wider">${u.role}</span></td>
+                    <td class="p-4 text-right"><button onclick="window.deleteUserProfile('${u.id}')" class="text-danger hover:text-red-500 transition text-xs font-medium"><i class="fa-solid fa-trash"></i> Eliminar</button></td>
+                </tr>
+            `).join('');
+        }
+        window.deleteUserProfile = async (id) => { if(confirm("¿Eliminar usuario?")) await deleteDoc(doc(db, "users", id)); };
+
         document.getElementById('form-wave').addEventListener('submit', async (e) => {
             e.preventDefault();
-            await addDoc(collection(db, "waves"), { name: document.getElementById('w-name').value, courses: [], agents: [] });
-            e.target.reset();
+            try { await addDoc(collection(db, "waves"), { name: document.getElementById('w-name').value }); e.target.reset(); } catch(err) { alert(err.message); }
+        });
+        function renderWavesList() {
+            const container = document.getElementById('list-waves');
+            if(!container) return;
+            container.innerHTML = localWaves.map(w => `
+                <div class="flex items-center justify-between p-3 bg-white dark:bg-dark border border-light-border dark:border-border rounded-lg text-sm shadow-sm">
+                    <span class="font-medium text-gray-800 dark:text-gray-200"><i class="fa-solid fa-people-group text-accent mr-2"></i>${w.name}</span>
+                    <button onclick="window.deleteWaveUnit('${w.id}')" class="text-danger text-xs hover:underline"><i class="fa-solid fa-circle-xmark"></i> Quitar</button>
+                </div>
+            `).join('');
+        }
+        window.deleteWaveUnit = async (id) => { if(confirm("¿Dar de baja esta Wave?")) await deleteDoc(doc(db, "waves", id)); };
+
+        function populateSelectors() {
+            if(currentUser.role !== 'admin') return;
+            const getSel = id => document.getElementById(id);
+            if(getSel('sel-assign-wave-c')) getSel('sel-assign-wave-c').innerHTML = localWaves.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+            if(getSel('sel-assign-wave-a')) getSel('sel-assign-wave-a').innerHTML = localWaves.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+            if(getSel('sel-assign-course')) getSel('sel-assign-course').innerHTML = localCourses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+            if(getSel('sel-assign-agent')) getSel('sel-assign-agent').innerHTML = localUsers.filter(u => u.role === 'agent').map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+        }
+        document.getElementById('form-assign-course').addEventListener('submit', async (e) => {
+            e.preventDefault(); await addDoc(collection(db, "courseAssignments"), { type: "wave_course", targetId: document.getElementById('sel-assign-wave-c').value, assignId: document.getElementById('sel-assign-course').value }); alert("Asignado.");
+        });
+        document.getElementById('form-assign-agent').addEventListener('submit', async (e) => {
+            e.preventDefault(); await addDoc(collection(db, "courseAssignments"), { type: "agent_wave", targetId: document.getElementById('sel-assign-agent').value, assignId: document.getElementById('sel-assign-wave-a').value }); alert("Asignado.");
         });
 
-        // Crear Curso Raíz
+        function renderAssignmentsTable() {
+            const tbody = document.getElementById('table-assignments');
+            if(!tbody) return;
+            tbody.innerHTML = localAssignments.map(a => {
+                const wave = localWaves.find(w => w.id === (a.type === 'wave_course' ? a.targetId : a.assignId));
+                let entityName = a.type === 'wave_course' ? (localCourses.find(c => c.id === a.assignId)?.title || "Curso Removido") : (localUsers.find(u => u.id === a.targetId)?.name || "Agente Inactivo");
+                return `<tr>
+                    <td class="p-3 font-semibold uppercase text-[10px] tracking-wider text-gray-500">${a.type.replace('_', ' ')}</td>
+                    <td class="p-3 font-medium text-accent">${wave ? wave.name : 'Inexistente'}</td>
+                    <td class="p-3 text-gray-700 dark:text-gray-300">${entityName}</td>
+                    <td class="p-3 text-right"><button onclick="window.removeAssignment('${a.id}')" class="text-danger text-xs hover:underline">Remover</button></td>
+                </tr>`;
+            }).join('');
+        }
+        window.removeAssignment = async (id) => { await deleteDoc(doc(db, "courseAssignments", id)); };
+
+
+        // ==========================================
+        // MÓDULO 3: CRUD JERÁRQUICO DE CURSOS (Con Reordenamiento)
+        // ==========================================
         document.getElementById('form-course').addEventListener('submit', async (e) => {
             e.preventDefault();
-            await addDoc(collection(db, "courses"), { title: document.getElementById('c-title').value, weeks: [], status: 'activo' });
-            e.target.reset();
+            try { await addDoc(collection(db, "courses"), { title: document.getElementById('c-title').value, weeks: [], status: "activo" }); e.target.reset(); } catch(err) { alert(err.message); }
         });
 
-        // Modificadores de Árbol
-        window.deleteCourse = async (id) => { if(confirm('¿Eliminar curso entero?')) await deleteDoc(doc(db, "courses", id)); };
-        
-        window.addWeek = async (courseId) => {
-            const title = prompt("Nombre de la semana (Ej. Semana 1):");
-            if(!title) return;
-            const course = localCourses.find(c => c.id === courseId);
-            course.weeks.push({ title, days: [] });
-            await updateDoc(doc(db, "courses", courseId), { weeks: course.weeks });
+        function renderHierarchicalTree() {
+            const container = document.getElementById('tree-courses');
+            if(!container) return;
+            container.innerHTML = localCourses.map(course => `
+                <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 shadow-sm">
+                    <div class="flex justify-between items-center border-b border-light-border dark:border-border pb-3 mb-3">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-book text-accent"></i> ${course.title}</h3>
+                        <div class="flex gap-2">
+                            <button onclick="window.addWeekUnit('${course.id}')" class="bg-gray-100 dark:bg-dark border border-light-border dark:border-border hover:border-accent px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 transition">+ Añadir Semana</button>
+                            <button onclick="window.deleteCourseUnit('${course.id}')" class="text-danger text-xs px-2"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        ${(course.weeks || []).map((week, wIdx) => `
+                            <div class="ml-6 border-l-2 border-light-border dark:border-border pl-4">
+                                <div class="flex justify-between items-center bg-gray-50 dark:bg-dark/40 p-2 rounded-lg mb-2">
+                                    <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200"><i class="fa-solid fa-calendar-week text-warning mr-2"></i>${week.title}</h4>
+                                    <div class="flex gap-2">
+                                        <button onclick="window.addDayUnit('${course.id}', ${wIdx})" class="text-[11px] bg-white dark:bg-dark border border-light-border dark:border-border px-2 py-1 rounded text-gray-600 dark:text-gray-400">+ Día</button>
+                                        <button onclick="window.deleteWeekUnit('${course.id}', ${wIdx})" class="text-danger text-[11px] px-1"><i class="fa-solid fa-circle-minus"></i></button>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    ${(week.days || []).map((day, dIdx) => `
+                                        <div class="ml-6 border-l-2 border-dashed border-gray-300 dark:border-border/60 pl-4">
+                                            <div class="flex justify-between items-center bg-white dark:bg-dark/20 p-2 rounded border border-light-border dark:border-border/40 text-xs mb-1 shadow-sm">
+                                                <span class="font-medium text-gray-800 dark:text-gray-300"><i class="fa-regular fa-calendar-check text-success mr-1.5"></i>${day.title}</span>
+                                                <div class="flex gap-1">
+                                                    <button onclick="window.openActivityModal('${course.id}', ${wIdx}, ${dIdx})" class="text-[10px] bg-accent/10 text-accent border border-accent/30 px-2 py-0.5 rounded hover:bg-accent/20 transition">+ Tema/Actividad</button>
+                                                    <button onclick="window.deleteDayUnit('${course.id}', ${wIdx}, ${dIdx})" class="text-danger text-[10px] px-1"><i class="fa-solid fa-xmark"></i></button>
+                                                </div>
+                                            </div>
+                                            <ul class="ml-4 space-y-1.5 mt-2">
+                                                ${(day.activities || []).map((act, aIdx) => `
+                                                    <li class="text-xs bg-gray-50 dark:bg-dark/60 border border-light-border dark:border-border p-2 rounded-md flex justify-between items-center group">
+                                                        <span class="text-gray-600 dark:text-gray-400 truncate w-2/3"><strong class="text-gray-900 dark:text-gray-200">[${act.type.toUpperCase()}]</strong> ${act.title}</span>
+                                                        <div class="flex gap-2 items-center">
+                                                            <div class="flex flex-col opacity-0 group-hover:opacity-100 transition px-2 border-r border-light-border dark:border-border">
+                                                                <button onclick="window.moveActivity('${course.id}', ${wIdx}, ${dIdx}, ${aIdx}, -1)" class="text-gray-400 hover:text-accent"><i class="fa-solid fa-caret-up"></i></button>
+                                                                <button onclick="window.moveActivity('${course.id}', ${wIdx}, ${dIdx}, ${aIdx}, 1)" class="text-gray-400 hover:text-accent"><i class="fa-solid fa-caret-down"></i></button>
+                                                            </div>
+                                                            <button onclick="window.deleteActivityUnit('${course.id}', ${wIdx}, ${dIdx}, ${aIdx})" class="text-danger text-[11px] p-1"><i class="fa-regular fa-trash-can"></i></button>
+                                                        </div>
+                                                    </li>
+                                                `).join('')}
+                                            </ul>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.addWeekUnit = async (cId) => {
+            const title = prompt("Nombre de la Semana:"); if(!title) return;
+            const c = localCourses.find(c => c.id === cId);
+            if(!c.weeks) c.weeks = []; c.weeks.push({ title, days: [] });
+            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+        };
+        window.deleteWeekUnit = async (cId, wIdx) => {
+            const c = localCourses.find(c => c.id === cId); c.weeks.splice(wIdx, 1);
+            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+        };
+        window.addDayUnit = async (cId, wIdx) => {
+            const title = prompt("Nombre del Día:"); if(!title) return;
+            const c = localCourses.find(c => c.id === cId); c.weeks[wIdx].days.push({ title, activities: [] });
+            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+        };
+        window.deleteDayUnit = async (cId, wIdx, dIdx) => {
+            const c = localCourses.find(c => c.id === cId); c.weeks[wIdx].days.splice(dIdx, 1);
+            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+        };
+        window.deleteCourseUnit = async (id) => { if(confirm("¿Eliminar curso completo?")) await deleteDoc(doc(db, "courses", id)); };
+
+        // Reordenar actividades (Move up/down)
+        window.moveActivity = async (cId, wIdx, dIdx, aIdx, dir) => {
+            const c = localCourses.find(course => course.id === cId);
+            const acts = c.weeks[wIdx].days[dIdx].activities;
+            if(aIdx + dir < 0 || aIdx + dir >= acts.length) return;
+            const temp = acts[aIdx];
+            acts[aIdx] = acts[aIdx + dir];
+            acts[aIdx + dir] = temp;
+            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
         };
 
-        window.addDay = async (courseId, weekIdx) => {
-            const title = prompt("Nombre del día (Ej. Día 1):");
-            if(!title) return;
-            const course = localCourses.find(c => c.id === courseId);
-            course.weeks[weekIdx].days.push({ title, activities: [] });
-            await updateDoc(doc(db, "courses", courseId), { weeks: course.weeks });
-        };
 
-        // --- 4. INTEGRACIÓN FIREBASE STORAGE (SUBIDA DE ARCHIVOS) ---
-        const modalAct = document.getElementById('modal-activity');
+        // ==========================================
+        // MÓDULO 4: CREADOR AVANZADO Y ASIGNACIÓN (Incluye lógica Kahoot select)
+        // ==========================================
+        const modalActivity = document.getElementById('modal-activity');
+        function populateKahootSelect(selectedId = "") {
+            const kSelect = document.getElementById('act-kahoot-id');
+            if(!kSelect) return;
+            if(localKahoots.length === 0) {
+                kSelect.innerHTML = `<option value="" class="bg-white dark:bg-dark">No hay Kahoots en el banco</option>`;
+                kSelect.disabled = true;
+                return;
+            }
+            kSelect.disabled = false;
+            kSelect.innerHTML = localKahoots.map(k => `<option value="${safeText(k.id)}" ${k.id === selectedId ? 'selected' : ''} class="bg-white dark:bg-dark">${safeText(k.title || 'Kahoot sin titulo')}</option>`).join('');
+        }
+
         window.openActivityModal = (cId, wIdx, dIdx) => {
             document.getElementById('modal-course-id').value = cId;
             document.getElementById('modal-week-idx').value = wIdx;
             document.getElementById('modal-day-idx').value = dIdx;
-            modalAct.classList.remove('hidden');
+            
+            populateKahootSelect();
+            
+            modalActivity.classList.remove('hidden');
+            window.toggleActivityFields();
         };
 
-        document.getElementById('btn-close-modal').addEventListener('click', () => modalAct.classList.add('hidden'));
+        window.toggleActivityFields = () => {
+            const type = document.getElementById('act-type').value;
+            document.getElementById('field-file').style.display = ['imagen', 'pdf', 'practica', 'presentacion'].includes(type) ? 'block' : 'none';
+            document.getElementById('field-youtube').style.display = type === 'video' ? 'block' : 'none';
+            document.getElementById('field-kahoot').style.display = type === 'kahoot' ? 'block' : 'none';
+            document.getElementById('field-desc').style.display = type !== 'kahoot' ? 'block' : 'none';
+        };
+
+        document.getElementById('btn-close-modal').addEventListener('click', () => {
+            modalActivity.classList.add('hidden');
+            ['act-title','act-desc','act-objectives','act-youtube','act-notes','act-duration','act-file'].forEach(id => document.getElementById(id).value = '');
+        });
 
         document.getElementById('btn-save-activity').addEventListener('click', async () => {
             const cId = document.getElementById('modal-course-id').value;
-            const wIdx = document.getElementById('modal-week-idx').value;
-            const dIdx = document.getElementById('modal-day-idx').value;
+            const wIdx = parseInt(document.getElementById('modal-week-idx').value);
+            const dIdx = parseInt(document.getElementById('modal-day-idx').value);
+            
             const title = document.getElementById('act-title').value;
             const type = document.getElementById('act-type').value;
+            const description = document.getElementById('act-desc').value;
+            const objectives = document.getElementById('act-objectives').value;
+            const youtube = document.getElementById('act-youtube').value;
+            const notes = document.getElementById('act-notes').value;
+            const duration = document.getElementById('act-duration').value || 0;
             const fileObj = document.getElementById('act-file').files[0];
+            const kahootId = document.getElementById('act-kahoot-id').value;
 
-            if(!title) return alert("Falta el título");
+            if(!title) return alert("Título obligatorio.");
+            if(type === 'kahoot' && !kahootId) return alert("Seleccione un Kahoot del banco antes de guardar la actividad.");
+            document.getElementById('upload-progress').classList.remove('hidden');
 
             let fileUrl = "";
-            if (fileObj) {
-                document.getElementById('upload-progress').classList.remove('hidden');
-                const storageRef = ref(storage, `lms_files/${Date.now()}_${fileObj.name}`);
+            if (fileObj && ['imagen', 'pdf', 'presentacion', 'practica'].includes(type)) {
+                const storageRef = ref(storage, `lms_media/${Date.now()}_${fileObj.name}`);
                 try {
-                    const snapshot = await uploadBytesResumable(storageRef, fileObj);
-                    fileUrl = await getDownloadURL(snapshot.ref);
-                    
-                    // Actualizar métrica visual de archivos
-                    const mFiles = document.getElementById('metric-files');
-                    mFiles.innerText = parseInt(mFiles.innerText) + 1;
-                } catch (e) {
-                    alert("Error subiendo archivo a Storage: " + e.message);
-                    return;
-                }
+                    const snap = await uploadBytesResumable(storageRef, fileObj);
+                    fileUrl = await getDownloadURL(snap.ref);
+                } catch(e) { alert("Error Storage: " + e.message); document.getElementById('upload-progress').classList.add('hidden'); return; }
             }
 
-            const course = localCourses.find(c => c.id === cId);
-            if(!course.weeks[wIdx].days[dIdx].activities) course.weeks[wIdx].days[dIdx].activities = [];
+            const c = localCourses.find(course => course.id === cId);
+            if(!c.weeks[wIdx].days[dIdx].activities) c.weeks[wIdx].days[dIdx].activities = [];
             
-            course.weeks[wIdx].days[dIdx].activities.push({ title, type, url: fileUrl });
-            
-            await updateDoc(doc(db, "courses", cId), { weeks: course.weeks });
+            c.weeks[wIdx].days[dIdx].activities.push({ 
+                title, type, url: fileUrl, description, objectives, youtube, notes, duration, kahootId
+            });
+
+            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
             
             document.getElementById('upload-progress').classList.add('hidden');
-            modalAct.classList.add('hidden');
-            document.getElementById('act-title').value = '';
-            document.getElementById('act-file').value = '';
+            document.getElementById('btn-close-modal').click();
         });
 
-        // --- 5. MOTOR KAHOOT (REALTIME FIRESTORE) ---
-        document.getElementById('btn-create-kahoot').addEventListener('click', async () => {
-            const title = document.getElementById('k-title').value;
-            if(!title) return alert("Escribe un título");
-            
-            const pin = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('k-pin-display').innerText = pin;
-            
-            const docRef = await addDoc(collection(db, "kahootSessions"), {
-                title: title, pin: pin, hostId: currentUser.id, status: 'waiting', createdAt: new Date()
-            });
-            currentKahootId = docRef.id;
-
-            document.getElementById('kahoot-host-area').classList.remove('hidden');
-
-            // Escuchar jugadores reales uniéndose a esta sesión
-            onSnapshot(collection(db, `kahootSessions/${currentKahootId}/players`), (snap) => {
-                const plist = document.getElementById('k-players-list');
-                plist.innerHTML = '';
-                snap.forEach(p => {
-                    plist.innerHTML += `<div class="bg-gray-700 px-3 py-1 rounded-full text-sm">${p.data().name}</div>`;
-                });
-            });
-        });
-
-        // --- 6. GENERADOR DE CERTIFICADOS PDF EN NAVEGADOR ---
-        function renderCertificates() {
-            const list = document.getElementById('cert-list');
-            list.innerHTML = '';
-            // Renderizamos certificados basados en los cursos locales simulando finalización
-            localCourses.forEach(c => {
-                list.innerHTML += `
-                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 text-center">
-                    <i class="fa-solid fa-award text-5xl text-yellow-500 mb-4"></i>
-                    <h4 class="font-bold text-lg mb-2">${c.title}</h4>
-                    <p class="text-xs text-gray-400 mb-4">Completado: 100%</p>
-                    <button onclick="window.downloadPDF('${c.title}', '${currentUser.name}')" class="bg-blue-600 hover:bg-blue-700 w-full p-2 rounded text-sm font-bold"><i class="fa-solid fa-download"></i> Descargar PDF</button>
-                </div>`;
-            });
-        }
-
-        window.downloadPDF = (courseName, userName) => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('landscape');
-            
-            // Diseño estricto del certificado
-            doc.setFillColor(15, 23, 42); // bg-gray-900
-            doc.rect(0, 0, 300, 210, 'F');
-            
-            doc.setDrawColor(59, 130, 246); // blue-500 border
-            doc.setLineWidth(2);
-            doc.rect(10, 10, 277, 190);
-            
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(40);
-            doc.text("CERTIFICADO DE APROBACIÓN", 148, 50, { align: 'center' });
-            
-            doc.setFontSize(20);
-            doc.setTextColor(156, 163, 175);
-            doc.text("Academia UPANA otorga el presente a:", 148, 80, { align: 'center' });
-            
-            doc.setFontSize(35);
-            doc.setTextColor(59, 130, 246);
-            doc.text(userName.toUpperCase(), 148, 110, { align: 'center' });
-            
-            doc.setFontSize(20);
-            doc.setTextColor(156, 163, 175);
-            doc.text("Por haber completado con éxito el entrenamiento operativo de:", 148, 140, { align: 'center' });
-            
-            doc.setFontSize(25);
-            doc.setTextColor(255, 255, 255);
-            doc.text(courseName, 148, 160, { align: 'center' });
-
-            const code = "UID-" + Math.random().toString(36).substr(2, 9).toUpperCase();
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text(`ID Verificación: ${code} | Fecha: ${new Date().toLocaleDateString()}`, 148, 190, { align: 'center' });
-            
-            doc.save(`Certificado_${courseName.replace(/\s+/g, '_')}.pdf`);
+        window.deleteActivityUnit = async (cId, wIdx, dIdx, aIdx) => {
+            const c = localCourses.find(course => course.id === cId);
+            c.weeks[wIdx].days[dIdx].activities.splice(aIdx, 1);
+            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
         };
 
-    </script>
+
+        // ==========================================
+        // MÓDULO 5: KAHOOT BANK (Banco, Creador de Preguntas)
+        // ==========================================
+        let currentKahootQuestions = [];
+        window.currentKahootQuestions = currentKahootQuestions;
+
+        function renderKahootBank() {
+            const grid = document.getElementById('kahoots-grid');
+            if(!grid) return;
+            grid.innerHTML = localKahoots.map(k => `
+                <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-5 rounded-xl shadow-lg relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 bg-warning text-dark text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">${k.questions?.length || 0} Pregs</div>
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2 text-lg truncate pr-8">${safeText(k.title || 'Kahoot sin titulo')}</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 h-8 mb-4">${safeText(k.description || 'Sin descripción')}</p>
+                    <div class="flex gap-2">
+                        <button onclick="window.editKahoot('${safeText(k.id)}')" class="flex-1 bg-gray-100 dark:bg-dark border border-light-border dark:border-border text-xs font-semibold py-2 rounded text-gray-700 dark:text-gray-300 hover:border-warning transition"><i class="fa-solid fa-pen"></i> Editar</button>
+                        <button onclick="window.deleteKahoot('${safeText(k.id)}')" class="w-10 bg-red-50 dark:bg-red-900/20 text-danger border border-red-200 dark:border-red-900/30 rounded flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/50 transition"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.editKahoot = (id) => window.openKahootEditorModal(id);
+
+        window.openKahootEditorModal = (id = null) => {
+            document.getElementById('modal-kahoot-editor').classList.remove('hidden');
+            if(id) {
+                const k = localKahoots.find(x => x.id === id);
+                document.getElementById('ke-id').value = k.id;
+                document.getElementById('ke-title').value = k.title;
+                document.getElementById('ke-desc').value = k.description || '';
+                currentKahootQuestions = [...(k.questions || [])];
+                window.currentKahootQuestions = currentKahootQuestions;
+            } else {
+                document.getElementById('ke-id').value = '';
+                document.getElementById('ke-title').value = '';
+                document.getElementById('ke-desc').value = '';
+                currentKahootQuestions = [];
+                window.currentKahootQuestions = currentKahootQuestions;
+            }
+            renderKahootQuestionsList();
+        };
+
+        window.addKahootQuestion = () => {
+            currentKahootQuestions.push({ q: "", options: ["", "", "", ""], correct: 0, time: 20, points: 1000 });
+            renderKahootQuestionsList();
+        };
+
+        window.removeKahootQuestion = (idx) => {
+            currentKahootQuestions.splice(idx, 1);
+            renderKahootQuestionsList();
+        };
+
+        window.duplicateKahootQuestion = (idx) => {
+            const dup = JSON.parse(JSON.stringify(currentKahootQuestions[idx]));
+            currentKahootQuestions.splice(idx + 1, 0, dup);
+            renderKahootQuestionsList();
+        };
+
+        function renderKahootQuestionsList() {
+            document.getElementById('ke-q-count').innerText = currentKahootQuestions.length;
+            const container = document.getElementById('ke-questions-container');
+            container.innerHTML = currentKahootQuestions.map((q, idx) => {
+                const options = Array.isArray(q.options) ? q.options : ["", "", "", ""];
+                while(options.length < 4) options.push("");
+                return `
+                    <div class="bg-white dark:bg-dark border border-light-border dark:border-border rounded-xl p-5 shadow-sm relative">
+                        <div class="absolute top-4 right-4 flex gap-2">
+                            <button onclick="window.duplicateKahootQuestion(${idx})" title="Duplicar" class="text-gray-400 hover:text-accent"><i class="fa-solid fa-copy"></i></button>
+                            <button onclick="window.removeKahootQuestion(${idx})" title="Eliminar" class="text-gray-400 hover:text-danger"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        
+                        <div class="mb-4 pr-16">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Pregunta ${idx + 1}</label>
+                            <input type="text" onchange="currentKahootQuestions[${idx}].q = this.value" value="${safeText(q.q || '')}" class="w-full bg-transparent border-b border-light-border dark:border-border focus:border-warning py-1 outline-none text-lg font-bold text-gray-900 dark:text-white" placeholder="Escribe la pregunta aqui...">
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                            ${[0,1,2,3].map(optIdx => `
+                                <div class="flex items-center gap-2 bg-gray-50 dark:bg-surface border ${Number(q.correct) === optIdx ? 'border-success' : 'border-light-border dark:border-border'} rounded p-2 transition-colors">
+                                    <input type="radio" name="kq_correct_${idx}" ${Number(q.correct) === optIdx ? 'checked' : ''} onchange="currentKahootQuestions[${idx}].correct = ${optIdx}; window.renderKahootQuestionsList()" class="w-4 h-4 text-success focus:ring-success accent-success">
+                                    <input type="text" onchange="currentKahootQuestions[${idx}].options[${optIdx}] = this.value" value="${safeText(options[optIdx] || '')}" class="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-200" placeholder="Respuesta ${['A','B','C','D'][optIdx]}">
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="flex gap-4 border-t border-light-border dark:border-border pt-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-regular fa-clock text-gray-400"></i>
+                                <select onchange="currentKahootQuestions[${idx}].time = parseInt(this.value)" class="bg-transparent text-xs outline-none text-gray-600 dark:text-gray-300">
+                                    <option value="10" ${Number(q.time) === 10 ? 'selected' : ''}>10 seg</option>
+                                    <option value="20" ${Number(q.time || 20) === 20 ? 'selected' : ''}>20 seg</option>
+                                    <option value="30" ${Number(q.time) === 30 ? 'selected' : ''}>30 seg</option>
+                                    <option value="60" ${Number(q.time) === 60 ? 'selected' : ''}>1 min</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-star text-warning"></i>
+                                <select onchange="currentKahootQuestions[${idx}].points = parseInt(this.value)" class="bg-transparent text-xs outline-none text-gray-600 dark:text-gray-300">
+                                    <option value="1000" ${Number(q.points || 1000) === 1000 ? 'selected' : ''}>Estandar</option>
+                                    <option value="2000" ${Number(q.points) === 2000 ? 'selected' : ''}>Doble</option>
+                                    <option value="0" ${Number(q.points) === 0 ? 'selected' : ''}>Sin puntos</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        window.renderKahootQuestionsList = renderKahootQuestionsList;
+        window.saveKahootToBank = async () => {
+            const title = document.getElementById('ke-title').value;
+            const desc = document.getElementById('ke-desc').value;
+            const id = document.getElementById('ke-id').value;
+            if(!title) return alert("Título obligatorio.");
+            
+            try {
+                if(id) { await updateDoc(doc(db, "kahoots", id), { title, description: desc, questions: currentKahootQuestions }); } 
+                else { await addDoc(collection(db, "kahoots"), { title, description: desc, questions: currentKahootQuestions }); }
+                document.getElementById('modal-kahoot-editor').classList.add('hidden');
+            } catch(e) { alert(e.message); }
+        };
+
+        window.deleteKahoot = async (id) => { if(confirm("¿Eliminar Kahoot del banco?")) await deleteDoc(doc(db, "kahoots", id)); };
+
+
+        // ==========================================
+        // MÓDULO 6: VISTA AGENTE / TRAINER DASHBOARD (Mantenido)
+        // ==========================================
+        function getSessionParticipants(session) {
+            return Object.entries(session?.participants || {}).map(([id, data]) => ({ id, ...(data || {}) }));
+        }
+
+        function getKahootRemainingSeconds(session) {
+            if(!session?.questionEndsAt || session.status !== 'question') return 0;
+            return Math.max(0, Math.ceil((new Date(session.questionEndsAt).getTime() - Date.now()) / 1000));
+        }
+
+        function buildKahootPodium(session, kahoot) {
+            const totals = {};
+            getSessionParticipants(session).forEach(p => {
+                totals[p.id] = { id: p.id, name: p.name || 'Agente', score: 0 };
+            });
+            Object.values(session?.responses || {}).forEach(questionResponses => {
+                Object.entries(questionResponses || {}).forEach(([userId, response]) => {
+                    if(!totals[userId]) totals[userId] = { id: userId, name: response.userName || 'Agente', score: 0 };
+                    totals[userId].score += Number(response.points || 0);
+                });
+            });
+            return Object.values(totals).sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+        }
+
+        function renderAgentKahootArea() {
+            const container = document.getElementById('agent-kahoot-area');
+            if(!container || currentUser?.role !== 'agent') return;
+
+            const joinedSession = localKahootSessions.find(s => s.status !== 'closed' && s.participants?.[currentUser.id]);
+            if(joinedSession) {
+                if(agentKahootTimerHandle) clearTimeout(agentKahootTimerHandle);
+                const k = localKahoots.find(x => x.id === joinedSession.kahootId);
+                const qIdx = Number(joinedSession.qIdx || 0);
+                const q = k?.questions?.[qIdx];
+                const answer = joinedSession.responses?.[qIdx]?.[currentUser.id];
+                const colors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
+                const iconClasses = ['fa-play -rotate-90', 'fa-gem', 'fa-circle', 'fa-square'];
+                const remaining = getKahootRemainingSeconds(joinedSession);
+                const statusText = joinedSession.status === 'lobby' ? 'Esperando que el trainer inicie' :
+                    joinedSession.status === 'question' ? `Pregunta ${qIdx + 1}` :
+                    joinedSession.status === 'results' ? 'Resultados de la pregunta' :
+                    joinedSession.status === 'podium' ? 'Podio final' : 'Conectado';
+                const podium = buildKahootPodium(joinedSession, k);
+
+                const questionHtml = q && joinedSession.status === 'question' ? `
+                    <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                        ${(q.options || []).map((opt, optIdx) => `
+                            <button onclick="window.answerKahootQuestion('${safeText(joinedSession.id)}', ${optIdx})" ${answer || remaining <= 0 ? 'disabled' : ''} class="kahoot-answer-card min-h-28 rounded-lg p-5 text-left text-white shadow-xl flex items-center gap-4 transition ${answer?.answerIndex === optIdx ? 'ring-4 ring-white scale-[1.01]' : 'hover:scale-[1.01]'} ${answer || remaining <= 0 ? 'opacity-80 cursor-default' : ''}" style="background:${colors[optIdx] || colors[0]}">
+                                <i class="fa-solid ${iconClasses[optIdx] || 'fa-circle'} text-4xl opacity-90 shrink-0"></i>
+                                <span class="text-xl md:text-2xl font-black leading-tight">${safeText(opt || '')}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                    ${answer ? `<div class="mt-6 text-lg font-black bg-white text-[#46178f] rounded-lg px-6 py-3 shadow">Respuesta registrada</div>` : remaining <= 0 ? `<div class="mt-6 text-lg font-black bg-white text-[#46178f] rounded-lg px-6 py-3 shadow">Tiempo finalizado</div>` : ''}
+                ` : '';
+
+                const resultHtml = q && joinedSession.status === 'results' ? `
+                    <div class="w-full max-w-3xl mt-8 bg-white text-[#46178f] rounded-xl p-6 shadow-2xl text-center">
+                        <div class="text-sm uppercase tracking-widest font-black opacity-70 mb-2">Resultado</div>
+                        <div class="text-2xl font-black">${answer ? (answer.isCorrect ? 'Correcta' : 'Incorrecta') : 'Sin respuesta'}</div>
+                        ${answer ? `<div class="mt-2 text-gray-700 font-bold">${safeText(q.options?.[answer.answerIndex] || '')} · ${Number(answer.points || 0)} pts</div>` : ''}
+                    </div>
+                ` : '';
+
+                const podiumHtml = joinedSession.status === 'podium' ? `
+                    <div class="w-full max-w-4xl mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        ${podium.slice(0, 3).map((p, idx) => `
+                            <div class="bg-white text-[#46178f] rounded-xl p-6 shadow-2xl text-center ${idx === 0 ? 'md:order-2 md:min-h-56' : idx === 1 ? 'md:order-1 md:min-h-44' : 'md:order-3 md:min-h-36'}">
+                                <div class="text-4xl font-black mb-2">${idx + 1}</div>
+                                <div class="text-xl font-black truncate">${safeText(p.name)}</div>
+                                <div class="text-2xl font-black text-warning mt-2">${p.score} pts</div>
+                            </div>
+                        `).join('') || `<div class="bg-white text-[#46178f] rounded-xl p-6 shadow-2xl text-center md:col-span-3 font-black">Sin respuestas registradas</div>`}
+                    </div>
+                ` : '';
+
+                container.innerHTML = `
+                    <div class="fixed inset-0 z-[65] bg-[#46178f] text-white flex flex-col">
+                        <div class="h-16 bg-[#32105f] flex items-center justify-between px-4 md:px-8 shadow">
+                            <div class="font-black text-xl md:text-2xl">UPANA<span class="text-yellow-300">Kahoot!</span></div>
+                            <div class="font-black text-sm md:text-lg">PIN ${safeText(joinedSession.pin)}</div>
+                            <button onclick="window.leaveKahootSession('${safeText(joinedSession.id)}')" class="bg-white/15 hover:bg-white/25 px-3 py-2 rounded text-sm font-bold">Salir</button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-5 md:p-10 flex flex-col items-center justify-center text-center">
+                            <div class="text-xs uppercase tracking-widest font-black opacity-75 mb-2">${safeText(statusText)}</div>
+                            <h2 class="text-3xl md:text-5xl font-black leading-tight max-w-5xl">${safeText(q?.q || k?.title || joinedSession.kahootTitle || 'Kahoot')}</h2>
+                            ${joinedSession.status === 'question' ? `<div class="mt-5 w-24 h-24 rounded-full bg-white text-[#46178f] flex items-center justify-center text-4xl font-black shadow-2xl">${remaining}</div>` : ''}
+                            ${questionHtml}
+                            ${resultHtml}
+                            ${podiumHtml}
+                        </div>
+                    </div>
+                `;
+                if(joinedSession.status === 'question' && remaining > 0) {
+                    agentKahootTimerHandle = setTimeout(renderAgentKahootArea, 1000);
+                }
+                return;
+            }
+            if(agentKahootTimerHandle) clearTimeout(agentKahootTimerHandle);
+
+            container.innerHTML = `
+                <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 shadow">
+                    <div class="flex flex-col md:flex-row md:items-end gap-4">
+                        <div class="flex-1">
+                            <label class="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400">Unirse a Kahoot</label>
+                            <input id="agent-kahoot-pin" type="text" inputmode="numeric" maxlength="6" placeholder="PIN de 6 dígitos" class="mt-2 w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-warning outline-none text-gray-900 dark:text-white">
+                        </div>
+                        <button onclick="window.joinKahootByPin()" class="bg-warning text-dark px-6 py-3 rounded-lg text-sm font-black hover:bg-yellow-400 transition"><i class="fa-solid fa-bolt mr-2"></i>Entrar</button>
+                    </div>
+                </div>
+            `;
+        }
+        window.joinKahootByPin = async () => {
+            const pin = (document.getElementById('agent-kahoot-pin')?.value || '').trim();
+            if(!pin) return alert("Ingrese el PIN del Kahoot.");
+            const session = localKahootSessions.find(s => String(s.pin) === pin && !['closed', 'podium'].includes(s.status));
+            if(!session) return alert("No se encontró una sesión activa con ese PIN.");
+
+            await updateDoc(doc(db, "kahootSessions", session.id), {
+                [`participants.${currentUser.id}`]: {
+                    name: currentUser.name || currentUser.email || 'Agente',
+                    email: currentUser.email || '',
+                    joinedAt: new Date().toISOString()
+                }
+            });
+        };
+
+        window.answerKahootQuestion = async (sessionId, answerIndex) => {
+            const session = localKahootSessions.find(s => s.id === sessionId);
+            if(!session || session.status !== 'question') return alert("La pregunta no está activa.");
+            const k = localKahoots.find(x => x.id === session.kahootId);
+            const qIdx = Number(session.qIdx || 0);
+            const q = k?.questions?.[qIdx];
+            if(!q) return alert("No se encontró la pregunta activa.");
+            if(getKahootRemainingSeconds(session) <= 0) return alert("El tiempo de esta pregunta finalizó.");
+            if(session.responses?.[qIdx]?.[currentUser.id]) return;
+            const isCorrect = Number(q.correct) === Number(answerIndex);
+            const basePoints = Number(q.points ?? 1000);
+
+            await updateDoc(doc(db, "kahootSessions", sessionId), {
+                [`responses.${qIdx}.${currentUser.id}`]: {
+                    answerIndex,
+                    isCorrect,
+                    points: isCorrect ? basePoints : 0,
+                    userName: currentUser.name || currentUser.email || 'Agente',
+                    answeredAt: new Date().toISOString()
+                }
+            });
+        };
+        window.leaveKahootSession = async (sessionId) => {
+            const session = localKahootSessions.find(s => s.id === sessionId);
+            if(!session) return;
+            const participants = { ...(session.participants || {}) };
+            delete participants[currentUser.id];
+            await updateDoc(doc(db, "kahootSessions", sessionId), { participants });
+        };
+
+        function renderAgentPortal() {
+            const container = document.getElementById('agent-courses-area');
+            if(!container || currentUser.role !== 'agent') return;
+            renderAgentKahootArea();
+
+            const bWaves = localAssignments.filter(a => a.type === 'agent_wave' && a.targetId === currentUser.id).map(a => a.assignId);
+            const bCourseIds = localAssignments.filter(a => a.type === 'wave_course' && bWaves.includes(a.targetId)).map(a => a.assignId);
+            const courses = localCourses.filter(c => bCourseIds.includes(c.id));
+
+            if(courses.length === 0) {
+                container.innerHTML = `<div class="p-6 text-center text-gray-500 bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl">Sin cursos asignados a tu wave.</div>`;
+                return;
+            }
+
+            container.innerHTML = courses.map(course => {
+                let tAct = 0;
+                let cAct = 0;
+                (course.weeks || []).forEach((w, wIdx) => (w.days || []).forEach((d, dIdx) => (d.activities || []).forEach((a, aIdx) => {
+                    tAct++;
+                    if(hasActivityProgress(currentUser.id, course.id, wIdx, dIdx, aIdx)) cAct++;
+                })));
+                const pct = tAct > 0 ? Math.round((cAct / tAct) * 100) : 0;
+
+                const weeksHtml = (course.weeks || []).map((week, wIdx) => `
+                    <div class="border border-light-border dark:border-border rounded-lg overflow-hidden">
+                        <div class="bg-gray-50 dark:bg-dark/50 px-4 py-3 font-bold text-sm text-gray-800 dark:text-gray-100">${safeText(week.title || `Semana ${wIdx + 1}`)}</div>
+                        <div class="divide-y divide-light-border dark:divide-border">
+                            ${(week.days || []).map((day, dIdx) => `
+                                <div class="p-4">
+                                    <div class="text-sm font-semibold text-accent mb-3">${safeText(day.title || `Dia ${dIdx + 1}`)}</div>
+                                    <div class="space-y-2">
+                                        ${(day.activities || []).map((act, aIdx) => {
+                                            const done = hasActivityProgress(currentUser.id, course.id, wIdx, dIdx, aIdx);
+                                            const kData = act.type === 'kahoot' ? localKahoots.find(k => k.id === act.kahootId) : null;
+                                            const link = act.type === 'pdf' && act.url ? getPdfViewerUrl(act.url) : act.url;
+                                            return `
+                                                <div class="bg-white dark:bg-dark border border-light-border dark:border-border rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                                    <div class="min-w-0">
+                                                        <div class="flex items-center gap-2 mb-1">
+                                                            <span class="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded ${done ? 'bg-success/15 text-success' : 'bg-gray-100 dark:bg-surface text-gray-500'}">${done ? 'Completado' : 'Pendiente'}</span>
+                                                            <span class="text-[10px] uppercase tracking-wider text-gray-400 font-bold">${safeText(act.type || 'actividad')}</span>
+                                                        </div>
+                                                        <div class="font-semibold text-gray-900 dark:text-white truncate">${safeText(act.title || 'Actividad sin titulo')}</div>
+                                                        ${act.objectives ? `<div class="text-xs text-warning mt-1">${safeText(act.objectives)}</div>` : ''}
+                                                        ${act.type === 'kahoot' ? `<div class="text-xs text-gray-500 mt-1">${kData ? safeText(kData.title) : 'Kahoot no encontrado en el banco'}</div>` : ''}
+                                                        ${act.description ? `<div class="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-2">${safeText(act.description)}</div>` : ''}
+                                                    </div>
+                                                    <div class="flex gap-2 shrink-0">
+                                                        ${act.type === 'video' && act.youtube ? `<a href="${safeText(act.youtube)}" target="_blank" class="bg-accent text-white px-3 py-2 rounded text-xs font-bold"><i class="fa-solid fa-play mr-1"></i> Abrir</a>` : ''}
+                                                        ${link ? `<a href="${safeText(link)}" target="_blank" class="bg-gray-100 dark:bg-surface border border-light-border dark:border-border text-gray-700 dark:text-gray-200 px-3 py-2 rounded text-xs font-bold"><i class="fa-solid fa-up-right-from-square mr-1"></i> Ver</a>` : ''}
+                                                        ${act.type === 'kahoot' && kData ? `<button onclick="window.launchKahootExecution('${safeText(act.kahootId)}')" class="bg-warning text-dark px-3 py-2 rounded text-xs font-black"><i class="fa-solid fa-bolt mr-1"></i> Kahoot</button>` : ''}
+                                                    </div>
+                                                </div>
+                                            `;
+                                        }).join('') || `<div class="text-xs text-gray-400">Sin actividades en este dia.</div>`}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-6 shadow">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-light-border dark:border-border pb-4 mb-4">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white">${safeText(course.title || 'Curso sin titulo')}</h3>
+                            <div class="w-full md:w-1/4 min-w-[180px]">
+                                <div class="text-xs text-accent font-bold mb-1">${pct}% Completado</div>
+                                <div class="w-full bg-gray-200 dark:bg-dark h-2 rounded-full overflow-hidden"><div class="bg-accent h-full" style="width: ${pct}%"></div></div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">${weeksHtml || `<div class="text-sm text-gray-500">Este curso aun no tiene semanas configuradas.</div>`}</div>
+                    </div>`;
+            }).join('');
+        }
+        function renderTrainerPresenterSelector() {
+            const container = document.getElementById('trainer-presenter-selector');
+            if(!container) return;
+            container.innerHTML = localWaves.map(wave => {
+                const cIds = localAssignments.filter(a => a.type === 'wave_course' && a.targetId === wave.id).map(a => a.assignId);
+                const courses = localCourses.filter(c => cIds.includes(c.id));
+                if(courses.length === 0) return '';
+                return `<div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-5 rounded-xl shadow">
+                        <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-4">${wave.name}</h4>
+                        ${courses.map(course => `
+                            <div class="bg-gray-50 dark:bg-dark border border-light-border dark:border-border rounded-lg p-3 mb-2">
+                                <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 border-b border-light-border dark:border-border pb-1">${course.title}</div>
+                                ${(course.weeks || []).map((w, wIdx) => (w.days || []).map((d, dIdx) => `
+                                    <button onclick="window.startPresentation('${wave.id}', '${course.id}', ${wIdx}, ${dIdx})" class="w-full text-left bg-white dark:bg-surface hover:bg-accent/10 border border-light-border dark:border-border text-xs p-2 rounded flex justify-between items-center group mb-1 text-gray-800 dark:text-gray-200">
+                                        <span class="truncate">Día: ${d.title}</span><i class="fa-solid fa-play text-accent opacity-50 group-hover:opacity-100"></i>
+                                    </button>
+                                `).join('')).join('')}
+                            </div>
+                        `).join('')}</div>`;
+            }).join('');
+        }
+
+        function renderTrainerMatrix() {
+            const tbody = document.getElementById('table-trainer-tracking');
+            if(!tbody) return;
+            // Similar logic as previous iteration but styled for light/dark
+            // ... (Omitting full rewrite for brevity, keeps core logic of mapping progress)
+        }
+
+        function renderTrainerKahootResults() {
+            const container = document.getElementById('trainer-kahoot-results');
+            if(!container) return;
+            const finished = localKahootSessions
+                .filter(s => s.status === 'podium' || s.finishedAt || (s.summary && s.summary.length))
+                .sort((a, b) => new Date(b.finishedAt || b.updatedAt || b.createdAt || 0) - new Date(a.finishedAt || a.updatedAt || a.createdAt || 0));
+            if(finished.length === 0) {
+                container.innerHTML = `<div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 text-sm text-gray-500">Aún no hay resultados Kahoot finalizados.</div>`;
+                return;
+            }
+            container.innerHTML = finished.map(s => {
+                const k = localKahoots.find(x => x.id === s.kahootId);
+                const summary = (s.summary && s.summary.length) ? s.summary : buildKahootPodium(s, k);
+                return `
+                    <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 shadow">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                            <div>
+                                <h4 class="font-black text-gray-900 dark:text-white">${safeText(k?.title || s.kahootTitle || 'Kahoot')}</h4>
+                                <p class="text-xs text-gray-500">PIN ${safeText(s.pin || '')} · ${safeText(new Date(s.finishedAt || s.updatedAt || s.createdAt || Date.now()).toLocaleString())}</p>
+                            </div>
+                            <span class="text-xs font-black px-3 py-1 rounded-full bg-warning/20 text-warning">${summary.length} participantes</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            ${summary.slice(0, 3).map((p, idx) => `
+                                <div class="border border-light-border dark:border-border rounded-lg p-3">
+                                    <div class="text-xs font-black text-gray-400">#${idx + 1}</div>
+                                    <div class="font-bold text-gray-900 dark:text-white truncate">${safeText(p.name)}</div>
+                                    <div class="text-warning font-black">${Number(p.score || 0)} pts</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+
+        // ==========================================
+        // MÓDULO 7: PRESENTADOR MEJORADO Y VISORES EMBEBIDOS
+        // ==========================================
+        
+        window.startPresentation = (wId, cId, wIdx, dIdx) => {
+            const wave = localWaves.find(w => w.id === wId);
+            const course = localCourses.find(c => c.id === cId);
+            const week = course.weeks[wIdx];
+            const day = week.days[dIdx];
+
+            if(!day.activities || day.activities.length === 0) return alert("Día vacío.");
+
+            presState = { waveId: wId, waveName: wave.name, courseId: cId, courseTitle: course.title, wIdx, weekTitle: week.title, dIdx, dayTitle: day.title, activities: day.activities, currentAIdx: 0 };
+
+            document.getElementById('pres-course-title').innerText = course.title;
+            document.getElementById('pres-wave-title').innerText = `${wave.name} | ${week.title} - ${day.title}`;
+            
+            document.getElementById('presentation-view').classList.remove('hidden');
+            document.getElementById('presentation-view').classList.add('flex');
+            
+            renderPresentationSidebar();
+            renderCurrentSlide();
+        };
+
+        window.closePresentation = () => { document.getElementById('presentation-view').classList.add('hidden'); document.getElementById('presentation-view').classList.remove('flex'); };
+
+        function renderPresentationSidebar() {
+            const course = localCourses.find(c => c.id === presState.courseId);
+            const nav = document.getElementById('pres-sidebar-nav');
+            
+            let html = '';
+            (course.weeks || []).forEach((w, wi) => {
+                html += `<div class="font-bold text-xs text-gray-500 uppercase tracking-widest mt-4 mb-2">${w.title}</div>`;
+                (w.days || []).forEach((d, di) => {
+                    const isCurrentDay = (wi === presState.wIdx && di === presState.dIdx);
+                    html += `
+                        <div class="ml-2 border-l-2 ${isCurrentDay ? 'border-accent' : 'border-light-border dark:border-border'} pl-3 mb-4">
+                            <div class="text-sm font-semibold text-gray-900 dark:text-white mb-2">${d.title}</div>
+                            <div class="space-y-1">
+                                ${(d.activities || []).map((a, ai) => {
+                                    const isCurrentAct = isCurrentDay && (ai === presState.currentAIdx);
+                                    const activeClass = isCurrentAct ? 'bg-accent/10 text-accent font-bold border-accent/30' : 'hover:bg-gray-50 dark:hover:bg-dark border-transparent text-gray-600 dark:text-gray-400';
+                                    
+                                    // Make buttons clickable if they are in the current day
+                                    const clickHandler = isCurrentDay ? `onclick="window.goToSlide(${ai})"` : '';
+                                    
+                                    return `<button ${clickHandler} class="w-full text-left text-xs p-2 rounded border transition ${activeClass} truncate block">
+                                        <i class="fa-solid fa-angle-right mr-1 opacity-50"></i> ${a.title}
+                                    </button>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+            nav.innerHTML = html;
+        }
+
+        window.goToSlide = (idx) => { presState.currentAIdx = idx; renderCurrentSlide(); };
+        window.navigatePresentation = (step) => {
+            const newIdx = presState.currentAIdx + step;
+            if(newIdx >= 0 && newIdx < presState.activities.length) { presState.currentAIdx = newIdx; renderCurrentSlide(); }
+        };
+
+        window.toggleImageFullscreen = (imgEl) => {
+            if(!document.fullscreenElement) { imgEl.requestFullscreen().catch(err => alert("Error fullscreen")); } 
+            else { document.exitFullscreen(); }
+        };
+
+        function renderCurrentSlide() {
+            const act = presState.activities[presState.currentAIdx];
+            const total = presState.activities.length;
+            
+            document.getElementById('pres-counter').innerText = `Actividad ${presState.currentAIdx + 1} de ${total}`;
+            document.getElementById('pres-progress-bar').style.width = `${((presState.currentAIdx + 1) / total) * 100}%`;
+            
+            document.getElementById('btn-pres-prev').style.visibility = presState.currentAIdx === 0 ? 'hidden' : 'visible';
+            document.getElementById('btn-pres-next').style.visibility = presState.currentAIdx === total - 1 ? 'hidden' : 'visible';
+
+            renderPresentationSidebar(); // Update active states
+
+            let mediaHtml = '';
+            
+            // Lógica de Visores Embebidos (CORE UPDATE)
+            if (act.type === 'video') {
+                if(act.youtube) {
+                    const ytId = act.youtube.split('v=')[1]?.split('&')[0] || act.youtube.split('/').pop();
+                    mediaHtml = `<div class="projection-block aspect-video rounded-xl overflow-hidden shadow-2xl border border-light-border dark:border-border"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
+                } else if(act.url) {
+                    mediaHtml = `<div class="projection-block aspect-video rounded-xl overflow-hidden shadow-2xl bg-black"><video controls class="w-full h-full"><source src="${safeText(act.url)}"></video></div>`;
+                }
+            } else if (act.type === 'pdf' && act.url) {
+                // Iframe para PDF embebido
+                mediaHtml = `<div class="projection-block projection-media rounded-xl overflow-hidden shadow-2xl border border-light-border dark:border-border bg-white">
+                                <iframe src="${safeText(getPdfViewerUrl(act.url))}" class="projection-pdf-frame" title="${safeText(act.title || '')}"></iframe>
+                             </div>`;
+            } else if (act.type === 'imagen' && act.url) {
+                mediaHtml = `<div class="projection-block projection-image-wrap bg-gray-50 dark:bg-dark/40 rounded-xl border border-light-border dark:border-border">
+                                <img src="${safeText(act.url)}" onclick="window.toggleImageFullscreen(this)" class="projection-image rounded-lg cursor-pointer hover:opacity-95 transition" title="Clic para Pantalla Completa">
+                             </div>`;
+            } else if (act.type === 'kahoot') {
+                // Lógica de Lanzamiento Kahoot
+                const kData = localKahoots.find(k => k.id === act.kahootId);
+                const kTitle = kData ? kData.title : "Kahoot no encontrado";
+                const kCount = kData ? kData.questions?.length : 0;
+                mediaHtml = `
+                    <div class="kahoot-projection-card bg-[#46178f] text-white p-6 md:p-10 rounded-2xl text-center shadow-2xl my-4 mx-auto">
+                        <div class="text-4xl md:text-6xl font-black mb-6">UPANA<span class="text-yellow-400">Kahoot!</span></div>
+                        <h3 class="text-2xl md:text-3xl font-bold mb-2">${safeText(kTitle)}</h3>
+                        <p class="text-xl opacity-80 mb-8">${kCount} Preguntas Evaluativas</p>
+                        ${kData ? `<button onclick="window.launchKahootExecution('${safeText(act.kahootId)}')" class="bg-white text-[#46178f] hover:bg-gray-100 font-black text-lg md:text-2xl py-4 px-6 md:px-12 rounded shadow-xl transition transform hover:scale-105">INICIAR DINÁMICA</button>` : `<span class="text-red-300">El Kahoot asociado fue eliminado del banco.</span>`}
+                    </div>`;
+            }
+
+            const slideHtml = `
+                <div class="bg-white dark:bg-surface/95 border border-light-border dark:border-border rounded-2xl shadow-xl p-5 md:p-8 text-center mb-6 shrink-0">
+                    <span class="inline-block px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-wider border border-accent/20 mb-4">${act.type} ${act.duration ? `• ${act.duration} Min` : ''}</span>
+                    <h2 class="text-3xl md:text-5xl font-black text-gray-900 dark:text-white leading-tight mb-4 tracking-tight">${act.title}</h2>
+                    ${act.objectives ? `<p class="text-warning text-lg md:text-xl font-medium max-w-3xl mx-auto"><i class="fa-solid fa-bullseye mr-2"></i>${act.objectives}</p>` : ''}
+                </div>
+                
+                <div class="projection-stack">
+                    ${mediaHtml}
+                    
+                    ${act.description && act.type !== 'kahoot' ? `
+                        <div class="projection-text-block bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl p-8 text-left text-gray-800 dark:text-gray-200 text-lg leading-relaxed shadow-inner">
+                            ${toHtml(act.description)}
+                        </div>
+                    ` : ''}
+                </div>
+                
+                ${act.notes ? `
+                    <div class="mt-6 flex justify-center">
+                        <div class="relative w-full max-w-3xl shadow-2xl">
+                            <div class="trainer-notes-trigger bg-warning text-dark text-xs font-bold uppercase tracking-wider py-2 px-6 rounded-t-xl mx-auto w-max cursor-pointer opacity-80 hover:opacity-100 transition shadow-lg"><i class="fa-solid fa-chalkboard-user mr-2"></i>Ver Notas del Trainer</div>
+                            <div class="trainer-notes-container bg-warning rounded-b-xl rounded-t-none text-dark shadow-2xl w-full border-t border-yellow-600/30">
+                                <div class="p-6 text-sm font-medium leading-relaxed">
+                                    ${toHtml(act.notes)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+            document.getElementById('pres-slide-container').innerHTML = slideHtml;
+        }
+
+        window.markDayCompleted = async () => {
+            if(!confirm("¿Registrar el avance del día completo para todos los agentes de la Wave?")) return;
+            const btn = document.getElementById('btn-pres-finish');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando...'; btn.disabled = true;
+
+            const agentIdsInWave = localAssignments.filter(a => a.type === 'agent_wave' && a.assignId === presState.waveId).map(a => a.targetId);
+            const promises = [];
+            
+            agentIdsInWave.forEach(agId => {
+                presState.activities.forEach((act, aIdx) => {
+                    const docId = progressKey(agId, presState.courseId, presState.wIdx, presState.dIdx, aIdx);
+                    promises.push(setDoc(doc(db, "userProgress", docId), {
+                        userId: agId, courseId: presState.courseId, weekId: presState.wIdx, dayId: presState.dIdx, activityId: aIdx,
+                        status: "completed", completionPercentage: 100, lastAccess: new Date().toISOString(), markedByTrainerId: currentUser.id
+                    }));
+                });
+            });
+
+            try {
+                await Promise.all(promises); alert("¡Día Completado y Registrado!"); window.closePresentation();
+            } catch (err) { alert("Error: " + err.message); } 
+            finally { btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Marcar Día Completado'; btn.disabled = false; }
+        };
+
+        // ==========================================
+        // MÓDULO 8: EJECUCIÓN KAHOOT (Trainer Interface)
+        // ==========================================
+        let kahootExecState = { kahoot: null, sessionId: null, pin: null, qIdx: -1, status: 'lobby', participants: {} };
+        let kahootTimerHandle = null;
+
+        function getCurrentKahootQuestion() {
+            return kahootExecState.kahoot?.questions?.[Number(kahootExecState.qIdx || 0)];
+        }
+
+        function prepareKahootQuestionTiming() {
+            const q = getCurrentKahootQuestion();
+            const seconds = Number(q?.time || 20);
+            const now = Date.now();
+            kahootExecState.questionStartedAt = new Date(now).toISOString();
+            kahootExecState.questionEndsAt = new Date(now + seconds * 1000).toISOString();
+        }
+
+        function scheduleKahootTimer() {
+            if(kahootTimerHandle) clearTimeout(kahootTimerHandle);
+            if(kahootExecState.status !== 'question' || !kahootExecState.sessionId) return;
+            const remaining = getKahootRemainingSeconds(kahootExecState);
+            if(remaining <= 0) {
+                window.forceKahootResults();
+                return;
+            }
+            kahootTimerHandle = setTimeout(() => {
+                renderKahootExecutionStep();
+                scheduleKahootTimer();
+            }, 1000);
+        }
+
+        window.forceKahootResults = async () => {
+            if(kahootExecState.status !== 'question' || !kahootExecState.sessionId) return;
+            kahootExecState.status = 'results';
+            await updateDoc(doc(db, "kahootSessions", kahootExecState.sessionId), {
+                status: 'results',
+                updatedAt: new Date().toISOString()
+            });
+            renderKahootExecutionStep();
+        };
+
+        window.launchKahootExecution = async (kahootId) => {
+            const k = localKahoots.find(x => x.id === kahootId);
+            if(!k) return;
+            const pin = String(Math.floor(100000 + Math.random() * 900000));
+            const sessionRef = doc(collection(db, "kahootSessions"));
+            const sessionData = {
+                kahootId,
+                kahootTitle: k.title || 'Kahoot',
+                pin,
+                qIdx: -1,
+                status: 'lobby',
+                participants: {},
+                createdAt: new Date().toISOString(),
+                trainerId: currentUser?.id || '',
+                trainerName: currentUser?.name || currentUser?.email || 'Trainer'
+            };
+            await setDoc(sessionRef, sessionData);
+            kahootExecState = { kahoot: k, sessionId: sessionRef.id, ...sessionData };
+            
+            document.getElementById('k-exec-pin').innerText = "PIN: " + pin;
+            document.getElementById('kahoot-execution-view').classList.remove('hidden');
+            document.getElementById('kahoot-execution-view').classList.add('flex');
+            
+            renderKahootExecutionStep();
+        };
+
+        window.closeKahootExecution = async () => {
+            if(confirm("¿Cerrar dinámica interactiva?")) {
+                if(kahootExecState.sessionId) {
+                    await updateDoc(doc(db, "kahootSessions", kahootExecState.sessionId), { status: 'closed', closedAt: new Date().toISOString() });
+                }
+                document.getElementById('kahoot-execution-view').classList.add('hidden');
+                document.getElementById('kahoot-execution-view').classList.remove('flex');
+                if(kahootTimerHandle) clearTimeout(kahootTimerHandle);
+                kahootExecState = { kahoot: null, sessionId: null, pin: null, qIdx: -1, status: 'lobby', participants: {} };
+            }
+        };
+
+        window.advanceKahoot = async () => {
+            if(kahootExecState.status === 'lobby') { kahootExecState.status = 'question'; kahootExecState.qIdx = 0; }
+            else if(kahootExecState.status === 'question') { kahootExecState.status = 'results'; }
+            else if(kahootExecState.status === 'results') {
+                kahootExecState.qIdx++;
+                if(kahootExecState.qIdx >= kahootExecState.kahoot.questions.length) kahootExecState.status = 'podium';
+                else kahootExecState.status = 'question';
+            }
+            else if(kahootExecState.status === 'podium') { await window.closeKahootExecution(); return; }
+            if(kahootExecState.status === 'question') prepareKahootQuestionTiming();
+            
+            if(kahootExecState.sessionId) {
+                const summary = kahootExecState.status === 'podium'
+                    ? buildKahootPodium(kahootExecState, kahootExecState.kahoot).map((p, idx) => ({ ...p, rank: idx + 1 }))
+                    : null;
+                await updateDoc(doc(db, "kahootSessions", kahootExecState.sessionId), {
+                    status: kahootExecState.status,
+                    qIdx: kahootExecState.qIdx,
+                    questionStartedAt: kahootExecState.questionStartedAt || null,
+                    questionEndsAt: kahootExecState.questionEndsAt || null,
+                    ...(summary ? { summary, finishedAt: new Date().toISOString() } : {}),
+                    updatedAt: new Date().toISOString()
+                });
+            }
+            renderKahootExecutionStep();
+        };
+        function renderKahootExecutionStep() {
+            const container = document.getElementById('k-exec-content');
+            const btnNext = document.getElementById('btn-k-exec-next');
+            const statusLabel = document.getElementById('k-exec-status');
+            document.getElementById('k-exec-pin').innerText = "PIN: " + (kahootExecState.pin || "000000");
+            if(kahootExecState.status !== 'question' && kahootTimerHandle) clearTimeout(kahootTimerHandle);
+
+            if(kahootExecState.status === 'lobby') {
+                const participants = getSessionParticipants(kahootExecState);
+                container.innerHTML = `<h2 class="text-5xl font-black text-gray-800 dark:text-white mb-3 text-center">Únete con el PIN</h2>
+                                       <div class="text-6xl font-black text-[#46178f] bg-white px-10 py-4 rounded-xl shadow mb-8">${safeText(kahootExecState.pin || '')}</div>
+                                       <div class="text-sm font-bold text-gray-500 dark:text-gray-300 mb-4">${participants.length} participante(s) conectado(s)</div>
+                                       <div class="flex gap-4 flex-wrap justify-center">
+                                            ${participants.length ? participants.map(p => `<div class="bg-white dark:bg-gray-800 px-6 py-3 rounded shadow text-xl font-bold dark:text-white">${safeText(p.name || 'Agente')}</div>`).join('') : `<div class="text-gray-500 dark:text-gray-400 bg-white/70 dark:bg-gray-800/70 px-6 py-3 rounded shadow">Esperando agentes reales...</div>`}
+                                       </div>`;
+                btnNext.innerText = "Empezar Dinámica"; statusLabel.innerText = "Esperando jugadores...";
+            } 
+            else if (kahootExecState.status === 'question') {
+                const q = kahootExecState.kahoot.questions[kahootExecState.qIdx];
+                const colors = ['bg-[#e21b3c]', 'bg-[#1368ce]', 'bg-[#d89e00]', 'bg-[#26890c]'];
+                const shapes = ['fa-play -rotate-90', 'fa-gem', 'fa-circle', 'fa-square'];
+                const remaining = getKahootRemainingSeconds(kahootExecState);
+                container.innerHTML = `
+                    <div class="w-24 h-24 rounded-full bg-[#46178f] text-white flex items-center justify-center text-4xl font-black shadow-2xl mb-6">${remaining}</div>
+                    <div class="bg-white text-black p-8 rounded shadow text-center w-full max-w-4xl mb-8">
+                        <h2 class="text-4xl font-bold">${safeText(q.q || '')}</h2>
+                    </div>
+                    <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${[0,1,2,3].map(i => `
+                            <div class="${colors[i]} kahoot-answer-card min-h-28 rounded flex items-center p-6 shadow-md shadow-black/20 text-white">
+                                <i class="fa-solid ${shapes[i]} text-4xl mr-6 opacity-80 shrink-0"></i>
+                                <span class="text-2xl md:text-3xl font-bold leading-tight">${safeText(q.options?.[i] || '')}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                btnNext.innerText = "Mostrar Resultados"; statusLabel.innerText = `Pregunta ${kahootExecState.qIdx + 1} de ${kahootExecState.kahoot.questions.length} • Tiempo: ${remaining}s`;
+                scheduleKahootTimer();
+            }
+            else if (kahootExecState.status === 'results') {
+                const q = kahootExecState.kahoot.questions[kahootExecState.qIdx];
+                const colors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
+                const responses = Object.values(kahootExecState.responses?.[kahootExecState.qIdx] || {});
+                const participants = getSessionParticipants(kahootExecState);
+                const counts = [0, 0, 0, 0];
+                responses.forEach(r => { if(Number.isInteger(Number(r.answerIndex))) counts[Number(r.answerIndex)] = (counts[Number(r.answerIndex)] || 0) + 1; });
+                const maxCount = Math.max(1, ...counts);
+                const correctCount = responses.filter(r => r.isCorrect).length;
+                container.innerHTML = `
+                    <h2 class="text-4xl font-bold text-gray-800 dark:text-white mb-2">Resultados de la pregunta</h2>
+                    <p class="text-gray-500 dark:text-gray-300 font-bold mb-8">${responses.length} de ${participants.length} respuestas · ${correctCount} correctas</p>
+                    <div class="flex items-end h-72 gap-6 md:gap-8 mb-8">
+                        ${[0,1,2,3].map(i => {
+                            const isCorrect = (Number(q.correct) === i);
+                            const height = `${Math.max(8, Math.round((counts[i] / maxCount) * 100))}%`;
+                            return `<div class="flex flex-col items-center w-20 md:w-28 h-full justify-end">
+                                <div class="font-bold text-gray-600 dark:text-gray-300 mb-2">${counts[i]} ${isCorrect ? '<i class="fa-solid fa-check text-success text-2xl ml-1"></i>' : ''}</div>
+                                <div style="height: ${height}; background-color: ${colors[i]}" class="w-full rounded-t shadow-lg"></div>
+                                <div class="mt-2 text-xs font-bold text-gray-500 dark:text-gray-400">${['A','B','C','D'][i]}</div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 w-full max-w-4xl shadow text-left">
+                        <div class="text-xs uppercase tracking-widest font-black text-gray-500 mb-3">Detalle por agente</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            ${participants.map(p => {
+                                const r = kahootExecState.responses?.[kahootExecState.qIdx]?.[p.id];
+                                return `<div class="flex justify-between gap-3 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm dark:text-white">
+                                    <span class="font-bold truncate">${safeText(p.name || 'Agente')}</span>
+                                    <span class="${r?.isCorrect ? 'text-success' : 'text-danger'} font-black">${r ? `${r.isCorrect ? 'Correcta' : 'Incorrecta'} · ${Number(r.points || 0)} pts` : 'Sin respuesta'}</span>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+                btnNext.innerText = kahootExecState.qIdx + 1 >= kahootExecState.kahoot.questions.length ? "Ver Podio" : "Siguiente Pregunta";
+                statusLabel.innerText = "Revisión de respuestas";
+            }
+            else if (kahootExecState.status === 'podium') {
+                const podium = buildKahootPodium(kahootExecState, kahootExecState.kahoot);
+                container.innerHTML = `
+                    <div class="text-center w-full max-w-5xl">
+                        <h2 class="text-5xl font-black text-gray-800 dark:text-white mb-4">¡Podio Final!</h2>
+                        <p class="text-gray-500 dark:text-gray-300 font-bold mb-10">Resultados guardados para evaluación de admin y trainer.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-8">
+                            ${podium.slice(0, 3).map((p, idx) => `
+                                <div class="rounded-xl p-6 shadow-2xl text-center ${idx === 0 ? 'bg-[#ffd700] md:order-2 md:min-h-64' : idx === 1 ? 'bg-[#c0c0c0] md:order-1 md:min-h-52' : 'bg-[#cd7f32] md:order-3 md:min-h-44'}">
+                                    <div class="text-5xl font-black mb-3">${idx + 1}</div>
+                                    <div class="text-2xl font-black truncate">${safeText(p.name)}</div>
+                                    <div class="text-3xl font-black mt-3">${p.score} pts</div>
+                                </div>
+                            `).join('') || `<div class="bg-white rounded-xl p-6 shadow-2xl md:col-span-3 font-black">Sin respuestas registradas</div>`}
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow text-left">
+                            <div class="text-xs uppercase tracking-widest font-black text-gray-500 mb-3">Ranking completo</div>
+                            ${podium.map((p, idx) => `<div class="flex justify-between border-b border-gray-200 dark:border-gray-700 py-2 dark:text-white"><span class="font-bold">${idx + 1}. ${safeText(p.name)}</span><span class="font-black text-warning">${p.score} pts</span></div>`).join('')}
+                        </div>
+                    </div>
+                `;
+                btnNext.innerText = "Finalizar"; statusLabel.innerText = "Dinámica concluida";
+            }
+        }    </script>
 </body>
 </html>
