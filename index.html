@@ -40,11 +40,12 @@
         .trainer-notes-container { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
         .trainer-notes-trigger:hover + .trainer-notes-container, .trainer-notes-container:hover { max-height: 300px; overflow-y: auto; }
         .projection-stack { width: 100%; display: flex; flex-direction: column; gap: 1rem; }
-        .projection-block { width: 100%; border-radius: 0.75rem; overflow: visible; }
-        .projection-media { width: 100%; min-height: 58vh; }
-        .projection-pdf-frame { width: 100%; height: 68vh; border: 0; background: #fff; }
-        .projection-image-wrap { width: 100%; min-height: 52vh; display: flex; align-items: center; justify-content: center; overflow: visible; }
-        .projection-image { width: auto; max-width: 100%; height: auto; max-height: none; object-fit: contain; }
+        .projection-block { width: 100%; border-radius: 0.75rem; overflow: hidden; }
+        .projection-media { width: 100%; height: min(62vh, 680px); min-height: 360px; }
+        .projection-pdf-frame { width: 100%; height: min(62vh, 680px); border: 0; background: #fff; }
+        .projection-video-frame { width: 100%; height: min(62vh, 680px); min-height: 360px; border: 0; background: #000; }
+        .projection-image-wrap { width: 100%; height: min(62vh, 680px); min-height: 340px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .projection-image { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
         .projection-text-block { width: 100%; max-height: none; overflow: visible; }
         .projection-shell { min-width: 0; overflow-x: hidden; }
         #pres-sidebar { position: absolute; top: 0; bottom: 0; left: 0; transform: translateX(-100%); }
@@ -55,26 +56,47 @@
         .course-mode-pill { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; padding: .3rem .6rem; font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
         .learning-content img { max-width: 100%; border-radius: 12px; margin: 1rem auto; display: block; }
         .learning-content iframe, .learning-content video { width: 100%; min-height: 420px; border-radius: 12px; }
+        .activity-tab-panel { display: grid; }
+        .activity-tab-btn { display: none; }
+        #top-user-menu { position: fixed !important; top: 1rem; right: 1rem; z-index: 40; }
+        #top-user-dropdown { display: none; }
+        #top-user-menu.open #top-user-dropdown { display: block; }
+        #top-user-menu.immersive-hidden { display: none !important; }
+        .embed-preview-frame { width: 100%; aspect-ratio: 16 / 9; min-height: 320px; border: 0; background: #000; border-radius: .75rem; }
         @media (max-width: 768px) {
             html, body { height: auto !important; min-height: 100% !important; overflow-y: auto !important; overscroll-behavior-y: auto; }
             body { display: block !important; overflow-x: hidden !important; padding-bottom: 2rem; }
             #app-view { min-height: 100vh; height: auto; flex-direction: column; overflow: visible; }
-            #app-view > aside { width: 100%; max-height: none; border-right: 0; border-bottom: 1px solid rgba(148, 163, 184, .25); flex-shrink: 0; display: block; box-shadow: 0 6px 18px rgba(15, 23, 42, .08); }
-            #app-view > aside > div:first-child > div:first-child { padding: .9rem 1rem; }
-            #app-view > aside nav { max-height: none; overflow-x: auto; overflow-y: hidden; padding: .65rem 1rem; display: flex; gap: .5rem; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
-            #app-view > aside nav > div { display: contents; }
+            #app-view > aside { width: 100%; max-height: none; border-right: 0; border-bottom: 1px solid rgba(148, 163, 184, .25); flex-shrink: 0; display: block; box-shadow: 0 4px 14px rgba(15, 23, 42, .08); position: sticky; top: 0; z-index: 30; background: #fff; }
+            .dark #app-view > aside { background: #13161c; }
+            #app-view > aside > div:first-child > div:first-child { height: 4.5rem; padding: .85rem 1rem; padding-right: 6.2rem; }
+            #app-view > aside > div:first-child > div:first-child .w-8 { width: 2.25rem; height: 2.25rem; border-radius: .75rem; }
+            #app-view > aside > div:first-child > div:first-child span { font-size: .95rem; }
+            #btn-theme-toggle { margin-right: 4.25rem; }
+            #app-view > aside nav { max-height: none; overflow-x: auto; overflow-y: hidden; padding: .55rem .8rem .7rem; display: flex !important; flex-wrap: nowrap !important; align-items: stretch; gap: .45rem; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+            #app-view > aside nav::-webkit-scrollbar { display: none; }
+            #app-view > aside nav > div:not([style*="display: none"]) { display: contents !important; }
             #app-view > aside nav > div[style*="display: none"],
             #app-view > aside nav > a[style*="display: none"] { display: none !important; }
             #app-view > aside nav > div > div { display: none !important; }
-            #app-view > aside nav a { flex: 0 0 auto; padding: .65rem .85rem; font-size: .8rem; margin: 0 !important; border: 1px solid rgba(148, 163, 184, .25); border-radius: 999px; background: rgba(255,255,255,.72); scroll-snap-align: start; }
+            #app-view > aside nav a { flex: 0 0 5.8rem; height: 3.15rem; padding: .45rem .5rem; font-size: .66rem; line-height: .9rem; margin: 0 !important; border: 1px solid rgba(148, 163, 184, .28); border-radius: 1rem; background: rgba(255,255,255,.82); scroll-snap-align: start; display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: .22rem; text-align: center; white-space: normal; overflow: hidden; box-shadow: none; }
+            #app-view > aside nav a i { width: auto !important; font-size: .95rem; line-height: 1; }
             .dark #app-view > aside nav a { background: rgba(17, 24, 39, .72); }
-            #app-view > aside > div:last-child { padding: .7rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
-            #app-view > aside > div:last-child .mb-3 { margin-bottom: 0 !important; min-width: 0; }
-            #app-view > aside > div:last-child #user-avatar { width: 2rem; height: 2rem; border-radius: .65rem; }
-            #app-view > aside > div:last-child #user-name { font-size: .8rem; max-width: 8.5rem; }
-            #app-view > aside > div:last-child #user-role { font-size: .62rem; }
-            #app-view > aside > div:last-child button { width: auto; white-space: nowrap; }
-            main { padding: 1rem !important; overflow: visible !important; min-height: auto; padding-bottom: 5rem !important; }
+            #app-view > aside > div:last-child { display: none !important; }
+            #top-user-menu { position: fixed !important; top: .85rem !important; right: .85rem !important; z-index: 45; }
+            #top-user-toggle { padding: .45rem .6rem; border-radius: 1rem; box-shadow: 0 8px 22px rgba(15, 23, 42, .14); }
+            #top-user-toggle #user-avatar { width: 2.6rem; height: 2.6rem; border-radius: .85rem; }
+            #top-user-menu .top-user-name { display: none; }
+            #top-user-dropdown { width: min(14rem, calc(100vw - 1.5rem)); }
+            main { padding: 1rem 1rem 5rem !important; overflow: visible !important; min-height: auto; }
+            .view-section h2 { font-size: 1.35rem !important; line-height: 1.2 !important; margin-bottom: .8rem !important; }
+            .view-section p { font-size: .82rem; }
+            .view-section .grid { gap: .9rem; }
+            .view-section .p-6 { padding: 1rem; }
+            .view-section .rounded-xl { border-radius: .9rem; }
+            table { min-width: 640px; }
+            .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+            button, input, select, textarea { font-size: 16px; }
             #agent-view h2 { font-size: 1.45rem; line-height: 1.2; }
             #agent-view p { margin-bottom: 1rem; }
             #agent-courses-area .grid { grid-template-columns: minmax(0, 1fr) !important; gap: .9rem; }
@@ -110,11 +132,55 @@
             <h1 class="text-2xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Plataforma LMS</h1>
             <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">Consola operativa institucional UPANA</p>
             <div class="space-y-4">
-                <input type="text" id="auth-name" placeholder="Nombre completo (para registro inicial)" class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none transition text-gray-900 dark:text-white">
                 <input type="email" id="auth-email" placeholder="Correo electrónico" class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none transition text-gray-900 dark:text-white">
                 <input type="password" id="auth-password" placeholder="Contraseña" class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none transition text-gray-900 dark:text-white">
                 <button id="btn-login" class="w-full bg-accent hover:bg-accent/90 text-white p-3 rounded-lg font-medium text-sm transition shadow-lg shadow-accent/20">Iniciar Sesión</button>
-                <button id="btn-register" class="w-full bg-transparent border border-light-border dark:border-border hover:bg-gray-50 dark:hover:bg-surface text-gray-600 dark:text-gray-300 p-3 rounded-lg text-sm transition">Registrar cuenta inicial</button>
+                <button id="btn-register" class="w-full bg-transparent border border-light-border dark:border-border hover:bg-gray-50 dark:hover:bg-surface text-gray-600 dark:text-gray-300 p-3 rounded-lg text-sm transition">¿No tienes cuenta? Regístrate</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-register-agent" class="fixed inset-0 bg-black/80 hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl w-full max-w-md shadow-2xl p-6">
+            <div class="flex items-start justify-between gap-3 mb-5">
+                <div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white">Crear cuenta</h3>
+                    <p class="text-sm text-gray-500 mt-1">Ingresa tus datos para crear tu acceso.</p>
+                </div>
+                <button onclick="document.getElementById('modal-register-agent').classList.add('hidden')" class="text-gray-400 hover:text-danger"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="space-y-3">
+                <input type="text" id="reg-name" placeholder="Nombre completo" class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none transition text-gray-900 dark:text-white">
+                <input type="email" id="reg-email" placeholder="Correo electrónico" class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none transition text-gray-900 dark:text-white">
+                <input type="password" id="reg-password" placeholder="Contraseña" class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none transition text-gray-900 dark:text-white">
+                <button id="btn-register-agent-submit" class="w-full bg-accent hover:bg-accent/90 text-white p-3 rounded-lg font-bold text-sm transition shadow-lg shadow-accent/20">Registrarme</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-photo-setup" class="fixed inset-0 bg-black/80 hidden z-[65] flex items-center justify-center p-4">
+        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-2xl w-full max-w-md shadow-2xl p-6 text-center">
+            <div class="w-20 h-20 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-camera text-3xl"></i></div>
+            <h3 class="text-2xl font-black text-gray-900 dark:text-white">Agreguemos tu foto</h3>
+            <p class="text-sm text-gray-500 mt-2">Tu foto ayuda a identificarte en asistencia, resultados y seguimiento de capacitación.</p>
+            <div id="setup-photo-preview" class="w-32 h-32 rounded-2xl bg-gray-100 dark:bg-dark mx-auto my-5 flex items-center justify-center text-gray-400 overflow-hidden"><i class="fa-solid fa-user text-4xl"></i></div>
+            <input id="setup-photo-input" type="file" accept="image/*" class="hidden">
+            <label for="setup-photo-input" class="inline-flex items-center justify-center gap-2 bg-accent text-white px-5 py-3 rounded-lg text-sm font-black cursor-pointer hover:bg-accent/90 transition w-full"><i class="fa-solid fa-image"></i> Seleccionar foto</label>
+            <div class="grid grid-cols-2 gap-3 mt-4">
+                <button id="btn-upload-profile-photo" class="bg-success text-white py-3 rounded-lg text-sm font-black disabled:opacity-60" disabled>Subir foto</button>
+                <button id="btn-skip-profile-photo" class="border border-light-border dark:border-border text-gray-600 dark:text-gray-300 py-3 rounded-lg text-sm font-bold">Omitir por ahora</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-system-message" class="fixed inset-0 bg-black/70 hidden z-[90] flex items-center justify-center p-4">
+        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-2xl w-full max-w-sm shadow-2xl p-6">
+            <div class="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-4"><i id="system-message-icon" class="fa-solid fa-circle-info text-xl"></i></div>
+            <h3 id="system-message-title" class="text-xl font-black text-gray-900 dark:text-white">Aviso</h3>
+            <p id="system-message-text" class="text-sm text-gray-500 dark:text-gray-400 mt-2 whitespace-pre-wrap"></p>
+            <div id="system-message-actions" class="flex justify-end gap-3 mt-6">
+                <button id="system-message-cancel" class="hidden border border-light-border dark:border-border text-gray-600 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-bold">Cancelar</button>
+                <button id="system-message-ok" class="bg-accent text-white px-5 py-2 rounded-lg text-sm font-black">Aceptar</button>
             </div>
         </div>
     </div>
@@ -148,6 +214,7 @@
                         <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-4 px-3">Operaciones</div>
                         <a href="#" data-target="trainer-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-chalkboard-user w-5"></i> Consola Trainer</a>
                         <a href="#" data-target="upanahoot-bank-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-bolt w-5"></i> Banco de UPANAHOOTs</a>
+                        <a href="#" data-target="evaluations-bank-view" class="nav-btn flex items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-border transition mb-1"><i class="fa-solid fa-clipboard-question w-5"></i> Banco de Evaluaciones</a>
                     </div>
 
                     <div class="agent-control hidden">
@@ -157,19 +224,25 @@
                 </nav>
             </div>
             
-            <div class="p-4 border-t border-light-border dark:border-border bg-gray-50 dark:bg-dark/40">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-lg bg-accent flex items-center justify-center font-bold text-white text-sm" id="user-avatar">-</div>
-                    <div class="overflow-hidden">
-                        <div class="text-sm font-semibold truncate text-gray-900 dark:text-white" id="user-name">Cargando...</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest font-medium" id="user-role">-</div>
-                    </div>
-                </div>
-                <button id="btn-logout" class="w-full text-left text-xs text-danger hover:text-red-500 font-medium flex items-center gap-2 p-2 transition"><i class="fa-solid fa-power-off"></i> Finalizar Sesión</button>
-            </div>
+            <div class="p-4 border-t border-light-border dark:border-border bg-gray-50 dark:bg-dark/40 text-xs text-gray-400">UPANA LMS</div>
         </aside>
 
-        <main class="flex-1 bg-light-bg dark:bg-dark overflow-y-auto p-8 custom-scrollbar relative" id="main-content">
+        <div id="top-user-menu">
+            <button id="top-user-toggle" class="bg-light-surface dark:bg-surface border border-light-border dark:border-border shadow-lg rounded-xl px-3 py-2 flex items-center gap-3 hover:border-accent transition">
+                <div class="w-9 h-9 rounded-lg bg-accent flex items-center justify-center font-bold text-white text-sm overflow-hidden" id="user-avatar">-</div>
+                <div class="top-user-name text-left max-w-40">
+                    <div class="text-sm font-black truncate text-gray-900 dark:text-white" id="user-name">Cargando...</div>
+                    <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-widest font-bold" id="user-role">-</div>
+                </div>
+                <i class="fa-solid fa-chevron-down text-xs text-gray-400"></i>
+            </button>
+            <div id="top-user-dropdown" class="absolute right-0 mt-2 w-56 bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl shadow-2xl overflow-hidden">
+                <button id="btn-open-profile" class="w-full text-left px-4 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark/60"><i class="fa-solid fa-id-badge w-5 text-accent"></i> Mi Perfil</button>
+                <button id="btn-logout" class="w-full text-left px-4 py-3 text-sm font-bold text-danger hover:bg-red-50 dark:hover:bg-red-900/20"><i class="fa-solid fa-power-off w-5"></i> Finalizar Sesión</button>
+            </div>
+        </div>
+
+        <main class="flex-1 bg-light-bg dark:bg-dark overflow-y-auto p-8 pt-20 custom-scrollbar relative" id="main-content">
             
             <section id="dash-view" class="view-section block">
                 <h2 class="text-3xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Consola Central</h2>
@@ -183,6 +256,29 @@
                 <div id="dashboard-course-progress" class="admin-trainer-control hidden mt-8"></div>
                 <div id="dashboard-course-detail" class="admin-trainer-control hidden mt-6"></div>
                 <div id="admin-supervision-panel" class="admin-control hidden mt-8"></div>
+            </section>
+
+            <section id="profile-view" class="view-section hidden">
+                <h2 class="text-2xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Mi Perfil</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Administra tu foto e información visible dentro de la plataforma.</p>
+                <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+                    <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-6 text-center shadow">
+                        <div id="profile-photo-preview" class="w-32 h-32 rounded-2xl bg-accent mx-auto mb-4 flex items-center justify-center text-white text-4xl font-black overflow-hidden"></div>
+                        <h3 id="profile-name" class="text-xl font-black text-gray-900 dark:text-white">Usuario</h3>
+                        <p id="profile-role-title" class="text-sm text-accent font-bold mt-1">Rol</p>
+                        <label for="profile-photo-input" class="mt-5 inline-flex items-center justify-center gap-2 bg-accent text-white px-5 py-2.5 rounded-lg text-sm font-black cursor-pointer hover:bg-accent/90 transition"><i class="fa-solid fa-camera"></i> Cambiar foto</label>
+                        <input id="profile-photo-input" type="file" accept="image/*" class="hidden">
+                    </div>
+                    <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-6 shadow">
+                        <h3 class="font-black text-gray-900 dark:text-white mb-4">Información útil</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div class="bg-gray-50 dark:bg-dark/40 rounded-lg p-4"><div class="text-xs uppercase font-black text-gray-400">Correo</div><div id="profile-email" class="font-bold text-gray-900 dark:text-white mt-1">-</div></div>
+                            <div class="bg-gray-50 dark:bg-dark/40 rounded-lg p-4"><div class="text-xs uppercase font-black text-gray-400">Perfil operativo</div><div id="profile-role-detail" class="font-bold text-gray-900 dark:text-white mt-1">-</div></div>
+                            <div class="bg-gray-50 dark:bg-dark/40 rounded-lg p-4"><div class="text-xs uppercase font-black text-gray-400">Estado</div><div id="profile-status" class="font-bold text-success mt-1">Activo</div></div>
+                            <div class="bg-gray-50 dark:bg-dark/40 rounded-lg p-4"><div class="text-xs uppercase font-black text-gray-400">Ingreso</div><div id="profile-join-date" class="font-bold text-gray-900 dark:text-white mt-1">-</div></div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <section id="users-view" class="view-section hidden">
@@ -219,51 +315,82 @@
             </section>
 
             <section id="waves-view" class="view-section hidden">
-                <h2 class="text-2xl font-bold tracking-tight mb-6 text-gray-900 dark:text-white">Estructura Corporativa: Control de Waves</h2>
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Estructura Corporativa: Control de Waves</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Organiza grupos de capacitación, asigna cursos y vincula agentes desde una sola vista.</p>
+                </div>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-1 space-y-6">
-                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl">
-                            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Nueva Unidad Operativa (Wave)</h3>
+                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl shadow-sm">
+                            <div class="flex items-start gap-3 mb-5">
+                                <div class="w-10 h-10 rounded-lg bg-accent/10 text-accent flex items-center justify-center"><i class="fa-solid fa-layer-group"></i></div>
+                                <div>
+                                    <h3 class="text-sm font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">Crear nueva Wave</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Usa nombres fáciles de reconocer, por ejemplo: Primer Ingreso Wave 1.</p>
+                                </div>
+                            </div>
                             <form id="form-wave" class="space-y-4">
                                 <input type="text" id="w-name" placeholder="Ej. Wave 51" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required>
-                                <button type="submit" class="w-full bg-accent text-white py-2.5 rounded-lg text-sm font-medium transition">Crear Wave</button>
+                                <button type="submit" class="w-full bg-accent text-white py-2.5 rounded-lg text-sm font-bold transition hover:bg-accent/90"><i class="fa-solid fa-plus mr-2"></i>Crear Wave</button>
                             </form>
                         </div>
-                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl">
+                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl shadow-sm">
                             <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Waves Registradas</h3>
-                            <div id="list-waves" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar"></div>
+                            <div id="list-waves" class="space-y-3 max-h-[28rem] overflow-y-auto custom-scrollbar pr-1"></div>
                         </div>
                     </div>
 
                     <div class="lg:col-span-2 space-y-6">
-                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h3 class="text-sm font-bold text-accent uppercase tracking-wider mb-4"><i class="fa-solid fa-link"></i> Vincular Curso a Wave</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl shadow-sm">
+                                <div class="flex items-start gap-3 mb-4">
+                                    <div class="w-10 h-10 rounded-lg bg-accent/10 text-accent flex items-center justify-center"><i class="fa-solid fa-book-open"></i></div>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">Asignar curso</h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">El curso quedará disponible para todos los agentes de esa Wave.</p>
+                                    </div>
+                                </div>
                                 <form id="form-assign-course" class="space-y-3">
+                                    <label class="block text-[11px] uppercase tracking-wider font-bold text-gray-400">Wave destino</label>
                                     <select id="sel-assign-wave-c" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required></select>
+                                    <label class="block text-[11px] uppercase tracking-wider font-bold text-gray-400">Curso a impartir</label>
                                     <select id="sel-assign-course" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required></select>
-                                    <button type="submit" class="w-full bg-accent text-white py-2 rounded-lg text-xs font-semibold transition">Asignar Curso</button>
+                                    <button type="submit" class="w-full bg-accent text-white py-2.5 rounded-lg text-xs font-bold transition hover:bg-accent/90"><i class="fa-solid fa-link mr-2"></i>Asignar Curso</button>
                                 </form>
                             </div>
-                            <div>
-                                <h3 class="text-sm font-bold text-success uppercase tracking-wider mb-4"><i class="fa-solid fa-user-plus"></i> Vincular Agente a Wave</h3>
+                            <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl shadow-sm">
+                                <div class="flex items-start gap-3 mb-4">
+                                    <div class="w-10 h-10 rounded-lg bg-success/10 text-success flex items-center justify-center"><i class="fa-solid fa-user-plus"></i></div>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">Asignar agente</h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Vincula al colaborador con su grupo real de capacitación.</p>
+                                    </div>
+                                </div>
                                 <form id="form-assign-agent" class="space-y-3">
+                                    <label class="block text-[11px] uppercase tracking-wider font-bold text-gray-400">Wave destino</label>
                                     <select id="sel-assign-wave-a" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required></select>
+                                    <label class="block text-[11px] uppercase tracking-wider font-bold text-gray-400">Agente</label>
                                     <select id="sel-assign-agent" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required></select>
-                                    <button type="submit" class="w-full bg-success text-white py-2 rounded-lg text-xs font-semibold transition">Asignar Agente</button>
+                                    <button type="submit" class="w-full bg-success text-white py-2.5 rounded-lg text-xs font-bold transition hover:bg-success/90"><i class="fa-solid fa-user-check mr-2"></i>Asignar Agente</button>
                                 </form>
                             </div>
                         </div>
 
-                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl">
-                            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Matriz de Relaciones Activas</h3>
+                        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl shadow-sm">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+                                <div>
+                                    <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Relaciones Activas</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Resumen de qué cursos y agentes pertenecen a cada Wave.</p>
+                                </div>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-accent bg-accent/10 px-3 py-1 rounded-full">Administración</span>
+                            </div>
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left text-xs">
+                                <table class="w-full text-left text-xs border-separate border-spacing-y-2">
                                     <thead class="bg-gray-50 dark:bg-dark/50 text-gray-500 dark:text-gray-400 uppercase border-b border-light-border dark:border-border">
-                                        <tr><th class="p-3">Tipo Relación</th><th class="p-3">Wave Destino</th><th class="p-3">Entidad Asignada</th><th class="p-3 text-right">Acción</th></tr>
+                                        <tr><th class="p-3">Relación</th><th class="p-3">Wave</th><th class="p-3">Asignación</th><th class="p-3 text-right">Acción</th></tr>
                                     </thead>
-                                    <tbody id="table-assignments" class="divide-y divide-light-border dark:divide-border"></tbody>
+                                    <tbody id="table-assignments"></tbody>
                                 </table>
                             </div>
                         </div>
@@ -286,7 +413,7 @@
                     </form>
                 </div>
                 <div id="tree-courses" class="space-y-4"></div>
-                <div id="admin-course-supervision-panel" class="admin-control hidden mt-8"></div>
+                <div id="admin-course-supervision-panel" class="hidden mt-8" style="display:none!important"></div>
             </section>
 
             <section id="upanahoot-bank-view" class="view-section hidden">
@@ -304,6 +431,14 @@
                 </div>
             </section>
 
+            <section id="evaluations-bank-view" class="view-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold tracking-tight text-accent"><i class="fa-solid fa-clipboard-question mr-2"></i> Banco de Evaluaciones</h2>
+                    <button onclick="window.openEvaluationEditorModal()" class="bg-accent text-white font-bold px-6 py-2.5 rounded-lg text-sm transition shadow-lg shadow-accent/20"><i class="fa-solid fa-plus mr-2"></i> Crear Evaluación</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="evaluations-grid"></div>
+            </section>
+
             <section id="trainer-view" class="view-section hidden">
                 <h2 class="text-2xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Panel Operativo de Instructores (Trainer)</h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Gestiona la proyección de contenido presencial y monitorea a tus agentes.</p>
@@ -313,7 +448,7 @@
                     <div id="trainer-presenter-selector" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 </div>
 
-                <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 text-sm text-gray-500 dark:text-gray-400">Selecciona una Wave, curso y día para proyectar la capacitación presencial.</div>
+                <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 text-sm text-gray-500 dark:text-gray-400">Elige la capacitación que vas a presentar.</div>
 
                 <div class="mt-8">
                     <h3 class="text-lg font-bold text-accent mb-4 border-b border-light-border dark:border-border pb-2"><i class="fa-solid fa-clipboard-check mr-2"></i> Revisión de Autoaprendizaje</h3>
@@ -432,15 +567,55 @@
         </div>
     </div>
 
+    <div id="modal-evaluation-editor" class="fixed inset-0 bg-black/80 hidden z-[70] flex items-center justify-center p-4">
+        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-light-border dark:border-border flex justify-between items-center">
+                <h3 class="text-xl font-bold text-accent"><i class="fa-solid fa-clipboard-question mr-2"></i> Editor de Evaluación</h3>
+                <button onclick="document.getElementById('modal-evaluation-editor').classList.add('hidden')" class="text-gray-400 hover:text-danger"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-gray-50 dark:bg-dark/50">
+                <input type="hidden" id="ev-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <input type="text" id="ev-title" class="w-full bg-white dark:bg-dark border border-light-border dark:border-border p-3 rounded-lg outline-none focus:border-accent text-gray-900 dark:text-white font-bold" placeholder="Título de la evaluación">
+                    <input type="text" id="ev-desc" class="w-full bg-white dark:bg-dark border border-light-border dark:border-border p-3 rounded-lg outline-none focus:border-accent text-gray-900 dark:text-white" placeholder="Descripción / objetivo">
+                </div>
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="font-bold text-gray-900 dark:text-white">Preguntas (<span id="ev-q-count">0</span>)</h4>
+                    <button onclick="window.addEvaluationQuestion()" class="bg-dark text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition"><i class="fa-solid fa-plus mr-2"></i> Agregar Pregunta</button>
+                </div>
+                <div id="ev-questions-container" class="space-y-6"></div>
+            </div>
+            <div class="p-6 border-t border-light-border dark:border-border bg-light-surface dark:bg-surface">
+                <button onclick="window.saveEvaluationToBank()" class="w-full bg-accent text-white font-bold py-3 rounded-lg text-lg transition shadow-lg">Guardar Evaluación</button>
+            </div>
+        </div>
+    </div>
 
-    <div id="modal-activity" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-6 rounded-xl w-full max-w-2xl shadow-2xl my-8">
-            <h3 class="text-lg font-bold mb-4 text-accent"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Creador Avanzado de Contenido</h3>
+
+    <div id="modal-activity" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-3 md:p-4">
+        <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl w-full max-w-4xl max-h-[92vh] shadow-2xl my-4 flex flex-col overflow-hidden">
+            <div class="p-4 md:p-5 border-b border-light-border dark:border-border">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-bold text-accent"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Creador Avanzado de Contenido</h3>
+                        <p class="text-xs text-gray-500 mt-1">Agrega el contenido y los recursos de la actividad.</p>
+                    </div>
+                    <button id="btn-close-modal-top" type="button" class="text-gray-400 hover:text-danger"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div class="hidden gap-2 overflow-x-auto mt-4 pb-1">
+                    <button type="button" onclick="window.switchActivityTab('basic')" data-activity-tab="basic" class="activity-tab-btn active shrink-0 border border-light-border dark:border-border rounded-full px-3 py-1.5 text-xs font-black text-gray-500">1. Básico</button>
+                    <button type="button" onclick="window.switchActivityTab('content')" data-activity-tab="content" class="activity-tab-btn shrink-0 border border-light-border dark:border-border rounded-full px-3 py-1.5 text-xs font-black text-gray-500">2. Contenido</button>
+                    <button type="button" onclick="window.switchActivityTab('media')" data-activity-tab="media" class="activity-tab-btn shrink-0 border border-light-border dark:border-border rounded-full px-3 py-1.5 text-xs font-black text-gray-500">3. Recursos</button>
+                    <button type="button" onclick="window.switchActivityTab('notes')" data-activity-tab="notes" class="activity-tab-btn shrink-0 border border-light-border dark:border-border rounded-full px-3 py-1.5 text-xs font-black text-gray-500">4. Trainer</button>
+                </div>
+            </div>
+            <div class="p-4 md:p-6 overflow-y-auto custom-scrollbar flex-1">
             <input type="hidden" id="modal-course-id">
             <input type="hidden" id="modal-week-idx">
             <input type="hidden" id="modal-day-idx">
+            <input type="hidden" id="modal-activity-idx">
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 activity-tab-panel active" data-activity-panel="basic">
                 <div class="md:col-span-2">
                     <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Título Principal de la Actividad / Tema</label>
                     <input type="text" id="act-title" placeholder="Ej. Cultura Upana e Inducción" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" required>
@@ -451,7 +626,7 @@
                     <select id="act-type" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white" onchange="window.toggleActivityFields()">
                         <option value="presentacion" class="bg-white dark:bg-dark">Slide Texto/HTML (Tema)</option>
                         <option value="imagen" class="bg-white dark:bg-dark">Imagen Estática Embebida</option>
-                        <option value="video" class="bg-white dark:bg-dark">Video (MP4 / YouTube) Embebido</option>
+                        <option value="video" class="bg-white dark:bg-dark">Video / enlace público embebido</option>
                         <option value="pdf" class="bg-white dark:bg-dark">Documento PDF Embebido</option>
                         <option value="kahoot" class="bg-white dark:bg-dark">UPANAHOOT (Evaluación)</option>
                         <option value="practica" class="bg-white dark:bg-dark">Actividad Práctica / Lectura</option>
@@ -469,7 +644,10 @@
                     <input type="text" id="act-objectives" placeholder="Ej. Que el agente comprenda las normativas básicas." class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
                 </div>
 
-                <div class="md:col-span-2" id="field-desc">
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 activity-tab-panel" data-activity-panel="content">
+                <div id="field-desc">
                     <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Contenido a Proyectar (Texto Principal)</label>
                     <div class="flex flex-wrap gap-2 mb-2 bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-lg p-2">
                         <button type="button" onclick="window.richCommand('bold')" class="px-2 py-1 rounded bg-white dark:bg-surface border border-light-border dark:border-border text-xs font-bold">B</button>
@@ -483,7 +661,7 @@
                     <textarea id="act-desc" rows="4" class="hidden"></textarea>
                 </div>
 
-                <div class="md:col-span-2" id="field-content-order">
+                <div id="field-content-order">
                     <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Orden de Presentación</label>
                     <select id="act-content-order" class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
                         <option value="media-first" class="bg-white dark:bg-dark">Mostrar archivo / imagen / video / PDF primero y texto después</option>
@@ -491,31 +669,52 @@
                     </select>
                 </div>
 
-                <div class="md:col-span-2" id="field-notes">
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 activity-tab-panel" data-activity-panel="notes">
+                <div id="field-notes">
                     <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold text-warning"><i class="fa-solid fa-eye-slash mr-1"></i> Notas para el Trainer (No se proyectan)</label>
                     <textarea id="act-notes" rows="2" placeholder="Instrucciones para el formador..." class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-warning outline-none custom-scrollbar text-gray-900 dark:text-white"></textarea>
                 </div>
 
-                <div id="field-youtube" class="md:col-span-2">
-                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Enlace de YouTube</label>
-                    <input type="url" id="act-youtube" placeholder="https://youtube.com/..." class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 activity-tab-panel" data-activity-panel="media">
+                <div id="field-youtube">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Enlace público de video o visor externo</label>
+                    <input type="url" id="act-youtube" placeholder="https://workdrive.zoho.com/..." class="w-full bg-transparent border border-light-border dark:border-border p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
+                    <button type="button" id="btn-toggle-embed-code" onclick="window.toggleEmbedCodeField()" class="mt-3 inline-flex items-center gap-2 text-xs font-black text-accent bg-accent/10 border border-accent/20 rounded-lg px-3 py-2 hover:bg-accent/15 transition"><i class="fa-solid fa-code"></i> Ingresar código incrustado</button>
                 </div>
 
-                <div id="field-kahoot" class="md:col-span-2 hidden">
+                <div id="field-embed-code" class="hidden">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Código incrustado del video</label>
+                    <textarea id="act-embed-code" rows="4" placeholder='<iframe src="https://workdrive.zohoexternal.com/embed/..." allowfullscreen="true"></iframe>' class="w-full bg-transparent border border-light-border dark:border-border p-3 rounded-lg text-sm focus:border-accent outline-none custom-scrollbar text-gray-900 dark:text-white font-mono"></textarea>
+                    <p class="text-[11px] text-gray-400 mt-1">Pega aquí el código de inserción del video.</p>
+                </div>
+
+                <div id="field-kahoot" class="hidden">
                     <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold text-accent">Seleccionar UPANAHOOT del Banco</label>
                     <select id="act-kahoot-id" class="w-full bg-transparent border border-accent p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
                         </select>
                 </div>
 
-                <div id="field-file" class="md:col-span-2">
-                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Archivo Físico (Firebase Storage)</label>
-                    <input type="file" id="act-file" class="w-full bg-transparent border border-light-border dark:border-border p-2 rounded-lg text-xs text-gray-500 dark:text-gray-400">
+                <div id="field-evaluation" class="hidden">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold text-accent">Seleccionar Evaluación del Banco</label>
+                    <select id="act-evaluation-id" class="w-full bg-transparent border border-accent p-2.5 rounded-lg text-sm focus:border-accent outline-none text-gray-900 dark:text-white">
+                        </select>
+                </div>
+
+                <div id="field-file">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1 font-semibold">Archivo o recurso</label>
+                    <label for="act-file" class="w-full bg-gray-50 dark:bg-dark/40 border border-dashed border-light-border dark:border-border p-4 rounded-lg text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2 cursor-pointer hover:border-accent hover:text-accent transition"><i class="fa-solid fa-cloud-arrow-up"></i><span id="act-file-label">Seleccionar archivo desde tu equipo</span></label>
+                    <input type="file" id="act-file" class="hidden">
                 </div>
             </div>
 
             <div id="upload-progress" class="text-xs text-accent font-semibold animate-pulse hidden mt-4"><i class="fa-solid fa-spinner fa-spin"></i> Subiendo archivo a Storage...</div>
+            </div>
             
-            <div class="flex gap-3 pt-6 mt-4 border-t border-light-border dark:border-border">
+            <div class="flex gap-3 p-4 md:p-5 border-t border-light-border dark:border-border bg-light-surface dark:bg-surface">
                 <button id="btn-save-activity" class="flex-1 bg-accent text-white py-3 rounded-lg text-sm font-medium transition shadow-lg shadow-accent/20">Añadir Tema/Actividad al Día</button>
                 <button id="btn-close-modal" class="flex-1 bg-transparent border border-light-border dark:border-border hover:bg-gray-50 dark:hover:bg-surface text-gray-600 dark:text-gray-400 py-3 rounded-lg text-sm transition">Descartar</button>
             </div>
@@ -604,6 +803,7 @@
         let localAssignments = [];
         let localProgress = [];
         let localUPANAHOOTs = []; // Bank
+        let localEvaluations = [];
         let localUPANAHOOTSessions = [];
         let localDayClosures = [];
         let localSelfStudySubmissions = [];
@@ -632,6 +832,37 @@
 
         const toHtml = (value = "") => safeText(value).replace(/\n/g, '<br>');
 
+        function showSystemMessage(message, title = "Aviso", options = {}) {
+            const modal = document.getElementById('modal-system-message');
+            const titleEl = document.getElementById('system-message-title');
+            const textEl = document.getElementById('system-message-text');
+            const okBtn = document.getElementById('system-message-ok');
+            const cancelBtn = document.getElementById('system-message-cancel');
+            const iconEl = document.getElementById('system-message-icon');
+            if(!modal || !titleEl || !textEl || !okBtn || !cancelBtn) return Promise.resolve(true);
+            titleEl.innerText = title;
+            textEl.innerText = String(message || "");
+            iconEl.className = `fa-solid ${options.confirm ? 'fa-circle-question' : 'fa-circle-info'} text-xl`;
+            okBtn.innerText = options.okText || 'Aceptar';
+            cancelBtn.innerText = options.cancelText || 'Cancelar';
+            cancelBtn.classList.toggle('hidden', !options.confirm);
+            modal.classList.remove('hidden');
+            return new Promise(resolve => {
+                const close = (result) => {
+                    modal.classList.add('hidden');
+                    okBtn.onclick = null;
+                    cancelBtn.onclick = null;
+                    resolve(result);
+                };
+                okBtn.onclick = () => close(true);
+                cancelBtn.onclick = () => close(false);
+            });
+        }
+
+        window.showSystemMessage = showSystemMessage;
+        window.alert = (message) => { showSystemMessage(message); };
+        const askConfirm = (message, title = "Confirmar") => showSystemMessage(message, title, { confirm: true, okText: "Sí, continuar", cancelText: "Cancelar" });
+
         function renderRichHtml(value = "") {
             const raw = String(value || "");
             if(!raw.includes("<")) return toHtml(raw);
@@ -648,6 +879,29 @@
             return template.innerHTML;
         }
 
+        function extractEmbedSrc(embedCode = "") {
+            const raw = String(embedCode || "").trim();
+            if(!raw) return "";
+            const template = document.createElement('template');
+            template.innerHTML = raw;
+            const iframe = template.content.querySelector('iframe');
+            const src = iframe?.getAttribute('src') || (/^https:\/\//i.test(raw) ? raw : "");
+            if(!src) return "";
+            try {
+                const parsed = new URL(src, window.location.href);
+                if(parsed.protocol !== 'https:') return "";
+                return parsed.href;
+            } catch {
+                return "";
+            }
+        }
+
+        function renderEmbedFrame(embedCode = "", title = "Video incrustado", extraClass = "") {
+            const src = extractEmbedSrc(embedCode);
+            if(!src) return "";
+            return `<iframe src="${safeText(src)}" class="embed-preview-frame ${extraClass}" scrolling="no" frameborder="0" allowfullscreen title="${safeText(title)}"></iframe>`;
+        }
+
         function progressKey(userId, courseId, wIdx, dIdx, aIdx) {
             return `${userId}_${courseId}_${wIdx}_${dIdx}_${aIdx}`;
         }
@@ -660,10 +914,51 @@
             );
         }
 
+        function findDayClosure(courseId, wIdx, dIdx, waveId = null, weekTitle = "", dayTitle = "") {
+            const norm = value => String(value || '').trim().toLowerCase();
+            return localDayClosures.find(c => {
+                const sameCourse = c.courseId === courseId;
+                const sameWave = !waveId || !c.waveId || c.waveId === waveId;
+                const sameIndex = Number(c.wIdx ?? c.weekId) === Number(wIdx) && Number(c.dIdx ?? c.dayId) === Number(dIdx);
+                const sameName = (!weekTitle || norm(c.weekTitle) === norm(weekTitle)) && (!dayTitle || norm(c.dayTitle) === norm(dayTitle));
+                return sameCourse && sameWave && (sameIndex || sameName);
+            });
+        }
+
         function getPdfViewerUrl(url) {
             if(!url) return "";
             const separator = url.includes('#') ? '&' : '#';
             return `${url}${separator}toolbar=1&navpanes=0&scrollbar=1&page=1&view=FitH`;
+        }
+
+        function isDirectVideoUrl(url = "") {
+            return /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(String(url));
+        }
+
+        function roleLabel(role = "") {
+            return role === 'admin' ? 'Administrador' : role === 'trainer' ? 'Entrenador' : 'Agente';
+        }
+
+        function roleSubtitle(role = "") {
+            return role === 'admin' ? 'Administrador de plataforma' : role === 'trainer' ? 'Entrenador de capacitación' : 'Agente de Servicio al Cliente';
+        }
+
+        function renderUserAvatar(targetId, user) {
+            const target = document.getElementById(targetId);
+            if(!target || !user) return;
+            if(user.photoURL) target.innerHTML = `<img src="${safeText(user.photoURL)}" class="w-full h-full object-cover" alt="${safeText(user.name || 'Usuario')}">`;
+            else target.innerText = (user.name || user.email || 'U').charAt(0).toUpperCase();
+        }
+
+        function renderProfileView() {
+            if(!currentUser) return;
+            renderUserAvatar('profile-photo-preview', currentUser);
+            document.getElementById('profile-name').innerText = currentUser.name || 'Usuario';
+            document.getElementById('profile-role-title').innerText = roleSubtitle(currentUser.role);
+            document.getElementById('profile-email').innerText = currentUser.email || '-';
+            document.getElementById('profile-role-detail').innerText = roleLabel(currentUser.role);
+            document.getElementById('profile-status').innerText = currentUser.status || 'activo';
+            document.getElementById('profile-join-date').innerText = currentUser.joinDate ? new Date(currentUser.joinDate).toLocaleDateString() : '-';
         }
 
         // UI FRAMEWORK COUPLING
@@ -718,6 +1013,26 @@
             });
         });
 
+        document.getElementById('top-user-toggle')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('top-user-menu')?.classList.toggle('open');
+        });
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('top-user-menu');
+            if(menu && !menu.contains(e.target)) menu.classList.remove('open');
+        });
+        document.getElementById('btn-open-profile')?.addEventListener('click', () => {
+            document.getElementById('top-user-menu')?.classList.remove('open');
+            activateView('profile-view');
+        });
+
+        function setTopUserMenuVisible(visible = true) {
+            const menu = document.getElementById('top-user-menu');
+            if(!menu) return;
+            menu.classList.toggle('immersive-hidden', !visible);
+            if(!visible) menu.classList.remove('open');
+        }
+
         // AUTHENTICATION
         document.getElementById('btn-login').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value;
@@ -725,34 +1040,78 @@
             try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert("Fallo de acceso corporativo: " + e.message); }
         });
 
-        document.getElementById('btn-register').addEventListener('click', async () => {
-            const name = document.getElementById('auth-name')?.value.trim();
-            const email = document.getElementById('auth-email').value;
-            const pass = document.getElementById('auth-password').value;
-            if(!name) return alert("Ingrese su nombre completo para usarlo en el sistema.");
-            if(!email || !pass) return alert("Ingrese credenciales válidas.");
+        document.getElementById('btn-register').addEventListener('click', () => {
+            document.getElementById('modal-register-agent').classList.remove('hidden');
+        });
+
+        document.getElementById('btn-register-agent-submit').addEventListener('click', async () => {
+            const name = document.getElementById('reg-name')?.value.trim();
+            const email = document.getElementById('reg-email')?.value.trim();
+            const pass = document.getElementById('reg-password')?.value;
+            if(!name) return alert("Ingrese su nombre completo.");
+            if(!email || !pass) return alert("Ingrese correo y contraseña.");
             try {
                 const res = await createUserWithEmailAndPassword(auth, email, pass);
                 await setDoc(doc(db, "users", res.user.uid), {
-                    name, email, role: "admin", status: "activo", joinDate: new Date().toISOString()
+                    name, email, role: "agent", status: "activo", joinDate: new Date().toISOString(), photoURL: "", photoSetupPending: true
                 });
-                alert("Cuenta máster creada exitosamente.");
+                document.getElementById('modal-register-agent').classList.add('hidden');
+                alert("Cuenta creada. Ya puedes ingresar.");
             } catch (e) { alert("Error de registro: " + e.message); }
         });
 
         document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
 
+        async function uploadCurrentUserPhoto(fileObj) {
+            if(!currentUser || !fileObj) return;
+            const storageRef = ref(storage, `profile_photos/${currentUser.id}_${Date.now()}_${fileObj.name}`);
+            const snap = await uploadBytesResumable(storageRef, fileObj);
+            const photoURL = await getDownloadURL(snap.ref);
+            await updateDoc(doc(db, "users", currentUser.id), { photoURL, photoSetupPending: false });
+            currentUser = { ...currentUser, photoURL, photoSetupPending: false };
+            renderUserAvatar('user-avatar', currentUser);
+            renderProfileView();
+        }
+
+        function previewImageFile(inputId, previewId, buttonId = null) {
+            const fileObj = document.getElementById(inputId)?.files?.[0];
+            const preview = document.getElementById(previewId);
+            if(!fileObj || !preview) return;
+            const url = URL.createObjectURL(fileObj);
+            preview.innerHTML = `<img src="${url}" class="w-full h-full object-cover" alt="Vista previa">`;
+            if(buttonId) document.getElementById(buttonId).disabled = false;
+        }
+
+        document.getElementById('setup-photo-input').addEventListener('change', () => previewImageFile('setup-photo-input', 'setup-photo-preview', 'btn-upload-profile-photo'));
+        document.getElementById('profile-photo-input').addEventListener('change', async () => {
+            const fileObj = document.getElementById('profile-photo-input').files[0];
+            if(!fileObj) return;
+            await uploadCurrentUserPhoto(fileObj);
+            alert("Foto de perfil actualizada.");
+        });
+        document.getElementById('btn-upload-profile-photo').addEventListener('click', async () => {
+            const fileObj = document.getElementById('setup-photo-input').files[0];
+            if(!fileObj) return;
+            await uploadCurrentUserPhoto(fileObj);
+            document.getElementById('modal-photo-setup').classList.add('hidden');
+        });
+        document.getElementById('btn-skip-profile-photo').addEventListener('click', async () => {
+            if(currentUser?.id) await updateDoc(doc(db, "users", currentUser.id), { photoSetupPending: false });
+            document.getElementById('modal-photo-setup').classList.add('hidden');
+        });
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const docSnap = await getDoc(doc(db, "users", user.uid));
                 if(docSnap.exists()){ currentUser = { id: user.uid, ...docSnap.data() }; } 
-                else { currentUser = { id: user.uid, role: 'admin', name: user.email, email: user.email }; }
+                else { currentUser = { id: user.uid, role: 'agent', name: user.email, email: user.email }; }
                 
                 currentUser.name = currentUser.name || currentUser.email || user.email || 'Usuario';
                 document.getElementById('user-name').innerText = currentUser.name;
-                document.getElementById('user-role').innerText = currentUser.role;
-                document.getElementById('user-avatar').innerText = currentUser.name.charAt(0).toUpperCase();
-                document.getElementById('stat-myrole').innerText = currentUser.role;
+                document.getElementById('user-role').innerText = roleLabel(currentUser.role);
+                renderUserAvatar('user-avatar', currentUser);
+                document.getElementById('stat-myrole').innerText = roleLabel(currentUser.role);
+                renderProfileView();
 
                 document.querySelectorAll('.admin-control').forEach(el => el.style.display = currentUser.role === 'admin' ? 'block' : 'none');
                 document.querySelectorAll('.trainer-control').forEach(el => el.style.display = ['admin', 'trainer'].includes(currentUser.role) ? 'block' : 'none');
@@ -762,6 +1121,7 @@
                 views.login.classList.add('hidden');
                 views.app.classList.remove('hidden');
                 activateView(currentUser.role === 'agent' ? 'agent-view' : 'dash-view');
+                if(currentUser.photoSetupPending && !currentUser.photoURL) document.getElementById('modal-photo-setup').classList.remove('hidden');
                 
                 initRealtimePipeline();
             } else {
@@ -798,6 +1158,7 @@
 
             onSnapshot(collection(db, "courseAssignments"), (snap) => {
                 localAssignments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderWavesList();
                 renderAssignmentsTable();
                 if(currentUser.role === 'agent') renderAgentPortal();
                 if(['trainer', 'admin'].includes(currentUser.role)) { renderTrainerMatrix(); renderTrainerPresenterSelector(); }
@@ -817,6 +1178,13 @@
                 if(!document.getElementById('presentation-view').classList.contains('hidden')) renderCurrentSlide();
             });
 
+            onSnapshot(collection(db, "evaluations"), (snap) => {
+                localEvaluations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderEvaluationsBank();
+                populateEvaluationSelect(document.getElementById('act-evaluation-id')?.value || "");
+                if(currentUser?.role === 'agent') renderSelfStudyContent();
+            });
+
             onSnapshot(collection(db, "kahootSessions"), (snap) => {
                 localUPANAHOOTSessions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 if(currentUser?.role === 'agent') renderAgentUPANAHOOTArea();
@@ -833,6 +1201,7 @@
             onSnapshot(collection(db, "dayClosures"), (snap) => {
                 localDayClosures = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 if(['admin', 'trainer'].includes(currentUser?.role)) {
+                    renderTrainerPresenterSelector();
                     renderTrainerMatrix();
                     renderAdminSupervision();
                 }
@@ -863,12 +1232,12 @@
                 <tr class="hover:bg-gray-100 dark:hover:bg-dark/20 transition">
                     <td class="p-4 font-medium text-gray-900 dark:text-gray-100">${u.name}</td>
                     <td class="p-4 text-gray-500 dark:text-gray-400">${u.email}</td>
-                    <td class="p-4"><span class="px-2 py-1 text-xs font-semibold rounded-md ${u.role === 'admin' ? 'bg-accent/20 text-indigo-500 dark:text-indigo-400' : u.role === 'trainer' ? 'bg-warning/20 text-warning' : 'bg-success/20 text-success'} uppercase tracking-wider">${u.role}</span></td>
+                    <td class="p-4"><span class="px-2 py-1 text-xs font-semibold rounded-md ${u.role === 'admin' ? 'bg-accent/20 text-indigo-500 dark:text-indigo-400' : u.role === 'trainer' ? 'bg-warning/20 text-warning' : 'bg-success/20 text-success'} uppercase tracking-wider">${roleLabel(u.role)}</span></td>
                     <td class="p-4 text-right"><button onclick="window.deleteUserProfile('${u.id}')" class="text-danger hover:text-red-500 transition text-xs font-medium"><i class="fa-solid fa-trash"></i> Eliminar</button></td>
                 </tr>
             `).join('');
         }
-        window.deleteUserProfile = async (id) => { if(confirm("¿Eliminar usuario?")) await deleteDoc(doc(db, "users", id)); };
+        window.deleteUserProfile = async (id) => { if(await askConfirm("¿Eliminar este usuario?")) await deleteDoc(doc(db, "users", id)); };
 
         document.getElementById('form-wave').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -877,14 +1246,39 @@
         function renderWavesList() {
             const container = document.getElementById('list-waves');
             if(!container) return;
-            container.innerHTML = localWaves.map(w => `
-                <div class="flex items-center justify-between p-3 bg-white dark:bg-dark border border-light-border dark:border-border rounded-lg text-sm shadow-sm">
-                    <span class="font-medium text-gray-800 dark:text-gray-200"><i class="fa-solid fa-people-group text-accent mr-2"></i>${w.name}</span>
-                    <button onclick="window.deleteWaveUnit('${w.id}')" class="text-danger text-xs hover:underline"><i class="fa-solid fa-circle-xmark"></i> Quitar</button>
+            if(localWaves.length === 0) {
+                container.innerHTML = `<div class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-dark/40 border border-dashed border-light-border dark:border-border rounded-xl p-4">Aún no hay waves registradas.</div>`;
+                return;
+            }
+            container.innerHTML = localWaves.map(w => {
+                const courseCount = localAssignments.filter(a => String(a.type || '').toLowerCase() === 'wave_course' && (a.targetId === w.id || a.waveId === w.id)).length;
+                const agentCount = localAssignments.filter(a => String(a.type || '').toLowerCase() === 'agent_wave' && (a.assignId === w.id || a.waveId === w.id)).length;
+                return `
+                <div class="p-4 bg-white dark:bg-dark border border-light-border dark:border-border rounded-xl text-sm shadow-sm">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-start gap-3 min-w-0">
+                            <div class="w-9 h-9 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0"><i class="fa-solid fa-people-group"></i></div>
+                            <div class="min-w-0">
+                                <div class="font-black text-gray-900 dark:text-gray-100 truncate">${safeText(w.name)}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Grupo operativo de capacitación</div>
+                            </div>
+                        </div>
+                        <button onclick="window.deleteWaveUnit('${safeText(w.id)}')" class="text-danger text-xs font-bold hover:underline shrink-0"><i class="fa-solid fa-circle-xmark mr-1"></i>Quitar</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <div class="rounded-lg bg-accent/5 border border-accent/10 p-3">
+                            <div class="text-lg font-black text-accent leading-none">${courseCount}</div>
+                            <div class="text-[10px] uppercase tracking-wider font-bold text-gray-500 mt-1">Cursos</div>
+                        </div>
+                        <div class="rounded-lg bg-success/5 border border-success/10 p-3">
+                            <div class="text-lg font-black text-success leading-none">${agentCount}</div>
+                            <div class="text-[10px] uppercase tracking-wider font-bold text-gray-500 mt-1">Agentes</div>
+                        </div>
+                    </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
-        window.deleteWaveUnit = async (id) => { if(confirm("¿Dar de baja esta Wave?")) await deleteDoc(doc(db, "waves", id)); };
+        window.deleteWaveUnit = async (id) => { if(await askConfirm("¿Dar de baja esta Wave?")) await deleteDoc(doc(db, "waves", id)); };
 
         function populateSelectors() {
             if(currentUser.role !== 'admin') return;
@@ -904,14 +1298,31 @@
         function renderAssignmentsTable() {
             const tbody = document.getElementById('table-assignments');
             if(!tbody) return;
+            if(localAssignments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-dark/40 rounded-xl">Aún no hay cursos o agentes vinculados a una Wave.</td></tr>`;
+                return;
+            }
             tbody.innerHTML = localAssignments.map(a => {
-                const wave = localWaves.find(w => w.id === (a.type === 'wave_course' ? a.targetId : a.assignId));
-                let entityName = a.type === 'wave_course' ? (localCourses.find(c => c.id === a.assignId)?.title || "Curso Removido") : (localUsers.find(u => u.id === a.targetId)?.name || "Agente Inactivo");
-                return `<tr>
-                    <td class="p-3 font-semibold uppercase text-[10px] tracking-wider text-gray-500">${a.type.replace('_', ' ')}</td>
-                    <td class="p-3 font-medium text-accent">${wave ? wave.name : 'Inexistente'}</td>
-                    <td class="p-3 text-gray-700 dark:text-gray-300">${entityName}</td>
-                    <td class="p-3 text-right"><button onclick="window.removeAssignment('${a.id}')" class="text-danger text-xs hover:underline">Remover</button></td>
+                const isCourseRelation = a.type === 'wave_course';
+                const wave = localWaves.find(w => w.id === (isCourseRelation ? a.targetId : a.assignId));
+                const course = localCourses.find(c => c.id === a.assignId);
+                const agent = localUsers.find(u => u.id === a.targetId);
+                const entityName = isCourseRelation ? (course?.title || "Curso no encontrado") : (agent?.name || agent?.email || "Agente no encontrado");
+                const label = isCourseRelation ? 'Curso asignado' : 'Agente asignado';
+                const icon = isCourseRelation ? 'fa-book-open' : 'fa-user-check';
+                const chipClass = isCourseRelation ? 'bg-accent/10 text-accent' : 'bg-success/10 text-success';
+                return `<tr class="bg-white dark:bg-dark border border-light-border dark:border-border shadow-sm">
+                    <td class="p-3 rounded-l-xl">
+                        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${chipClass} font-black">
+                            <i class="fa-solid ${icon}"></i>${label}
+                        </span>
+                    </td>
+                    <td class="p-3 font-black text-accent">${safeText(wave ? wave.name : 'Wave no encontrada')}</td>
+                    <td class="p-3 text-gray-700 dark:text-gray-300">
+                        <div class="font-bold text-gray-900 dark:text-white">${safeText(entityName)}</div>
+                        <div class="text-[11px] text-gray-400">${isCourseRelation ? 'Contenido asignado a la wave' : 'Persona asignada al grupo'}</div>
+                    </td>
+                    <td class="p-3 text-right rounded-r-xl"><button onclick="window.removeAssignment('${safeText(a.id)}')" class="text-danger text-xs font-bold hover:underline"><i class="fa-solid fa-trash mr-1"></i>Remover</button></td>
                 </tr>`;
             }).join('');
         }
@@ -982,42 +1393,43 @@
                     </div>
                     <div class="space-y-3">
                         ${(selectedCourse.weeks || []).map((week, wIdx) => `
-                            <div class="ml-0 md:ml-6 border-l-2 border-light-border dark:border-border pl-4">
-                                <div class="flex justify-between items-center bg-gray-50 dark:bg-dark/40 p-2 rounded-lg mb-2">
-                                    <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200"><i class="fa-solid fa-calendar-week text-warning mr-2"></i>${safeText(week.title)}</h4>
+                            <details class="bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl overflow-hidden" ${wIdx === 0 ? 'open' : ''}>
+                                <summary class="cursor-pointer list-none flex justify-between items-center gap-3 p-3">
+                                    <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200"><i class="fa-solid fa-calendar-week text-warning mr-2"></i>${safeText(week.title)} <span class="text-xs text-gray-400 ml-2">${(week.days || []).length} dia(s)</span></h4>
                                     <div class="flex gap-2">
-                                        <button onclick="window.addDayUnit('${selectedCourse.id}', ${wIdx})" class="text-[11px] bg-white dark:bg-dark border border-light-border dark:border-border px-2 py-1 rounded text-gray-600 dark:text-gray-400">+ Día</button>
-                                        <button onclick="window.deleteWeekUnit('${selectedCourse.id}', ${wIdx})" class="text-danger text-[11px] px-1"><i class="fa-solid fa-circle-minus"></i></button>
+                                        <button onclick="event.preventDefault(); window.addDayUnit('${selectedCourse.id}', ${wIdx})" class="text-[11px] bg-white dark:bg-dark border border-light-border dark:border-border px-2 py-1 rounded text-gray-600 dark:text-gray-400">+ Dia</button>
+                                        <button onclick="event.preventDefault(); window.deleteWeekUnit('${selectedCourse.id}', ${wIdx})" class="text-danger text-[11px] px-1"><i class="fa-solid fa-circle-minus"></i></button>
                                     </div>
-                                </div>
-                                <div class="space-y-2">
+                                </summary>
+                                <div class="space-y-2 p-3 pt-0">
                                     ${(week.days || []).map((day, dIdx) => `
-                                        <div class="ml-0 md:ml-6 border-l-2 border-dashed border-gray-300 dark:border-border/60 pl-4">
-                                            <div class="flex justify-between items-center bg-white dark:bg-dark/20 p-2 rounded border border-light-border dark:border-border/40 text-xs mb-1 shadow-sm">
-                                                <span class="font-medium text-gray-800 dark:text-gray-300"><i class="fa-regular fa-calendar-check text-success mr-1.5"></i>${safeText(day.title)}</span>
+                                        <details class="bg-white dark:bg-dark/20 border border-light-border dark:border-border/40 rounded-lg overflow-hidden" ${dIdx === 0 ? 'open' : ''}>
+                                            <summary class="cursor-pointer list-none flex justify-between items-center p-2 text-xs">
+                                                <span class="font-medium text-gray-800 dark:text-gray-300"><i class="fa-regular fa-calendar-check text-success mr-1.5"></i>${safeText(day.title)} <span class="text-gray-400 ml-2">${(day.activities || []).length} actividad(es)</span></span>
                                                 <div class="flex gap-1">
-                                                    <button onclick="window.openActivityModal('${selectedCourse.id}', ${wIdx}, ${dIdx})" class="text-[10px] bg-accent/10 text-accent border border-accent/30 px-2 py-0.5 rounded hover:bg-accent/20 transition">+ Tema/Actividad</button>
-                                                    <button onclick="window.deleteDayUnit('${selectedCourse.id}', ${wIdx}, ${dIdx})" class="text-danger text-[10px] px-1"><i class="fa-solid fa-xmark"></i></button>
+                                                    <button onclick="event.preventDefault(); window.openActivityModal('${selectedCourse.id}', ${wIdx}, ${dIdx})" class="text-[10px] bg-accent/10 text-accent border border-accent/30 px-2 py-0.5 rounded hover:bg-accent/20 transition">+ Tema/Actividad</button>
+                                                    <button onclick="event.preventDefault(); window.deleteDayUnit('${selectedCourse.id}', ${wIdx}, ${dIdx})" class="text-danger text-[10px] px-1"><i class="fa-solid fa-xmark"></i></button>
                                                 </div>
-                                            </div>
-                                            <ul class="ml-0 md:ml-4 space-y-1.5 mt-2">
+                                            </summary>
+                                            <ul class="space-y-1.5 p-2 pt-0">
                                                 ${(day.activities || []).map((act, aIdx) => `
-                                                    <li class="text-xs bg-gray-50 dark:bg-dark/60 border border-light-border dark:border-border p-2 rounded-md flex justify-between items-center group">
+                                                    <li draggable="true" ondragstart="window.activityDragStart(event, '${selectedCourse.id}', ${wIdx}, ${dIdx}, ${aIdx})" ondragover="event.preventDefault()" ondrop="window.activityDrop(event, '${selectedCourse.id}', ${wIdx}, ${dIdx}, ${aIdx})" class="text-xs bg-gray-50 dark:bg-dark/60 border border-light-border dark:border-border p-2 rounded-md flex justify-between items-center group cursor-move">
                                                         <span class="text-gray-600 dark:text-gray-400 truncate w-2/3"><strong class="text-gray-900 dark:text-gray-200">[${safeText((act.type || '').toUpperCase())}]</strong> ${safeText(act.title || '')}</span>
                                                         <div class="flex gap-2 items-center">
                                                             <div class="flex flex-col opacity-0 group-hover:opacity-100 transition px-2 border-r border-light-border dark:border-border">
                                                                 <button onclick="window.moveActivity('${selectedCourse.id}', ${wIdx}, ${dIdx}, ${aIdx}, -1)" class="text-gray-400 hover:text-accent"><i class="fa-solid fa-caret-up"></i></button>
                                                                 <button onclick="window.moveActivity('${selectedCourse.id}', ${wIdx}, ${dIdx}, ${aIdx}, 1)" class="text-gray-400 hover:text-accent"><i class="fa-solid fa-caret-down"></i></button>
                                                             </div>
+                                                            <button onclick="window.openActivityModal('${selectedCourse.id}', ${wIdx}, ${dIdx}, ${aIdx})" class="text-accent text-[11px] p-1"><i class="fa-solid fa-pen"></i></button>
                                                             <button onclick="window.deleteActivityUnit('${selectedCourse.id}', ${wIdx}, ${dIdx}, ${aIdx})" class="text-danger text-[11px] p-1"><i class="fa-regular fa-trash-can"></i></button>
                                                         </div>
                                                     </li>
-                                                `).join('')}
+                                                `).join('') || `<li class="text-xs text-gray-400 p-2">Sin actividades.</li>`}
                                             </ul>
-                                        </div>
-                                    `).join('')}
+                                        </details>
+                                    `).join('') || `<div class="text-xs text-gray-400 p-2">Sin dias.</div>`}
                                 </div>
-                            </div>
+                            </details>
                         `).join('') || `<div class="text-sm text-gray-500">Este curso aún no tiene semanas configuradas.</div>`}
                     </div>
                 </div>
@@ -1049,7 +1461,7 @@
             const c = localCourses.find(c => c.id === cId); c.weeks[wIdx].days.splice(dIdx, 1);
             await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
         };
-        window.deleteCourseUnit = async (id) => { if(confirm("¿Eliminar curso completo?")) await deleteDoc(doc(db, "courses", id)); };
+        window.deleteCourseUnit = async (id) => { if(await askConfirm("¿Eliminar curso completo?")) await deleteDoc(doc(db, "courses", id)); };
 
         // Reordenar actividades (Move up/down)
         window.moveActivity = async (cId, wIdx, dIdx, aIdx, dir) => {
@@ -1062,11 +1474,34 @@
             await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
         };
 
+        let activityDragState = null;
+        window.activityDragStart = (event, cId, wIdx, dIdx, aIdx) => {
+            activityDragState = { cId, wIdx, dIdx, aIdx };
+            event.dataTransfer.effectAllowed = 'move';
+        };
+        window.activityDrop = async (event, cId, wIdx, dIdx, targetIdx) => {
+            event.preventDefault();
+            if(!activityDragState || activityDragState.cId !== cId || Number(activityDragState.wIdx) !== Number(wIdx) || Number(activityDragState.dIdx) !== Number(dIdx)) return;
+            const fromIdx = Number(activityDragState.aIdx);
+            const toIdx = Number(targetIdx);
+            if(fromIdx === toIdx) return;
+            const c = localCourses.find(course => course.id === cId);
+            const acts = c.weeks[wIdx].days[dIdx].activities || [];
+            const [moved] = acts.splice(fromIdx, 1);
+            acts.splice(toIdx, 0, moved);
+            activityDragState = null;
+            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+        };
+
 
         // ==========================================
         // MÓDULO 4: CREADOR AVANZADO Y ASIGNACIÓN (Incluye lógica UPANAHOOT select)
         // ==========================================
         const modalActivity = document.getElementById('modal-activity');
+        window.switchActivityTab = (tab) => {
+            document.querySelectorAll('[data-activity-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.activityTab === tab));
+            document.querySelectorAll('[data-activity-panel]').forEach(panel => panel.classList.toggle('active', panel.dataset.activityPanel === tab));
+        };
         function populateUPANAHOOTSelect(selectedId = "") {
             const kSelect = document.getElementById('act-kahoot-id');
             if(!kSelect) return;
@@ -1079,34 +1514,65 @@
             kSelect.innerHTML = localUPANAHOOTs.map(k => `<option value="${safeText(k.id)}" ${k.id === selectedId ? 'selected' : ''} class="bg-white dark:bg-dark">${safeText(k.title || 'UPANAHOOT sin título')}</option>`).join('');
         }
 
-        window.openActivityModal = (cId, wIdx, dIdx) => {
+        window.openActivityModal = (cId, wIdx, dIdx, aIdx = null) => {
             document.getElementById('modal-course-id').value = cId;
             document.getElementById('modal-week-idx').value = wIdx;
             document.getElementById('modal-day-idx').value = dIdx;
-            document.getElementById('act-desc-editor').innerHTML = '';
-            document.getElementById('act-desc').value = '';
-            document.getElementById('act-content-order').value = 'media-first';
+            document.getElementById('modal-activity-idx').value = Number.isInteger(Number(aIdx)) ? aIdx : '';
+            const c = localCourses.find(course => course.id === cId);
+            const act = Number.isInteger(Number(aIdx)) ? c?.weeks?.[wIdx]?.days?.[dIdx]?.activities?.[aIdx] : null;
+            document.getElementById('act-title').value = act?.title || '';
+            document.getElementById('act-type').value = act?.type || 'presentacion';
+            document.getElementById('act-desc-editor').innerHTML = act?.description || '';
+            document.getElementById('act-desc').value = act?.description || '';
+            document.getElementById('act-objectives').value = act?.objectives || '';
+            document.getElementById('act-youtube').value = act?.youtube || act?.externalUrl || '';
+            document.getElementById('act-embed-code').value = act?.embedCode || '';
+            document.getElementById('act-notes').value = act?.notes || '';
+            document.getElementById('act-duration').value = act?.duration || '';
+            document.getElementById('act-content-order').value = act?.contentOrder || 'media-first';
+            document.getElementById('field-embed-code').dataset.open = act?.embedCode ? 'true' : 'false';
+            if(document.getElementById('act-evaluation-id')) document.getElementById('act-evaluation-id').value = act?.evaluationId || '';
             
-            populateUPANAHOOTSelect();
+            populateUPANAHOOTSelect(act?.kahootId || '');
+            populateEvaluationSelect(act?.evaluationId || '');
+            document.getElementById('btn-save-activity').innerText = act ? 'Guardar Cambios de Actividad' : 'Añadir Tema/Actividad al Día';
             
             modalActivity.classList.remove('hidden');
+            window.switchActivityTab('basic');
             window.toggleActivityFields();
         };
 
         window.toggleActivityFields = () => {
             const type = document.getElementById('act-type').value;
-            document.getElementById('field-file').style.display = ['imagen', 'pdf', 'practica', 'presentacion'].includes(type) ? 'block' : 'none';
+            document.getElementById('field-file').style.display = ['imagen', 'pdf', 'practica', 'presentacion', 'video'].includes(type) ? 'block' : 'none';
             document.getElementById('field-youtube').style.display = type === 'video' ? 'block' : 'none';
+            document.getElementById('field-embed-code').style.display = type === 'video' && document.getElementById('field-embed-code').dataset.open === 'true' ? 'block' : 'none';
             document.getElementById('field-kahoot').style.display = type === 'kahoot' ? 'block' : 'none';
+            document.getElementById('field-evaluation').style.display = type === 'evaluacion' ? 'block' : 'none';
             document.getElementById('field-desc').style.display = type !== 'kahoot' ? 'block' : 'none';
             document.getElementById('field-content-order').style.display = type !== 'kahoot' ? 'block' : 'none';
         };
 
+        window.toggleEmbedCodeField = () => {
+            const field = document.getElementById('field-embed-code');
+            field.dataset.open = field.dataset.open === 'true' ? 'false' : 'true';
+            window.toggleActivityFields();
+        };
+
         document.getElementById('btn-close-modal').addEventListener('click', () => {
             modalActivity.classList.add('hidden');
-            ['act-title','act-desc','act-objectives','act-youtube','act-notes','act-duration','act-file'].forEach(id => document.getElementById(id).value = '');
+            ['act-title','act-desc','act-objectives','act-youtube','act-embed-code','act-notes','act-duration','act-file','modal-activity-idx','act-evaluation-id'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
             document.getElementById('act-content-order').value = 'media-first';
             document.getElementById('act-desc-editor').innerHTML = '';
+            document.getElementById('field-embed-code').dataset.open = 'false';
+            document.getElementById('btn-save-activity').innerText = 'Añadir Tema/Actividad al Día';
+            document.getElementById('act-file-label').innerText = 'Seleccionar archivo desde tu equipo';
+        });
+        document.getElementById('btn-close-modal-top').addEventListener('click', () => document.getElementById('btn-close-modal').click());
+        document.getElementById('act-file').addEventListener('change', () => {
+            const fileObj = document.getElementById('act-file').files[0];
+            document.getElementById('act-file-label').innerText = fileObj ? fileObj.name : 'Seleccionar archivo desde tu equipo';
         });
 
         window.richCommand = (command, value = null) => {
@@ -1124,6 +1590,8 @@
             const cId = document.getElementById('modal-course-id').value;
             const wIdx = parseInt(document.getElementById('modal-week-idx').value);
             const dIdx = parseInt(document.getElementById('modal-day-idx').value);
+            const editIdxRaw = document.getElementById('modal-activity-idx').value;
+            const editIdx = editIdxRaw === '' ? null : parseInt(editIdxRaw);
             
             const title = document.getElementById('act-title').value;
             const type = document.getElementById('act-type').value;
@@ -1131,31 +1599,37 @@
             document.getElementById('act-desc').value = description;
             const objectives = document.getElementById('act-objectives').value;
             const youtube = document.getElementById('act-youtube').value;
+            const embedCode = document.getElementById('act-embed-code').value;
             const notes = document.getElementById('act-notes').value;
             const duration = document.getElementById('act-duration').value || 0;
             const fileObj = document.getElementById('act-file').files[0];
             const kahootId = document.getElementById('act-kahoot-id').value;
+            const evaluationId = document.getElementById('act-evaluation-id')?.value || '';
             const contentOrder = document.getElementById('act-content-order').value || 'media-first';
 
             if(!title) return alert("Título obligatorio.");
             if(type === 'kahoot' && !kahootId) return alert("Seleccione un UPANAHOOT del banco antes de guardar la actividad.");
+            if(type === 'evaluacion' && !evaluationId) return alert("Seleccione una evaluación del banco antes de guardar la actividad.");
             document.getElementById('upload-progress').classList.remove('hidden');
 
             let fileUrl = "";
-            if (fileObj && ['imagen', 'pdf', 'presentacion', 'practica'].includes(type)) {
+            if (fileObj && ['imagen', 'pdf', 'presentacion', 'practica', 'video'].includes(type)) {
                 const storageRef = ref(storage, `lms_media/${Date.now()}_${fileObj.name}`);
                 try {
                     const snap = await uploadBytesResumable(storageRef, fileObj);
                     fileUrl = await getDownloadURL(snap.ref);
-                } catch(e) { alert("Error Storage: " + e.message); document.getElementById('upload-progress').classList.add('hidden'); return; }
+                } catch(e) { alert("No se pudo subir el archivo: " + e.message); document.getElementById('upload-progress').classList.add('hidden'); return; }
             }
 
             const c = localCourses.find(course => course.id === cId);
             if(!c.weeks[wIdx].days[dIdx].activities) c.weeks[wIdx].days[dIdx].activities = [];
-            
-            c.weeks[wIdx].days[dIdx].activities.push({ 
-                title, type, url: fileUrl, description, objectives, youtube, notes, duration, kahootId, contentOrder
-            });
+            const previous = editIdx !== null ? c.weeks[wIdx].days[dIdx].activities[editIdx] : null;
+            const nextActivity = { 
+                ...(previous || {}),
+                title, type, url: fileUrl || previous?.url || '', description, objectives, youtube, externalUrl: youtube, embedCode, notes, duration, kahootId, evaluationId, contentOrder
+            };
+            if(editIdx !== null) c.weeks[wIdx].days[dIdx].activities[editIdx] = nextActivity;
+            else c.weeks[wIdx].days[dIdx].activities.push(nextActivity);
 
             await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
             
@@ -1314,7 +1788,104 @@
             } catch(e) { alert(e.message); }
         };
 
-        window.deleteUPANAHOOT = async (id) => { if(confirm("¿Eliminar UPANAHOOT del banco?")) await deleteDoc(doc(db, "kahoots", id)); };
+        window.deleteUPANAHOOT = async (id) => { if(await askConfirm("¿Eliminar UPANAHOOT del banco?")) await deleteDoc(doc(db, "kahoots", id)); };
+
+        let currentEvaluationQuestions = [];
+        window.currentEvaluationQuestions = currentEvaluationQuestions;
+        function renderEvaluationsBank() {
+            const grid = document.getElementById('evaluations-grid');
+            if(!grid) return;
+            grid.innerHTML = localEvaluations.map(ev => `
+                <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-5 rounded-xl shadow-lg">
+                    <div class="text-[10px] uppercase tracking-widest font-black text-accent mb-2">${ev.questions?.length || 0} preguntas</div>
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2 text-lg truncate">${safeText(ev.title || 'Evaluación sin título')}</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 h-8 mb-4">${safeText(ev.description || 'Sin descripción')}</p>
+                    <div class="flex gap-2">
+                        <button onclick="window.openEvaluationEditorModal('${safeText(ev.id)}')" class="flex-1 bg-gray-100 dark:bg-dark border border-light-border dark:border-border text-xs font-semibold py-2 rounded text-gray-700 dark:text-gray-300 hover:border-accent transition"><i class="fa-solid fa-pen"></i> Editar</button>
+                        <button onclick="window.deleteEvaluation('${safeText(ev.id)}')" class="w-10 bg-red-50 dark:bg-red-900/20 text-danger border border-red-200 dark:border-red-900/30 rounded flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('') || `<div class="text-sm text-gray-500">No hay evaluaciones registradas.</div>`;
+        }
+
+        function populateEvaluationSelect(selectedId = "") {
+            const evSelect = document.getElementById('act-evaluation-id');
+            if(!evSelect) return;
+            if(localEvaluations.length === 0) {
+                evSelect.innerHTML = `<option value="" class="bg-white dark:bg-dark">No hay evaluaciones en el banco</option>`;
+                evSelect.disabled = true;
+                return;
+            }
+            evSelect.disabled = false;
+            evSelect.innerHTML = localEvaluations.map(ev => `<option value="${safeText(ev.id)}" ${ev.id === selectedId ? 'selected' : ''} class="bg-white dark:bg-dark">${safeText(ev.title || 'Evaluación sin título')}</option>`).join('');
+        }
+
+        window.openEvaluationEditorModal = (id = null) => {
+            document.getElementById('modal-evaluation-editor').classList.remove('hidden');
+            const ev = id ? localEvaluations.find(x => x.id === id) : null;
+            document.getElementById('ev-id').value = ev?.id || '';
+            document.getElementById('ev-title').value = ev?.title || '';
+            document.getElementById('ev-desc').value = ev?.description || '';
+            currentEvaluationQuestions = [...(ev?.questions || [])];
+            window.currentEvaluationQuestions = currentEvaluationQuestions;
+            renderEvaluationQuestionsList();
+        };
+
+        window.addEvaluationQuestion = () => {
+            currentEvaluationQuestions.push({ q: "", questionType: "multiple", options: ["", "", "", ""], correct: 0, points: 1000 });
+            window.currentEvaluationQuestions = currentEvaluationQuestions;
+            renderEvaluationQuestionsList();
+        };
+
+        window.removeEvaluationQuestion = (idx) => {
+            currentEvaluationQuestions.splice(idx, 1);
+            window.currentEvaluationQuestions = currentEvaluationQuestions;
+            renderEvaluationQuestionsList();
+        };
+
+        function renderEvaluationQuestionsList() {
+            document.getElementById('ev-q-count').innerText = currentEvaluationQuestions.length;
+            const container = document.getElementById('ev-questions-container');
+            container.innerHTML = currentEvaluationQuestions.map((q, idx) => {
+                const options = Array.isArray(q.options) ? q.options : ["", "", "", ""];
+                while(options.length < 4) options.push("");
+                return `<div class="bg-white dark:bg-dark border border-light-border dark:border-border rounded-xl p-5 shadow-sm">
+                    <div class="flex justify-between gap-3 mb-3">
+                        <input type="text" onchange="currentEvaluationQuestions[${idx}].q = this.value" value="${safeText(q.q || '')}" class="flex-1 bg-transparent border-b border-light-border dark:border-border focus:border-accent py-1 outline-none text-lg font-bold text-gray-900 dark:text-white" placeholder="Pregunta ${idx + 1}">
+                        <button onclick="window.removeEvaluationQuestion(${idx})" class="text-danger"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <select onchange="currentEvaluationQuestions[${idx}].questionType = this.value; window.renderEvaluationQuestionsList()" class="mb-3 bg-transparent border border-light-border dark:border-border rounded p-2 text-xs outline-none text-gray-600 dark:text-gray-300">
+                        <option value="multiple" ${q.questionType !== 'text' ? 'selected' : ''}>Selección múltiple / autocorregible</option>
+                        <option value="text" ${q.questionType === 'text' ? 'selected' : ''}>Texto libre / revisión trainer</option>
+                    </select>
+                    ${q.questionType === 'text' ? `<div class="text-xs text-gray-500">El trainer revisará esta respuesta y podrá asignar puntos.</div>` : `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${[0,1,2,3].map(optIdx => `<div class="flex items-center gap-2 bg-gray-50 dark:bg-surface border ${Number(q.correct) === optIdx ? 'border-success' : 'border-light-border dark:border-border'} rounded p-2">
+                                <input type="radio" name="evq_correct_${idx}" ${Number(q.correct) === optIdx ? 'checked' : ''} onchange="currentEvaluationQuestions[${idx}].correct = ${optIdx}; window.renderEvaluationQuestionsList()" class="w-4 h-4 accent-success">
+                                <input type="text" onchange="currentEvaluationQuestions[${idx}].options[${optIdx}] = this.value" value="${safeText(options[optIdx] || '')}" class="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-200" placeholder="Respuesta ${optIdx + 1}">
+                            </div>`).join('')}
+                        </div>
+                    `}
+                </div>`;
+            }).join('');
+        }
+        window.renderEvaluationQuestionsList = renderEvaluationQuestionsList;
+
+        window.saveEvaluationToBank = async () => {
+            const title = document.getElementById('ev-title').value;
+            const description = document.getElementById('ev-desc').value;
+            const id = document.getElementById('ev-id').value;
+            if(!title) return alert("Título obligatorio.");
+            const questions = currentEvaluationQuestions.map(q => q.questionType === 'text'
+                ? { ...q, questionType: 'text', options: [], correct: null }
+                : { ...q, questionType: 'multiple' });
+            const payload = { title, description, questions };
+            if(id) await updateDoc(doc(db, "evaluations", id), payload);
+            else await addDoc(collection(db, "evaluations"), payload);
+            document.getElementById('modal-evaluation-editor').classList.add('hidden');
+        };
+
+        window.deleteEvaluation = async (id) => { if(await askConfirm("¿Eliminar evaluación del banco?")) await deleteDoc(doc(db, "evaluations", id)); };
 
 
         // ==========================================
@@ -1550,9 +2121,12 @@
 
         function renderLearningMedia(act) {
             if(act.type === 'video') {
+                if(act.embedCode) {
+                    const embed = renderEmbedFrame(act.embedCode, act.title || 'Video incrustado');
+                    if(embed) return embed;
+                }
                 if(act.youtube) {
-                    const ytId = act.youtube.split('v=')[1]?.split('&')[0] || act.youtube.split('/').pop();
-                    return `<iframe src="https://www.youtube.com/embed/${safeText(ytId)}" allowfullscreen></iframe>`;
+                    return `<iframe src="${safeText(act.youtube)}" allowfullscreen></iframe>`;
                 }
                 if(act.url) return `<video controls><source src="${safeText(act.url)}"></video>`;
             }
@@ -1625,6 +2199,48 @@
             alert("Respuesta enviada para revisión.");
         };
 
+        window.submitSelfStudyEvaluation = async () => {
+            const { courseId, wIdx, dIdx, aIdx } = selfStudyState;
+            const course = localCourses.find(c => c.id === courseId);
+            const act = course?.weeks?.[wIdx]?.days?.[dIdx]?.activities?.[aIdx];
+            const evaluation = localEvaluations.find(k => k.id === act?.evaluationId);
+            if(!evaluation) return alert("No se encontró la evaluación asociada.");
+            const answers = (evaluation.questions || []).map((q, idx) => {
+                if(q.questionType === 'text') {
+                    const value = document.getElementById(`eval_text_${idx}`)?.value.trim() || '';
+                    return { question: q.q || '', questionType: 'text', answer: value, pendingReview: true, points: 0 };
+                }
+                const selected = document.querySelector(`input[name="eval_q_${idx}"]:checked`)?.value;
+                const answerIndex = selected === undefined ? null : Number(selected);
+                const isCorrect = answerIndex !== null && Number(q.correct) === answerIndex;
+                return { question: q.q || '', questionType: 'multiple', answerIndex, answer: q.options?.[answerIndex] || '', correctIndex: Number(q.correct || 0), isCorrect, points: isCorrect ? Number(q.points || 1000) : 0 };
+            });
+            if(answers.some(a => a.questionType === 'text' && !a.answer)) return alert("Responde todas las preguntas de texto.");
+            if(answers.some(a => a.questionType !== 'text' && a.answerIndex === null)) return alert("Selecciona una respuesta en todas las preguntas.");
+            const hasTextReview = answers.some(a => a.pendingReview);
+            const autoPoints = answers.reduce((sum, a) => sum + Number(a.points || 0), 0);
+            await addDoc(collection(db, "selfStudySubmissions"), {
+                userId: currentUser.id,
+                userName: currentUser.name || currentUser.email || 'Agente',
+                courseId,
+                courseTitle: course?.title || '',
+                weekId: wIdx,
+                dayId: dIdx,
+                activityId: aIdx,
+                activityTitle: act?.title || evaluation.title || '',
+                evaluationId: evaluation.id,
+                evaluationTitle: evaluation.title || '',
+                answers,
+                answer: answers.map((a, i) => `${i + 1}. ${a.question}\n${a.answer || 'Sin respuesta'}${a.isCorrect === false ? ' (incorrecta)' : ''}`).join('\n\n'),
+                status: hasTextReview ? 'pendiente' : 'revisado',
+                points: hasTextReview ? autoPoints : autoPoints,
+                autoPoints,
+                createdAt: new Date().toISOString()
+            });
+            await window.completeSelfStudyActivity();
+            alert(hasTextReview ? "Evaluación enviada para revisión." : `Evaluación enviada. Punteo automático: ${autoPoints} pts.`);
+        };
+
         function renderSelfStudyContent() {
             const view = document.getElementById('self-study-view');
             if(!view || view.classList.contains('hidden')) return;
@@ -1663,6 +2279,32 @@
             const mediaHtml = renderLearningMedia(act);
             const textHtml = act.description ? `<div class="learning-content text-gray-800 dark:text-gray-200 leading-relaxed">${renderRichHtml(act.description)}</div>` : '';
             const ordered = act.contentOrder === 'text-first' ? `${textHtml}${mediaHtml}` : `${mediaHtml}${textHtml}`;
+            const evaluation = act.type === 'evaluacion' ? localEvaluations.find(k => k.id === act.evaluationId) : null;
+            const evaluationHtml = evaluation ? `
+                <div class="mt-6 border-t border-light-border dark:border-border pt-5">
+                    <div class="text-xs uppercase tracking-widest font-black text-accent mb-3">Evaluación de autoaprendizaje</div>
+                    <div class="space-y-4">
+                        ${(evaluation.questions || []).map((q, idx) => `
+                            <div class="border border-light-border dark:border-border rounded-xl p-4 bg-gray-50 dark:bg-dark/40">
+                                <div class="font-black text-gray-900 dark:text-white mb-3">${idx + 1}. ${safeText(q.q || 'Pregunta')}</div>
+                                ${q.imageUrl ? `<img src="${safeText(q.imageUrl)}" class="max-h-52 rounded-lg object-contain bg-white mx-auto mb-3">` : ''}
+                                ${q.questionType === 'text' ? `
+                                    <textarea id="eval_text_${idx}" class="w-full min-h-28 bg-white dark:bg-surface border border-light-border dark:border-border rounded-lg p-3 text-sm outline-none focus:border-accent text-gray-900 dark:text-white" placeholder="Escribe tu respuesta..."></textarea>
+                                ` : `
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                        ${(q.options || []).map((opt, optIdx) => `
+                                            <label class="cursor-pointer bg-white dark:bg-surface border border-light-border dark:border-border rounded-lg p-3 text-sm text-gray-800 dark:text-gray-200">
+                                                <input type="radio" name="eval_q_${idx}" value="${optIdx}" class="mr-2 accent-accent"> ${safeText(opt || `Respuesta ${optIdx + 1}`)}
+                                            </label>
+                                        `).join('')}
+                                    </div>
+                                `}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button onclick="window.submitSelfStudyEvaluation()" ${submission ? 'disabled' : ''} class="mt-5 bg-accent text-white px-5 py-2.5 rounded-lg text-sm font-black disabled:opacity-60">${submission ? 'Evaluación enviada' : 'Enviar evaluación'}</button>
+                </div>
+            ` : '';
             document.getElementById('self-study-content').innerHTML = `
                 <article class="soft-card bg-light-surface dark:bg-surface p-5 md:p-8">
                     <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
@@ -1674,7 +2316,7 @@
                         <span class="course-mode-pill ${completed ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning'}">${completed ? 'Completado' : 'Pendiente'}</span>
                     </div>
                     <div class="space-y-5">${ordered || `<div class="text-gray-500">Sin contenido registrado.</div>`}</div>
-                    ${['practica', 'evaluacion'].includes(act.type) ? `
+                    ${evaluationHtml || (['practica', 'evaluacion'].includes(act.type) ? `
                         <div class="mt-6 border-t border-light-border dark:border-border pt-5">
                             <label class="text-xs uppercase tracking-widest font-black text-gray-500">Respuesta para revisión</label>
                             <textarea id="self-study-answer" class="mt-2 w-full min-h-32 bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl p-3 text-sm outline-none focus:border-accent text-gray-900 dark:text-white" ${submission ? 'disabled' : ''}>${safeText(submission?.answer || '')}</textarea>
@@ -1685,7 +2327,7 @@
                         </div>
                     ` : `
                         <button onclick="window.completeSelfStudyActivity()" ${completed ? 'disabled' : ''} class="mt-6 bg-success text-white px-5 py-2.5 rounded-lg text-sm font-black disabled:opacity-60"><i class="fa-solid fa-check mr-2"></i>${completed ? 'Actividad completada' : 'Marcar como completada'}</button>
-                    `}
+                    `)}
                 </article>
             `;
         }
@@ -1729,17 +2371,37 @@
                 const courses = localCourses.filter(c => cIds.includes(c.id) && c.mode !== 'self');
                 if(courses.length === 0) return '';
                 return `<div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border p-5 rounded-xl shadow">
-                        <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-4">${wave.name}</h4>
+                    <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-4"><i class="fa-solid fa-people-group text-accent mr-2"></i>${safeText(wave.name)}</h4>
+                    <div class="space-y-3">
                         ${courses.map(course => `
-                            <div class="bg-gray-50 dark:bg-dark border border-light-border dark:border-border rounded-lg p-3 mb-2">
-                                <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 border-b border-light-border dark:border-border pb-1">${course.title}</div>
-                                ${(course.weeks || []).map((w, wIdx) => (w.days || []).map((d, dIdx) => `
-                                    <button onclick="window.startPresentation('${wave.id}', '${course.id}', ${wIdx}, ${dIdx})" class="w-full text-left bg-white dark:bg-surface hover:bg-accent/10 border border-light-border dark:border-border text-xs p-2 rounded flex justify-between items-center group mb-1 text-gray-800 dark:text-gray-200">
-                                        <span class="truncate">Día: ${d.title}</span><i class="fa-solid fa-play text-accent opacity-50 group-hover:opacity-100"></i>
-                                    </button>
-                                `).join('')).join('')}
-                            </div>
-                        `).join('')}</div>`;
+                            <details class="bg-gray-50 dark:bg-dark border border-light-border dark:border-border rounded-xl overflow-hidden" open>
+                                <summary class="cursor-pointer list-none p-3 flex items-center justify-between gap-3">
+                                    <div class="text-sm font-black text-gray-900 dark:text-white">${safeText(course.title)}</div>
+                                    <div class="text-xs text-gray-400">${(course.weeks || []).length} semana(s)</div>
+                                </summary>
+                                <div class="p-3 pt-0 space-y-2">
+                                    ${(course.weeks || []).map((w, wIdx) => `
+                                        <details class="bg-white dark:bg-surface border border-light-border dark:border-border rounded-lg overflow-hidden" ${wIdx === 0 ? 'open' : ''}>
+                                            <summary class="cursor-pointer list-none p-2 text-xs font-black text-gray-600 dark:text-gray-300 flex justify-between">
+                                                <span>${safeText(w.title || `Semana ${wIdx + 1}`)}</span>
+                                                <span class="text-gray-400">${(w.days || []).length} dia(s)</span>
+                                            </summary>
+                                            <div class="p-2 pt-0 space-y-1">
+                                                ${(w.days || []).map((d, dIdx) => {
+                                                    const done = Boolean(findDayClosure(course.id, wIdx, dIdx, wave.id, w.title || `Semana ${wIdx + 1}`, d.title || `Dia ${dIdx + 1}`));
+                                                    return `<button onclick="window.startPresentation('${wave.id}', '${course.id}', ${wIdx}, ${dIdx})" class="w-full text-left bg-gray-50 dark:bg-dark/40 hover:bg-accent/10 border border-light-border dark:border-border text-xs p-2 rounded flex justify-between items-center group text-gray-800 dark:text-gray-200">
+                                                        <span class="truncate"><i class="fa-solid fa-circle ${done ? 'text-success' : 'text-warning'} mr-2"></i>${safeText(d.title || `Dia ${dIdx + 1}`)}</span>
+                                                        <i class="fa-solid fa-play text-accent opacity-50 group-hover:opacity-100"></i>
+                                                    </button>`;
+                                                }).join('') || `<div class="text-xs text-gray-400 p-2">Sin dias.</div>`}
+                                            </div>
+                                        </details>
+                                    `).join('')}
+                                </div>
+                            </details>
+                        `).join('')}
+                    </div>
+                </div>`;
             }).join('');
         }
 
@@ -1838,9 +2500,7 @@
         function getCourseDayItems(course) {
             const items = [];
             (course.weeks || []).forEach((week, wIdx) => (week.days || []).forEach((day, dIdx) => {
-                const closure = localDayClosures
-                    .filter(c => c.courseId === course.id && Number(c.wIdx) === wIdx && Number(c.dIdx) === dIdx)
-                    .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
+                const closure = findDayClosure(course.id, wIdx, dIdx, null, week.title || `Semana ${wIdx + 1}`, day.title || `Dia ${dIdx + 1}`);
                 items.push({ course, week, day, wIdx, dIdx, closure, key: `${course.id}:${wIdx}:${dIdx}` });
             }));
             return items;
@@ -2017,7 +2677,7 @@
                                     <div class="border border-light-border dark:border-border rounded-lg p-3">
                                         <div class="font-bold text-sm text-gray-900 dark:text-white mb-2">${safeText(week.title || `Semana ${wIdx + 1}`)}</div>
                                         ${(week.days || []).map((day, dIdx) => {
-                                            const closure = courseClosures.find(c => Number(c.wIdx) === wIdx && Number(c.dIdx) === dIdx);
+                                            const closure = findDayClosure(course.id, wIdx, dIdx, null, week.title || `Semana ${wIdx + 1}`, day.title || `Dia ${dIdx + 1}`);
                                             const attendance = Object.values(closure?.attendance || {});
                                             const present = attendance.filter(a => a.status === 'presente').length;
                                             const absent = attendance.filter(a => a.status === 'ausente').length;
@@ -2100,13 +2760,18 @@
             
             document.getElementById('presentation-view').classList.remove('hidden');
             document.getElementById('presentation-view').classList.add('flex');
+            setTopUserMenuVisible(false);
             window.togglePresentationSidebar(false);
             
             renderPresentationSidebar();
             renderCurrentSlide();
         };
 
-        window.closePresentation = () => { document.getElementById('presentation-view').classList.add('hidden'); document.getElementById('presentation-view').classList.remove('flex'); };
+        window.closePresentation = () => {
+            document.getElementById('presentation-view').classList.add('hidden');
+            document.getElementById('presentation-view').classList.remove('flex');
+            if(document.getElementById('upanahoot-execution-view')?.classList.contains('hidden')) setTopUserMenuVisible(true);
+        };
         window.togglePresentationSidebar = (forceOpen = null) => {
             const sidebar = document.getElementById('pres-sidebar');
             if(!sidebar) return;
@@ -2174,11 +2839,17 @@
             
             // Lógica de Visores Embebidos (CORE UPDATE)
             if (act.type === 'video') {
-                if(act.youtube) {
-                    const ytId = act.youtube.split('v=')[1]?.split('&')[0] || act.youtube.split('/').pop();
-                    mediaHtml = `<div class="projection-block aspect-video rounded-xl overflow-hidden shadow-2xl border border-light-border dark:border-border"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
-                } else if(act.url) {
-                    mediaHtml = `<div class="projection-block aspect-video rounded-xl overflow-hidden shadow-2xl bg-black"><video controls class="w-full h-full"><source src="${safeText(act.url)}"></video></div>`;
+                const videoUrl = act.url || act.youtube || act.externalUrl || '';
+                const embedFrame = renderEmbedFrame(act.embedCode || '', act.title || 'Video incrustado', 'projection-video-frame');
+                if(embedFrame) {
+                    mediaHtml = `<div class="projection-block rounded-xl overflow-hidden shadow-2xl border border-light-border dark:border-border bg-black">${embedFrame}</div>`;
+                } else if(videoUrl && isDirectVideoUrl(videoUrl)) {
+                    mediaHtml = `<div class="projection-block rounded-xl overflow-hidden shadow-2xl bg-black"><video controls class="projection-video-frame"><source src="${safeText(videoUrl)}"></video></div>`;
+                } else if(videoUrl) {
+                    mediaHtml = `<div class="projection-block rounded-xl overflow-hidden shadow-2xl border border-light-border dark:border-border bg-white">
+                                    <iframe src="${safeText(videoUrl)}" class="projection-video-frame" allowfullscreen title="${safeText(act.title || 'Video externo')}"></iframe>
+                                  </div>
+                                  <div class="text-center text-xs text-gray-500 mt-2">Si el visor externo no carga, <a href="${safeText(videoUrl)}" target="_blank" class="text-accent font-black underline">abrir enlace público</a></div>`;
                 }
             } else if (act.type === 'pdf' && act.url) {
                 // Iframe para PDF embebido
@@ -2211,10 +2882,12 @@
             const orderedContent = act.contentOrder === 'text-first' ? `${textHtml}${mediaHtml}` : `${mediaHtml}${textHtml}`;
 
             const slideHtml = `
-                <div class="bg-white dark:bg-surface/95 border border-light-border dark:border-border rounded-2xl shadow-xl p-4 md:p-6 text-center mb-4 shrink-0">
-                    <span class="inline-block px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-wider border border-accent/20 mb-4">${act.type} ${act.duration ? `• ${act.duration} Min` : ''}</span>
-                    <h2 class="text-2xl md:text-4xl font-black text-gray-900 dark:text-white leading-tight mb-3 tracking-tight">${act.title}</h2>
-                    ${act.objectives ? `<p class="text-warning text-lg md:text-xl font-medium max-w-3xl mx-auto"><i class="fa-solid fa-bullseye mr-2"></i>${act.objectives}</p>` : ''}
+                <div class="bg-white/95 dark:bg-surface/95 border border-light-border dark:border-border rounded-xl shadow-sm p-3 md:p-4 text-left mb-3 shrink-0">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                        <h2 class="text-xl md:text-3xl font-black text-gray-900 dark:text-white leading-tight tracking-tight">${act.title}</h2>
+                        <span class="inline-block w-max px-3 py-1 rounded-full bg-accent/10 text-accent text-[11px] font-bold uppercase tracking-wider border border-accent/20">${act.type} ${act.duration ? `• ${act.duration} Min` : ''}</span>
+                    </div>
+                    ${act.objectives ? `<p class="text-warning text-sm md:text-base font-medium mt-2"><i class="fa-solid fa-bullseye mr-2"></i>${act.objectives}</p>` : ''}
                 </div>
                 
                 <div class="projection-stack">
@@ -2388,12 +3061,13 @@
             document.getElementById('k-exec-pin').innerText = "PIN: " + pin;
             document.getElementById('upanahoot-execution-view').classList.remove('hidden');
             document.getElementById('upanahoot-execution-view').classList.add('flex');
+            setTopUserMenuVisible(false);
             
             renderUPANAHOOTExecutionStep();
         };
 
         window.closeUPANAHOOTExecution = async () => {
-            if(confirm("¿Cerrar dinámica interactiva?")) {
+            if(await askConfirm("¿Cerrar dinámica interactiva?")) {
                 if(upanahootExecState.sessionId) {
                     await updateDoc(doc(db, "kahootSessions", upanahootExecState.sessionId), { status: 'closed', closedAt: new Date().toISOString() });
                 }
@@ -2401,6 +3075,7 @@
                 document.getElementById('upanahoot-execution-view').classList.remove('flex');
                 if(upanahootTimerHandle) clearTimeout(upanahootTimerHandle);
                 upanahootExecState = { upanahoot: null, sessionId: null, pin: null, qIdx: -1, status: 'lobby', participants: {} };
+                if(document.getElementById('presentation-view')?.classList.contains('hidden')) setTopUserMenuVisible(true);
             }
         };
 
