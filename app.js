@@ -248,7 +248,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                 const text = node.textContent.trim();
                 if(!text && !['br', 'img'].includes(tag)) return;
 
-                const isHeading = /^h[1-4]$/.test(tag) || (['div', 'p'].includes(tag) && node.children.length === 0 && text.length <= 90 && /^(?:[A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ\s/()&.-]{2,}|.+:)$/u.test(text));
+                const isHeading = /^h[1-4]$/.test(tag);
                 if(isHeading) {
                     startBlock(node.innerHTML);
                     return;
