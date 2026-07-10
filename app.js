@@ -25,6 +25,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
         let localProgress = [];
         let localUPANAHOOTs = [];
         let localEvaluations = [];
+        let localActivityContents = [];
         let localUPANAHOOTSessions = [];
         let localDayClosures = [];
         let localSelfStudySubmissions = [];
@@ -52,6 +53,79 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 
         const toHtml = (value = "") => safeText(value).replace(/\n/g, '<br>');
 
+        const activityContentFields = ['description', 'objectives', 'youtube', 'externalUrl', 'embedCode', 'notes'];
+
+        function getActivityContentId(courseId, act = {}) {
+            return act.contentId || `act_${courseId}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+        }
+
+        function activityContentPayload(act = {}) {
+            return activityContentFields.reduce((payload, field) => {
+                payload[field] = act[field] || '';
+                return payload;
+            }, {});
+        }
+
+        function hasActivityContentPayload(act = {}) {
+            return activityContentFields.some(field => String(act[field] || '').trim());
+        }
+
+        function sanitizeInlineStyle(style = "") {
+            const allowed = new Set(['color', 'background-color', 'font-weight', 'font-style', 'text-decoration', 'text-align']);
+            return String(style || '').split(';').map(rule => {
+                const [prop, ...valueParts] = rule.split(':');
+                const name = String(prop || '').trim().toLowerCase();
+                const value = valueParts.join(':').trim();
+                if(!allowed.has(name) || !value || /url\s*\(|expression\s*\(/i.test(value)) return '';
+                return `${name}: ${value}`;
+            }).filter(Boolean).join('; ');
+        }
+
+        function hydrateCourseContent(course = {}) {
+            const weeks = (course.weeks || []).map(week => ({
+                ...week,
+                days: (week.days || []).map(day => ({
+                    ...day,
+                    activities: (day.activities || []).map(act => {
+                        const stored = act.contentId ? localActivityContents.find(item => item.id === act.contentId) : null;
+                        return stored ? { ...act, ...activityContentPayload(stored) } : act;
+                    })
+                }))
+            }));
+            return { ...course, weeks };
+        }
+
+        async function prepareCourseWeeksForSave(courseId, weeks = []) {
+            const contentWrites = [];
+            const cleanWeeks = (weeks || []).map(week => ({
+                ...week,
+                days: (week.days || []).map(day => ({
+                    ...day,
+                    activities: (day.activities || []).map(act => {
+                        const next = { ...act };
+                        if(hasActivityContentPayload(next)) {
+                            next.contentId = getActivityContentId(courseId, next);
+                            contentWrites.push(setDoc(doc(db, "activityContents", next.contentId), {
+                                ...activityContentPayload(next),
+                                courseId,
+                                updatedAt: new Date().toISOString()
+                            }, { merge: true }));
+                        }
+                        activityContentFields.forEach(field => delete next[field]);
+                        return next;
+                    })
+                }))
+            }));
+            await Promise.all(contentWrites);
+            return cleanWeeks;
+        }
+
+        async function saveCourseWeeks(course) {
+            const cleanWeeks = await prepareCourseWeeksForSave(course.id, course.weeks || []);
+            await updateDoc(doc(db, "courses", course.id), { weeks: cleanWeeks });
+            course.weeks = cleanWeeks;
+        }
+
         function plainTextToRichHtml(value = "") {
             const lines = String(value || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
             const html = [];
@@ -72,7 +146,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                     return;
                 }
 
-                const bulletMatch = trimmed.match(/^(?:•|·|\*|-)\s+(.+)$/);
+                const bulletMatch = trimmed.match(/^(?:\u2022|\u00b7|\*|-)\s+(.+)$/);
                 const numberMatch = trimmed.match(/^\d+[.)]\s+(.+)$/);
                 if(bulletMatch || numberMatch) {
                     const nextListType = bulletMatch ? 'ul' : 'ol';
@@ -134,7 +208,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                 [...el.attributes].forEach(attr => {
                     const name = attr.name.toLowerCase();
                     const val = attr.value || '';
-                    if(name.startsWith('on') || (['href','src'].includes(name) && val.trim().toLowerCase().startsWith('javascript:'))) el.removeAttribute(attr.name);
+                    if(name.startsWith('on') || name === 'class' || name === 'id' || name.startsWith('data-') || (['href','src'].includes(name) && val.trim().toLowerCase().startsWith('javascript:'))) {
+                        el.removeAttribute(attr.name);
+                    } else if(name === 'style') {
+                        const cleanStyle = sanitizeInlineStyle(val);
+                        if(cleanStyle) el.setAttribute('style', cleanStyle);
+                        else el.removeAttribute(attr.name);
+                    } else if(!['href', 'src', 'alt', 'title', 'style', 'target', 'rel'].includes(name)) {
+                        el.removeAttribute(attr.name);
+                    }
                 });
             });
             return template.innerHTML;
@@ -423,12 +505,21 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 
         function initRealtimePipeline() {
             onSnapshot(collection(db, "courses"), (snap) => {
-                localCourses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                localCourses = snap.docs.map(d => hydrateCourseContent({ id: d.id, ...d.data() }));
                 document.getElementById('stat-courses').innerText = localCourses.length;
                 renderHierarchicalTree();
                 populateSelectors();
                 if(currentUser.role === 'agent') renderAgentPortal();
                 if(['trainer', 'admin'].includes(currentUser.role)) { renderTrainerMatrix(); renderTrainerPresenterSelector(); }
+            });
+
+            onSnapshot(collection(db, "activityContents"), (snap) => {
+                localActivityContents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                localCourses = localCourses.map(course => hydrateCourseContent(course));
+                renderHierarchicalTree();
+                if(currentUser?.role === 'agent') { renderAgentPortal(); renderSelfStudyContent(); }
+                if(['trainer', 'admin'].includes(currentUser?.role)) { renderTrainerMatrix(); renderTrainerPresenterSelector(); }
+                if(!document.getElementById('presentation-view')?.classList.contains('hidden')) renderCurrentSlide();
             });
 
             onSnapshot(collection(db, "users"), (snap) => {
@@ -863,20 +954,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             const title = prompt("Nombre de la Semana:"); if(!title) return;
             const c = localCourses.find(c => c.id === cId);
             if(!c.weeks) c.weeks = []; c.weeks.push({ title, days: [] });
-            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+            await saveCourseWeeks(c);
         };
         window.deleteWeekUnit = async (cId, wIdx) => {
             const c = localCourses.find(c => c.id === cId); c.weeks.splice(wIdx, 1);
-            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+            await saveCourseWeeks(c);
         };
         window.addDayUnit = async (cId, wIdx) => {
             const title = prompt("Nombre del Día:"); if(!title) return;
             const c = localCourses.find(c => c.id === cId); c.weeks[wIdx].days.push({ title, activities: [] });
-            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+            await saveCourseWeeks(c);
         };
         window.deleteDayUnit = async (cId, wIdx, dIdx) => {
             const c = localCourses.find(c => c.id === cId); c.weeks[wIdx].days.splice(dIdx, 1);
-            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+            await saveCourseWeeks(c);
         };
         window.deleteCourseUnit = async (id) => { if(await askConfirm("¿Eliminar curso completo?")) await deleteDoc(doc(db, "courses", id)); };
 
@@ -887,7 +978,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             const temp = acts[aIdx];
             acts[aIdx] = acts[aIdx + dir];
             acts[aIdx + dir] = temp;
-            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+            await saveCourseWeeks(c);
         };
 
         let activityDragState = null;
@@ -906,7 +997,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             const [moved] = acts.splice(fromIdx, 1);
             acts.splice(toIdx, 0, moved);
             activityDragState = null;
-            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+            await saveCourseWeeks(c);
         };
 
         const modalActivity = document.getElementById('modal-activity');
@@ -1066,7 +1157,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             else c.weeks[wIdx].days[dIdx].activities.push(nextActivity);
 
             try {
-                await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+                await saveCourseWeeks(c);
                 document.getElementById('btn-close-modal').click();
             } catch(e) {
                 alert("No se pudo guardar la actividad: " + (e?.message || e));
@@ -1080,7 +1171,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
         window.deleteActivityUnit = async (cId, wIdx, dIdx, aIdx) => {
             const c = localCourses.find(course => course.id === cId);
             c.weeks[wIdx].days[dIdx].activities.splice(aIdx, 1);
-            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+            await saveCourseWeeks(c);
         };
 
         let currentUPANAHOOTQuestions = [];
