@@ -52,6 +52,47 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 
         const toHtml = (value = "") => safeText(value).replace(/\n/g, '<br>');
 
+        function plainTextToRichHtml(value = "") {
+            const lines = String(value || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+            const html = [];
+            let listType = null;
+
+            const closeList = () => {
+                if(listType) {
+                    html.push(`</${listType}>`);
+                    listType = null;
+                }
+            };
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if(!trimmed) {
+                    closeList();
+                    html.push('<div><br></div>');
+                    return;
+                }
+
+                const bulletMatch = trimmed.match(/^(?:•|·|\*|-)\s+(.+)$/);
+                const numberMatch = trimmed.match(/^\d+[.)]\s+(.+)$/);
+                if(bulletMatch || numberMatch) {
+                    const nextListType = bulletMatch ? 'ul' : 'ol';
+                    if(listType !== nextListType) {
+                        closeList();
+                        listType = nextListType;
+                        html.push(`<${listType}>`);
+                    }
+                    html.push(`<li>${safeText((bulletMatch || numberMatch)[1])}</li>`);
+                    return;
+                }
+
+                closeList();
+                html.push(`<div>${safeText(trimmed)}</div>`);
+            });
+
+            closeList();
+            return html.join('');
+        }
+
         function showSystemMessage(message, title = "Aviso", options = {}) {
             const modal = document.getElementById('modal-system-message');
             const titleEl = document.getElementById('system-message-title');
@@ -961,7 +1002,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             event.preventDefault();
             const html = event.clipboardData?.getData('text/html');
             const text = event.clipboardData?.getData('text/plain') || '';
-            const clean = html ? renderRichHtml(html) : safeText(text).replace(/\n/g, '<br>');
+            const clean = html ? renderRichHtml(html) : plainTextToRichHtml(text);
             document.execCommand('insertHTML', false, clean);
         });
 
