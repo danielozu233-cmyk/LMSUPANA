@@ -12,7 +12,14 @@ body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, colo
         .projection-video-frame { width: 100%; height: min(62vh, 680px); min-height: 360px; border: 0; background: #000; }
         .projection-image-wrap { width: 100%; height: min(62vh, 680px); min-height: 340px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .projection-image { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
-        .projection-text-block { width: 100%; max-height: none; overflow: visible; }
+        .projection-text-block { width: 100%; max-height: none; overflow: visible; background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important; border-color: rgba(22, 93, 219, .16) !important; box-shadow: 0 18px 42px rgba(15, 23, 42, .08) !important; }
+        .projection-text-block > .projection-content-card + .projection-content-card { margin-top: 1rem; }
+        .projection-content-card { background: #fff; border: 1px solid rgba(148, 163, 184, .22); border-radius: 1rem; padding: 1.15rem 1.25rem; box-shadow: 0 10px 24px rgba(15, 23, 42, .045); }
+        .projection-content-card h1, .projection-content-card h2, .projection-content-card h3 { color: #165ddb; font-weight: 900; font-size: clamp(1.05rem, 1.7vw, 1.35rem); line-height: 1.2; margin: 0 0 .75rem; padding-bottom: .55rem; border-bottom: 1px solid rgba(22, 93, 219, .16); }
+        .projection-content-body { color: #111827; font-size: clamp(1rem, 1.25vw, 1.18rem); line-height: 1.55; }
+        .projection-content-body p, .projection-content-card > p { margin: .45rem 0; }
+        .projection-content-body ul, .projection-content-body ol, .projection-content-card > ul, .projection-content-card > ol { column-width: 22rem; column-gap: 2rem; }
+        .projection-content-body li, .projection-content-card > li { break-inside: avoid; }
         .projection-shell { min-width: 0; overflow-x: hidden; }
         #pres-sidebar { position: absolute; top: 0; bottom: 0; left: 0; transform: translateX(-100%); }
         #pres-sidebar.open { transform: translateX(0); }

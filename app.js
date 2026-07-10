@@ -222,6 +222,54 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             return template.innerHTML;
         }
 
+        function renderPresentationRichHtml(value = "") {
+            const clean = renderRichHtml(value);
+            const template = document.createElement('template');
+            template.innerHTML = clean;
+            const blocks = [];
+            let current = null;
+
+            const startBlock = (title = "") => {
+                if(current) blocks.push(current);
+                current = { title, nodes: [] };
+            };
+
+            [...template.content.childNodes].forEach(node => {
+                if(node.nodeType === Node.TEXT_NODE) {
+                    const text = node.textContent.trim();
+                    if(!text) return;
+                    if(!current) startBlock();
+                    current.nodes.push(`<p>${safeText(text)}</p>`);
+                    return;
+                }
+
+                if(node.nodeType !== Node.ELEMENT_NODE) return;
+                const tag = node.tagName.toLowerCase();
+                const text = node.textContent.trim();
+                if(!text && !['br', 'img'].includes(tag)) return;
+
+                const isHeading = /^h[1-4]$/.test(tag) || (['div', 'p'].includes(tag) && node.children.length === 0 && text.length <= 90 && /^(?:[A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ\s/()&.-]{2,}|.+:)$/u.test(text));
+                if(isHeading) {
+                    startBlock(node.innerHTML);
+                    return;
+                }
+
+                if(!current) startBlock();
+                current.nodes.push(node.outerHTML);
+            });
+
+            if(current) blocks.push(current);
+            const usableBlocks = blocks.filter(block => block.title || block.nodes.join('').trim());
+            if(usableBlocks.length <= 1) return `<div class="projection-content-card">${clean}</div>`;
+
+            return usableBlocks.map(block => `
+                <section class="projection-content-card">
+                    ${block.title ? `<h3>${block.title}</h3>` : ''}
+                    <div class="projection-content-body">${block.nodes.join('')}</div>
+                </section>
+            `).join('');
+        }
+
         function extractEmbedSrc(embedCode = "") {
             const raw = String(embedCode || "").trim();
             if(!raw) return "";
@@ -2362,10 +2410,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             nav.innerHTML = html;
         }
 
-        window.goToSlide = (idx) => { presState.currentAIdx = idx; window.togglePresentationSidebar(false); renderCurrentSlide(); };
+        function scrollPresentationToTop() {
+            document.getElementById('pres-slide-container')?.scrollIntoView({ block: 'start' });
+            document.getElementById('presentation-view')?.scrollTo({ top: 0, behavior: 'auto' });
+        }
+
+        window.goToSlide = (idx) => { presState.currentAIdx = idx; window.togglePresentationSidebar(false); renderCurrentSlide(true); };
         window.navigatePresentation = (step) => {
             const newIdx = presState.currentAIdx + step;
-            if(newIdx >= 0 && newIdx < presState.activities.length) { presState.currentAIdx = newIdx; renderCurrentSlide(); }
+            if(newIdx >= 0 && newIdx < presState.activities.length) { presState.currentAIdx = newIdx; renderCurrentSlide(true); }
         };
 
         window.toggleImageFullscreen = (imgEl) => {
@@ -2373,7 +2426,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             else { document.exitFullscreen(); }
         };
 
-        function renderCurrentSlide() {
+        function renderCurrentSlide(resetScroll = false) {
             const act = presState.activities[presState.currentAIdx];
             const total = presState.activities.length;
             
@@ -2423,7 +2476,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 
             const textHtml = act.description && act.type !== 'kahoot' ? `
                         <div class="projection-text-block learning-content bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl p-5 md:p-6 text-left text-gray-800 dark:text-gray-200 text-base md:text-lg leading-relaxed shadow-inner">
-                            ${renderRichHtml(act.description)}
+                            ${renderPresentationRichHtml(act.description)}
                         </div>
                     ` : '';
             const orderedContent = act.contentOrder === 'text-first' ? `${textHtml}${mediaHtml}` : `${mediaHtml}${textHtml}`;
@@ -2455,6 +2508,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                 ` : ''}
             `;
             document.getElementById('pres-slide-container').innerHTML = slideHtml;
+            if(resetScroll) requestAnimationFrame(scrollPresentationToTop);
         }
 
         window.markDayCompleted = async () => {
