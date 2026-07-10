@@ -2331,7 +2331,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             }
 
             const textHtml = act.description && act.type !== 'kahoot' ? `
-                        <div class="projection-text-block bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl p-5 md:p-6 text-left text-gray-800 dark:text-gray-200 text-base md:text-lg leading-relaxed shadow-inner">
+                        <div class="projection-text-block learning-content bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl p-5 md:p-6 text-left text-gray-800 dark:text-gray-200 text-base md:text-lg leading-relaxed shadow-inner">
                             ${renderRichHtml(act.description)}
                         </div>
                     ` : '';
