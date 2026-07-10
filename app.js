@@ -957,7 +957,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             window.richCommand('createLink', url);
         };
 
+        document.getElementById('act-desc-editor').addEventListener('paste', (event) => {
+            event.preventDefault();
+            const html = event.clipboardData?.getData('text/html');
+            const text = event.clipboardData?.getData('text/plain') || '';
+            const clean = html ? renderRichHtml(html) : safeText(text).replace(/\n/g, '<br>');
+            document.execCommand('insertHTML', false, clean);
+        });
+
         document.getElementById('btn-save-activity').addEventListener('click', async () => {
+            const saveBtn = document.getElementById('btn-save-activity');
+            const progressEl = document.getElementById('upload-progress');
             const cId = document.getElementById('modal-course-id').value;
             const wIdx = parseInt(document.getElementById('modal-week-idx').value);
             const dIdx = parseInt(document.getElementById('modal-day-idx').value);
@@ -981,15 +991,27 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             if(!title) return alert("Título obligatorio.");
             if(type === 'kahoot' && !kahootId) return alert("Seleccione un UPANAHOOT del banco antes de guardar la actividad.");
             if(type === 'evaluacion' && !evaluationId) return alert("Seleccione una evaluación del banco antes de guardar la actividad.");
-            document.getElementById('upload-progress').classList.remove('hidden');
+            const hasUploadableFile = Boolean(fileObj && ['imagen', 'pdf', 'presentacion', 'practica', 'video'].includes(type));
+            progressEl.innerHTML = hasUploadableFile
+                ? '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo archivo...'
+                : '<i class="fa-solid fa-spinner fa-spin"></i> Guardando actividad...';
+            progressEl.classList.remove('hidden');
+            saveBtn.disabled = true;
+            saveBtn.classList.add('opacity-60', 'cursor-wait');
 
             let fileUrl = "";
-            if (fileObj && ['imagen', 'pdf', 'presentacion', 'practica', 'video'].includes(type)) {
+            if (hasUploadableFile) {
                 const storageRef = ref(storage, `lms_media/${Date.now()}_${fileObj.name}`);
                 try {
                     const snap = await uploadBytesResumable(storageRef, fileObj);
                     fileUrl = await getDownloadURL(snap.ref);
-                } catch(e) { alert("No se pudo subir el archivo: " + e.message); document.getElementById('upload-progress').classList.add('hidden'); return; }
+                } catch(e) {
+                    alert("No se pudo subir el archivo: " + e.message);
+                    progressEl.classList.add('hidden');
+                    saveBtn.disabled = false;
+                    saveBtn.classList.remove('opacity-60', 'cursor-wait');
+                    return;
+                }
             }
 
             const c = localCourses.find(course => course.id === cId);
@@ -1002,10 +1024,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             if(editIdx !== null) c.weeks[wIdx].days[dIdx].activities[editIdx] = nextActivity;
             else c.weeks[wIdx].days[dIdx].activities.push(nextActivity);
 
-            await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
-            
-            document.getElementById('upload-progress').classList.add('hidden');
-            document.getElementById('btn-close-modal').click();
+            try {
+                await updateDoc(doc(db, "courses", cId), { weeks: c.weeks });
+                document.getElementById('btn-close-modal').click();
+            } catch(e) {
+                alert("No se pudo guardar la actividad: " + (e?.message || e));
+            } finally {
+                progressEl.classList.add('hidden');
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('opacity-60', 'cursor-wait');
+            }
         });
 
         window.deleteActivityUnit = async (cId, wIdx, dIdx, aIdx) => {
