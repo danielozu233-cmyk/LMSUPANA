@@ -36,6 +36,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
         let courseContentSearchTerm = "";
         let presentationSearchTerm = "";
         let presentationReturnState = null;
+        let courseOpenState = {};
         let courseSearchRenderTimer = null;
         let presentationSearchRenderTimer = null;
         let dayClosureState = null;
@@ -71,6 +72,31 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                 act.title, act.type, act.description, act.objectives, act.notes
             ].join(" "));
         }
+
+        try {
+            courseOpenState = JSON.parse(localStorage.getItem('courseOpenState') || '{}') || {};
+        } catch {
+            courseOpenState = {};
+        }
+
+        function rememberCourseOpenState(courseId, wIdx, dIdx = null, open = true) {
+            if(!courseId) return;
+            const state = courseOpenState[courseId] || { weeks: {}, days: {} };
+            state.weeks[String(wIdx)] = Boolean(open);
+            if(dIdx !== null) state.days[`${wIdx}:${dIdx}`] = Boolean(open);
+            courseOpenState[courseId] = state;
+            localStorage.setItem('courseOpenState', JSON.stringify(courseOpenState));
+        }
+
+        function isCourseWeekOpen(courseId, wIdx, fallback = false) {
+            return Boolean(courseOpenState[courseId]?.weeks?.[String(wIdx)] ?? fallback);
+        }
+
+        function isCourseDayOpen(courseId, wIdx, dIdx, fallback = false) {
+            return Boolean(courseOpenState[courseId]?.days?.[`${wIdx}:${dIdx}`] ?? fallback);
+        }
+
+        window.rememberCourseOpenState = rememberCourseOpenState;
 
         const activityContentFields = ['description', 'objectives', 'youtube', 'externalUrl', 'embedCode', 'notes'];
 
@@ -990,7 +1016,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                     </div>
                     <div class="space-y-3">
                         ${filteredWeeks.map(({week, wIdx, days}) => `
-                            <details class="bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl overflow-hidden" ${wIdx === 0 || courseContentSearchTerm ? 'open' : ''}>
+                            <details ontoggle="window.rememberCourseOpenState('${selectedCourse.id}', ${wIdx}, null, this.open)" class="bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl overflow-hidden" ${courseContentSearchTerm || isCourseWeekOpen(selectedCourse.id, wIdx, false) ? 'open' : ''}>
                                 <summary class="cursor-pointer list-none flex justify-between items-center gap-3 p-3">
                                     <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200"><i class="fa-solid fa-calendar-week text-warning mr-2"></i>${safeText(week.title)} <span class="text-xs text-gray-400 ml-2">${(week.days || []).length} dia(s)</span></h4>
                                     <div class="flex gap-2">
@@ -1000,7 +1026,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                                 </summary>
                                 <div class="space-y-2 p-3 pt-0">
                                     ${days.map(({day, dIdx, activities}) => `
-                                        <details class="bg-white dark:bg-dark/20 border border-light-border dark:border-border/40 rounded-lg overflow-hidden" ${dIdx === 0 || courseContentSearchTerm ? 'open' : ''}>
+                                        <details ontoggle="window.rememberCourseOpenState('${selectedCourse.id}', ${wIdx}, ${dIdx}, this.open)" class="bg-white dark:bg-dark/20 border border-light-border dark:border-border/40 rounded-lg overflow-hidden" ${courseContentSearchTerm || isCourseDayOpen(selectedCourse.id, wIdx, dIdx, false) ? 'open' : ''}>
                                             <summary class="cursor-pointer list-none flex justify-between items-center p-2 text-xs">
                                                 <span class="font-medium text-gray-800 dark:text-gray-300"><i class="fa-regular fa-calendar-check text-success mr-1.5"></i>${safeText(day.title)} <span class="text-gray-400 ml-2">${(day.activities || []).length} actividad(es)</span></span>
                                                 <div class="flex gap-1">
@@ -1036,6 +1062,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 
         window.selectCourseForManagement = (id) => {
             selectedCourseId = id;
+            courseContentSearchTerm = "";
+            clearTimeout(courseSearchRenderTimer);
             renderHierarchicalTree();
         };
 
@@ -1133,6 +1161,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             document.getElementById('modal-activity-idx').value = Number.isInteger(Number(aIdx)) ? aIdx : '';
             const c = localCourses.find(course => course.id === cId);
             const act = Number.isInteger(Number(aIdx)) ? c?.weeks?.[wIdx]?.days?.[dIdx]?.activities?.[aIdx] : null;
+            rememberCourseOpenState(cId, wIdx, dIdx, true);
+            const weekTitle = c?.weeks?.[wIdx]?.title || `Semana ${Number(wIdx) + 1}`;
+            const dayTitle = c?.weeks?.[wIdx]?.days?.[dIdx]?.title || `Día ${Number(dIdx) + 1}`;
+            const contextLabel = document.getElementById('activity-context-label');
+            if(contextLabel) contextLabel.innerHTML = `<i class="fa-solid fa-location-dot mr-2"></i>${safeText(c?.title || 'Curso')} · ${safeText(weekTitle)} · ${safeText(dayTitle)}`;
             document.getElementById('act-title').value = act?.title || '';
             document.getElementById('act-type').value = act?.type || 'presentacion';
             document.getElementById('act-desc-editor').innerHTML = act?.description || '';
