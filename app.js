@@ -33,6 +33,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
         let selectedCourseId = null;
         let selectedDashboardCourseId = null;
         let selectedDashboardDayKey = null;
+        let courseContentSearchTerm = "";
+        let presentationSearchTerm = "";
+        let presentationReturnState = null;
         let dayClosureState = null;
         let selfStudyState = { courseId: null, wIdx: 0, dIdx: 0, aIdx: 0 };
 
@@ -52,6 +55,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             .replace(/'/g, "&#039;");
 
         const toHtml = (value = "") => safeText(value).replace(/\n/g, '<br>');
+
+        const normalizeSearch = (value = "") => String(value || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .trim();
+
+        function activitySearchText(course = {}, week = {}, day = {}, act = {}) {
+            return normalizeSearch([
+                course.title, course.description,
+                week.title, day.title,
+                act.title, act.type, act.description, act.objectives, act.notes
+            ].join(" "));
+        }
 
         const activityContentFields = ['description', 'objectives', 'youtube', 'externalUrl', 'embedCode', 'notes'];
 
@@ -935,6 +952,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                     }).join('')}
                 </div>
             `;
+            const courseQuery = normalizeSearch(courseContentSearchTerm);
+            const filteredWeeks = selectedCourse ? (selectedCourse.weeks || []).map((week, wIdx) => {
+                const weekMatches = courseQuery && normalizeSearch(week.title).includes(courseQuery);
+                const days = (week.days || []).map((day, dIdx) => {
+                    const dayMatches = courseQuery && normalizeSearch(day.title).includes(courseQuery);
+                    const activities = (day.activities || []).map((act, aIdx) => ({ act, aIdx })).filter(({act}) => {
+                        if(!courseQuery) return true;
+                        return weekMatches || dayMatches || activitySearchText(selectedCourse, week, day, act).includes(courseQuery);
+                    });
+                    return { day, dIdx, activities, visible: !courseQuery || weekMatches || dayMatches || activities.length > 0 };
+                }).filter(item => item.visible);
+                return { week, wIdx, days, visible: !courseQuery || weekMatches || days.length > 0 };
+            }).filter(item => item.visible) : [];
+            const filteredActivityCount = filteredWeeks.reduce((total, item) => total + item.days.reduce((dayTotal, d) => dayTotal + d.activities.length, 0), 0);
             const detailHtml = selectedCourse ? `
                 <div class="bg-light-surface dark:bg-surface border border-light-border dark:border-border rounded-xl p-5 shadow-sm">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-light-border dark:border-border pb-3 mb-3">
@@ -947,9 +978,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                             <button onclick="window.deleteCourseUnit('${selectedCourse.id}')" class="text-danger text-xs px-2"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
+                    <div class="mb-4">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                            <input type="search" value="${safeText(courseContentSearchTerm)}" oninput="window.setCourseContentSearch(this.value)" placeholder="Buscar actividad, tema, semana, día o contenido..." class="w-full bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl py-3 pl-9 pr-24 text-sm outline-none focus:border-accent text-gray-900 dark:text-white">
+                            ${courseContentSearchTerm ? `<button onclick="window.setCourseContentSearch('')" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-accent">Limpiar</button>` : ''}
+                        </div>
+                        ${courseContentSearchTerm ? `<div class="mt-2 text-xs font-bold text-gray-500">${filteredActivityCount} resultado(s) dentro del curso seleccionado.</div>` : ''}
+                    </div>
                     <div class="space-y-3">
-                        ${(selectedCourse.weeks || []).map((week, wIdx) => `
-                            <details class="bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl overflow-hidden" ${wIdx === 0 ? 'open' : ''}>
+                        ${filteredWeeks.map(({week, wIdx, days}) => `
+                            <details class="bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl overflow-hidden" ${wIdx === 0 || courseContentSearchTerm ? 'open' : ''}>
                                 <summary class="cursor-pointer list-none flex justify-between items-center gap-3 p-3">
                                     <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200"><i class="fa-solid fa-calendar-week text-warning mr-2"></i>${safeText(week.title)} <span class="text-xs text-gray-400 ml-2">${(week.days || []).length} dia(s)</span></h4>
                                     <div class="flex gap-2">
@@ -958,8 +997,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                                     </div>
                                 </summary>
                                 <div class="space-y-2 p-3 pt-0">
-                                    ${(week.days || []).map((day, dIdx) => `
-                                        <details class="bg-white dark:bg-dark/20 border border-light-border dark:border-border/40 rounded-lg overflow-hidden" ${dIdx === 0 ? 'open' : ''}>
+                                    ${days.map(({day, dIdx, activities}) => `
+                                        <details class="bg-white dark:bg-dark/20 border border-light-border dark:border-border/40 rounded-lg overflow-hidden" ${dIdx === 0 || courseContentSearchTerm ? 'open' : ''}>
                                             <summary class="cursor-pointer list-none flex justify-between items-center p-2 text-xs">
                                                 <span class="font-medium text-gray-800 dark:text-gray-300"><i class="fa-regular fa-calendar-check text-success mr-1.5"></i>${safeText(day.title)} <span class="text-gray-400 ml-2">${(day.activities || []).length} actividad(es)</span></span>
                                                 <div class="flex gap-1">
@@ -968,7 +1007,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                                                 </div>
                                             </summary>
                                             <ul class="space-y-1.5 p-2 pt-0">
-                                                ${(day.activities || []).map((act, aIdx) => `
+                                                ${activities.map(({act, aIdx}) => `
                                                     <li draggable="true" ondragstart="window.activityDragStart(event, '${selectedCourse.id}', ${wIdx}, ${dIdx}, ${aIdx})" ondragover="event.preventDefault()" ondrop="window.activityDrop(event, '${selectedCourse.id}', ${wIdx}, ${dIdx}, ${aIdx})" class="text-xs bg-gray-50 dark:bg-dark/60 border border-light-border dark:border-border p-2 rounded-md flex justify-between items-center group cursor-move">
                                                         <span class="text-gray-600 dark:text-gray-400 truncate w-2/3"><strong class="text-gray-900 dark:text-gray-200">[${safeText((act.type || '').toUpperCase())}]</strong> ${safeText(act.title || '')}</span>
                                                         <div class="flex gap-2 items-center">
@@ -995,6 +1034,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 
         window.selectCourseForManagement = (id) => {
             selectedCourseId = id;
+            renderHierarchicalTree();
+        };
+
+        window.setCourseContentSearch = (value = "") => {
+            courseContentSearchTerm = String(value || "");
             renderHierarchicalTree();
         };
 
@@ -2330,6 +2374,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             if(!day.activities || day.activities.length === 0) return alert("Día vacío.");
 
             presState = { waveId: wId, waveName: wave.name, courseId: cId, courseTitle: course.title, wIdx, weekTitle: week.title, dIdx, dayTitle: day.title, activities: day.activities, currentAIdx: 0 };
+            presentationReturnState = null;
+            presentationSearchTerm = "";
 
             document.getElementById('pres-course-title').innerText = course.title;
             document.getElementById('pres-wave-title').innerText = `${wave.name} | ${week.title} - ${day.title}`;
@@ -2379,11 +2425,95 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             sidebar.classList.toggle('open', shouldOpen);
         };
 
+        function presentationSearchResults(course, query) {
+            const normalized = normalizeSearch(query);
+            if(!normalized) return [];
+            const results = [];
+            (course.weeks || []).forEach((week, wIdx) => (week.days || []).forEach((day, dIdx) => (day.activities || []).forEach((act, aIdx) => {
+                if(activitySearchText(course, week, day, act).includes(normalized)) results.push({ week, day, act, wIdx, dIdx, aIdx });
+            })));
+            return results;
+        }
+
+        window.setPresentationSearch = (value = "") => {
+            presentationSearchTerm = String(value || "");
+            renderPresentationSidebar();
+        };
+
+        window.jumpToPresentationActivity = (wIdx, dIdx, aIdx) => {
+            const course = localCourses.find(c => c.id === presState.courseId);
+            const week = course?.weeks?.[wIdx];
+            const day = week?.days?.[dIdx];
+            if(!course || !week || !day || !day.activities?.[aIdx]) return;
+            if(!presentationReturnState) {
+                presentationReturnState = {
+                    wIdx: presState.wIdx,
+                    dIdx: presState.dIdx,
+                    currentAIdx: presState.currentAIdx
+                };
+            }
+            presState.wIdx = Number(wIdx);
+            presState.weekTitle = week.title;
+            presState.dIdx = Number(dIdx);
+            presState.dayTitle = day.title;
+            presState.activities = day.activities || [];
+            presState.currentAIdx = Number(aIdx);
+            document.getElementById('pres-wave-title').innerText = `${presState.waveName} | ${week.title} - ${day.title}`;
+            window.togglePresentationSidebar(false);
+            renderCurrentSlide(true);
+        };
+
+        window.returnToPresentationAnchor = () => {
+            if(!presentationReturnState) return;
+            const course = localCourses.find(c => c.id === presState.courseId);
+            const week = course?.weeks?.[presentationReturnState.wIdx];
+            const day = week?.days?.[presentationReturnState.dIdx];
+            if(!course || !week || !day) {
+                presentationReturnState = null;
+                return;
+            }
+            presState.wIdx = presentationReturnState.wIdx;
+            presState.weekTitle = week.title;
+            presState.dIdx = presentationReturnState.dIdx;
+            presState.dayTitle = day.title;
+            presState.activities = day.activities || [];
+            presState.currentAIdx = Math.min(presentationReturnState.currentAIdx, Math.max((day.activities || []).length - 1, 0));
+            presentationReturnState = null;
+            document.getElementById('pres-wave-title').innerText = `${presState.waveName} | ${week.title} - ${day.title}`;
+            renderCurrentSlide(true);
+        };
+
         function renderPresentationSidebar() {
             const course = localCourses.find(c => c.id === presState.courseId);
             const nav = document.getElementById('pres-sidebar-nav');
+            if(!course || !nav) return;
             
-            let html = '';
+            const results = presentationSearchResults(course || {}, presentationSearchTerm);
+            let html = `
+                <div class="sticky top-0 z-10 bg-light-surface dark:bg-surface pb-3">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                        <input type="search" value="${safeText(presentationSearchTerm)}" oninput="window.setPresentationSearch(this.value)" placeholder="Buscar en todo el curso..." class="w-full bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl py-2.5 pl-9 pr-9 text-xs outline-none focus:border-accent text-gray-900 dark:text-white">
+                        ${presentationSearchTerm ? `<button onclick="window.setPresentationSearch('')" class="absolute right-3 top-1/2 -translate-y-1/2 text-accent text-xs"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                    </div>
+                    ${presentationReturnState ? `<button onclick="window.returnToPresentationAnchor()" class="mt-2 w-full bg-accent/10 text-accent border border-accent/20 rounded-lg px-3 py-2 text-xs font-black"><i class="fa-solid fa-rotate-left mr-1"></i>Volver a donde estaba</button>` : ''}
+                </div>
+            `;
+            if(presentationSearchTerm) {
+                html += `
+                    <div class="mb-4">
+                        <div class="text-[10px] uppercase tracking-widest font-black text-gray-400 mb-2">${results.length} resultado(s)</div>
+                        <div class="space-y-1">
+                            ${results.map(item => `
+                                <button onclick="window.jumpToPresentationActivity(${item.wIdx}, ${item.dIdx}, ${item.aIdx})" class="w-full text-left rounded-lg border border-light-border dark:border-border hover:border-accent hover:bg-accent/5 p-2 text-xs transition">
+                                    <div class="font-black text-gray-900 dark:text-white truncate">${safeText(item.act.title || 'Actividad sin título')}</div>
+                                    <div class="text-[10px] text-gray-500 mt-1 truncate">${safeText(item.week.title || '')} · ${safeText(item.day.title || '')} · ${safeText(item.act.type || '')}</div>
+                                </button>
+                            `).join('') || `<div class="text-xs text-gray-400 p-2">Sin coincidencias.</div>`}
+                        </div>
+                    </div>
+                `;
+            }
             (course.weeks || []).forEach((w, wi) => {
                 html += `<div class="font-bold text-xs text-gray-500 uppercase tracking-widest mt-4 mb-2">${w.title}</div>`;
                 (w.days || []).forEach((d, di) => {
