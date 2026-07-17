@@ -36,6 +36,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
         let courseContentSearchTerm = "";
         let presentationSearchTerm = "";
         let presentationReturnState = null;
+        let courseSearchRenderTimer = null;
+        let presentationSearchRenderTimer = null;
         let dayClosureState = null;
         let selfStudyState = { courseId: null, wIdx: 0, dIdx: 0, aIdx: 0 };
 
@@ -981,7 +983,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                     <div class="mb-4">
                         <div class="relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                            <input type="search" value="${safeText(courseContentSearchTerm)}" oninput="window.setCourseContentSearch(this.value)" placeholder="Buscar actividad, tema, semana, día o contenido..." class="w-full bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl py-3 pl-9 pr-24 text-sm outline-none focus:border-accent text-gray-900 dark:text-white">
+                            <input id="course-content-search-input" type="search" value="${safeText(courseContentSearchTerm)}" oninput="window.setCourseContentSearch(this.value)" placeholder="Buscar actividad, tema, semana, día o contenido..." class="w-full bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl py-3 pl-9 pr-24 text-sm outline-none focus:border-accent text-gray-900 dark:text-white">
                             ${courseContentSearchTerm ? `<button onclick="window.setCourseContentSearch('')" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-accent">Limpiar</button>` : ''}
                         </div>
                         ${courseContentSearchTerm ? `<div class="mt-2 text-xs font-bold text-gray-500">${filteredActivityCount} resultado(s) dentro del curso seleccionado.</div>` : ''}
@@ -1039,7 +1041,22 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 
         window.setCourseContentSearch = (value = "") => {
             courseContentSearchTerm = String(value || "");
-            renderHierarchicalTree();
+            clearTimeout(courseSearchRenderTimer);
+            if(!courseContentSearchTerm) {
+                renderHierarchicalTree();
+                return;
+            }
+            courseSearchRenderTimer = setTimeout(() => {
+                renderHierarchicalTree();
+                requestAnimationFrame(() => {
+                    const input = document.getElementById('course-content-search-input');
+                    if(input) {
+                        input.focus();
+                        const pos = input.value.length;
+                        input.setSelectionRange(pos, pos);
+                    }
+                });
+            }, 180);
         };
 
         window.addWeekUnit = async (cId) => {
@@ -2437,7 +2454,22 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 
         window.setPresentationSearch = (value = "") => {
             presentationSearchTerm = String(value || "");
-            renderPresentationSidebar();
+            clearTimeout(presentationSearchRenderTimer);
+            if(!presentationSearchTerm) {
+                renderPresentationSidebar();
+                return;
+            }
+            presentationSearchRenderTimer = setTimeout(() => {
+                renderPresentationSidebar();
+                requestAnimationFrame(() => {
+                    const input = document.getElementById('presentation-search-input');
+                    if(input) {
+                        input.focus();
+                        const pos = input.value.length;
+                        input.setSelectionRange(pos, pos);
+                    }
+                });
+            }, 180);
         };
 
         window.jumpToPresentationActivity = (wIdx, dIdx, aIdx) => {
@@ -2493,7 +2525,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                 <div class="sticky top-0 z-10 bg-light-surface dark:bg-surface pb-3">
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                        <input type="search" value="${safeText(presentationSearchTerm)}" oninput="window.setPresentationSearch(this.value)" placeholder="Buscar en todo el curso..." class="w-full bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl py-2.5 pl-9 pr-9 text-xs outline-none focus:border-accent text-gray-900 dark:text-white">
+                        <input id="presentation-search-input" type="search" value="${safeText(presentationSearchTerm)}" oninput="window.setPresentationSearch(this.value)" placeholder="Buscar en todo el curso..." class="w-full bg-gray-50 dark:bg-dark/40 border border-light-border dark:border-border rounded-xl py-2.5 pl-9 pr-9 text-xs outline-none focus:border-accent text-gray-900 dark:text-white">
                         ${presentationSearchTerm ? `<button onclick="window.setPresentationSearch('')" class="absolute right-3 top-1/2 -translate-y-1/2 text-accent text-xs"><i class="fa-solid fa-xmark"></i></button>` : ''}
                     </div>
                     ${presentationReturnState ? `<button onclick="window.returnToPresentationAnchor()" class="mt-2 w-full bg-accent/10 text-accent border border-accent/20 rounded-lg px-3 py-2 text-xs font-black"><i class="fa-solid fa-rotate-left mr-1"></i>Volver a donde estaba</button>` : ''}
