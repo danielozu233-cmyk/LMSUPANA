@@ -1579,11 +1579,21 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             return Object.values(totals).sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
         }
 
+        function sessionTimeValue(session = {}) {
+            return new Date(session.updatedAt || session.createdAt || session.questionStartedAt || 0).getTime() || 0;
+        }
+
+        function activeUPANAHOOTSessions() {
+            return [...localUPANAHOOTSessions]
+                .filter(s => !['closed', 'podium'].includes(s.status))
+                .sort((a, b) => sessionTimeValue(b) - sessionTimeValue(a));
+        }
+
         function renderAgentUPANAHOOTArea() {
             const container = document.getElementById('agent-upanahoot-area');
             if(!container || currentUser?.role !== 'agent') return;
 
-            const joinedSession = localUPANAHOOTSessions.find(s => s.status !== 'closed' && s.participants?.[currentUser.id]);
+            const joinedSession = activeUPANAHOOTSessions().find(s => s.participants?.[currentUser.id]);
             if(joinedSession) {
                 if(agentUPANAHOOTTimerHandle) clearTimeout(agentUPANAHOOTTimerHandle);
                 const k = localUPANAHOOTs.find(x => x.id === joinedSession.kahootId);
@@ -1671,16 +1681,28 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
         window.joinUPANAHOOTByPin = async () => {
             const pin = (document.getElementById('agent-upanahoot-pin')?.value || '').trim();
             if(!pin) return alert("Ingrese el PIN del UPANAHOOT.");
-            const session = localUPANAHOOTSessions.find(s => String(s.pin) === pin && !['closed', 'podium'].includes(s.status));
+            const session = activeUPANAHOOTSessions().find(s => String(s.pin).trim() === pin);
             if(!session) return alert("No se encontró una sesión activa con ese PIN.");
 
-            await updateDoc(doc(db, "kahootSessions", session.id), {
-                [`participants.${currentUser.id}`]: {
-                    name: currentUser.name || currentUser.email || 'Agente',
-                    email: currentUser.email || '',
-                    joinedAt: new Date().toISOString()
-                }
-            });
+            const updates = localUPANAHOOTSessions
+                .filter(s => s.id !== session.id && !['closed', 'podium'].includes(s.status) && s.participants?.[currentUser.id])
+                .map(s => {
+                    const participants = { ...(s.participants || {}) };
+                    delete participants[currentUser.id];
+                    return updateDoc(doc(db, "kahootSessions", s.id), { participants, updatedAt: new Date().toISOString() });
+                });
+            updates.push(updateDoc(doc(db, "kahootSessions", session.id), {
+                participants: {
+                    ...(session.participants || {}),
+                    [currentUser.id]: {
+                        name: currentUser.name || currentUser.email || 'Agente',
+                        email: currentUser.email || '',
+                        joinedAt: new Date().toISOString()
+                    }
+                },
+                updatedAt: new Date().toISOString()
+            }));
+            await Promise.all(updates);
         };
 
         window.answerUPANAHOOTQuestion = async (sessionId, answerIndex, buttonEl = null, event = null) => {
@@ -1728,7 +1750,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             if(!session) return;
             const participants = { ...(session.participants || {}) };
             delete participants[currentUser.id];
-            await updateDoc(doc(db, "kahootSessions", sessionId), { participants });
+            await updateDoc(doc(db, "kahootSessions", sessionId), { participants, updatedAt: new Date().toISOString() });
         };
 
         function renderAgentPortal() {
@@ -2854,6 +2876,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
         window.launchUPANAHOOTExecution = async (kahootId) => {
             const k = localUPANAHOOTs.find(x => x.id === kahootId);
             if(!k) return;
+            await Promise.all(localUPANAHOOTSessions
+                .filter(s => !['closed', 'podium'].includes(s.status) && s.trainerId === (currentUser?.id || ''))
+                .map(s => updateDoc(doc(db, "kahootSessions", s.id), { status: 'closed', closedAt: new Date().toISOString(), updatedAt: new Date().toISOString() })));
             const pin = String(Math.floor(100000 + Math.random() * 900000));
             const sessionRef = doc(collection(db, "kahootSessions"));
             const sessionData = {
@@ -2881,7 +2906,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
         window.closeUPANAHOOTExecution = async () => {
             if(await askConfirm("¿Cerrar dinámica interactiva?")) {
                 if(upanahootExecState.sessionId) {
-                    await updateDoc(doc(db, "kahootSessions", upanahootExecState.sessionId), { status: 'closed', closedAt: new Date().toISOString() });
+                    await updateDoc(doc(db, "kahootSessions", upanahootExecState.sessionId), { status: 'closed', closedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
                 }
                 document.getElementById('upanahoot-execution-view').classList.add('hidden');
                 document.getElementById('upanahoot-execution-view').classList.remove('flex');
