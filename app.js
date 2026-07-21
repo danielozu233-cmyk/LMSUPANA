@@ -1602,7 +1602,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                 const questionHtml = q && joinedSession.status === 'question' ? `
                     <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
                         ${(q.options || []).map((opt, optIdx) => `
-                            <button type="button" onclick="window.answerUPANAHOOTQuestion('${safeText(joinedSession.id)}', ${optIdx}, this)" ${answer || remaining <= 0 ? 'disabled' : ''} class="upanahoot-answer-card min-h-28 rounded-lg p-5 text-left text-white shadow-xl flex items-center gap-4 transition ${answer?.answerIndex === optIdx ? 'ring-4 ring-white scale-[1.01]' : 'hover:scale-[1.01] active:scale-[.99]'} ${answer || remaining <= 0 ? 'opacity-80 cursor-default' : 'cursor-pointer'}" style="background:${colors[optIdx] || colors[0]}">
+                            <button type="button" onpointerdown="window.answerUPANAHOOTQuestion('${safeText(joinedSession.id)}', ${optIdx}, this, event)" ontouchstart="window.answerUPANAHOOTQuestion('${safeText(joinedSession.id)}', ${optIdx}, this, event)" onclick="window.answerUPANAHOOTQuestion('${safeText(joinedSession.id)}', ${optIdx}, this, event)" ${answer || remaining <= 0 ? 'disabled' : ''} class="upanahoot-answer-card min-h-28 rounded-lg p-5 text-left text-white shadow-xl flex items-center gap-4 transition ${answer?.answerIndex === optIdx ? 'ring-4 ring-white scale-[1.01]' : 'hover:scale-[1.01] active:scale-[.99]'} ${answer || remaining <= 0 ? 'opacity-80 cursor-default' : 'cursor-pointer'}" style="background:${colors[optIdx] || colors[0]}">
                                 <i class="fa-solid ${iconClasses[optIdx] || 'fa-circle'} text-4xl opacity-90 shrink-0"></i>
                                 <span class="text-xl md:text-2xl font-black leading-tight">${safeText(opt || '')}</span>
                             </button>
@@ -1683,8 +1683,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             });
         };
 
-        window.answerUPANAHOOTQuestion = async (sessionId, answerIndex, buttonEl = null) => {
+        window.answerUPANAHOOTQuestion = async (sessionId, answerIndex, buttonEl = null, event = null) => {
+            if(event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            if(buttonEl?.dataset?.answering === 'true') return;
             if(buttonEl) {
+                buttonEl.dataset.answering = 'true';
                 buttonEl.disabled = true;
                 buttonEl.classList.add('ring-4', 'ring-white', 'scale-[1.01]');
             }
@@ -1710,6 +1716,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             };
             await updateDoc(doc(db, "kahootSessions", sessionId), { responses, updatedAt: new Date().toISOString() }).catch(e => {
                 if(buttonEl) {
+                    buttonEl.dataset.answering = 'false';
                     buttonEl.disabled = false;
                     buttonEl.classList.remove('ring-4', 'ring-white', 'scale-[1.01]');
                 }

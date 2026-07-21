@@ -24,7 +24,7 @@ body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, colo
         #pres-sidebar { position: absolute; top: 0; bottom: 0; left: 0; transform: translateX(-100%); }
         #pres-sidebar.open { transform: translateX(0); }
         .upanahoot-projection-card { width: 100%; max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere; }
-        .upanahoot-answer-card { min-width: 0; overflow-wrap: anywhere; }
+        .upanahoot-answer-card { min-width: 0; overflow-wrap: anywhere; touch-action: manipulation; -webkit-tap-highlight-color: rgba(255,255,255,.35); user-select: none; }
         .soft-card { border-radius: 14px; border: 1px solid rgba(148, 163, 184, .25); box-shadow: 0 12px 30px rgba(15, 23, 42, .06); }
         .course-mode-pill { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; padding: .3rem .6rem; font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
         .learning-content img { max-width: 100%; border-radius: 12px; margin: 1rem auto; display: block; }
