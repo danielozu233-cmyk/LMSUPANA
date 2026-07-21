@@ -1602,7 +1602,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                 const questionHtml = q && joinedSession.status === 'question' ? `
                     <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
                         ${(q.options || []).map((opt, optIdx) => `
-                            <button onclick="window.answerUPANAHOOTQuestion('${safeText(joinedSession.id)}', ${optIdx})" ${answer || remaining <= 0 ? 'disabled' : ''} class="upanahoot-answer-card min-h-28 rounded-lg p-5 text-left text-white shadow-xl flex items-center gap-4 transition ${answer?.answerIndex === optIdx ? 'ring-4 ring-white scale-[1.01]' : 'hover:scale-[1.01]'} ${answer || remaining <= 0 ? 'opacity-80 cursor-default' : ''}" style="background:${colors[optIdx] || colors[0]}">
+                            <button type="button" onclick="window.answerUPANAHOOTQuestion('${safeText(joinedSession.id)}', ${optIdx}, this)" ${answer || remaining <= 0 ? 'disabled' : ''} class="upanahoot-answer-card min-h-28 rounded-lg p-5 text-left text-white shadow-xl flex items-center gap-4 transition ${answer?.answerIndex === optIdx ? 'ring-4 ring-white scale-[1.01]' : 'hover:scale-[1.01] active:scale-[.99]'} ${answer || remaining <= 0 ? 'opacity-80 cursor-default' : 'cursor-pointer'}" style="background:${colors[optIdx] || colors[0]}">
                                 <i class="fa-solid ${iconClasses[optIdx] || 'fa-circle'} text-4xl opacity-90 shrink-0"></i>
                                 <span class="text-xl md:text-2xl font-black leading-tight">${safeText(opt || '')}</span>
                             </button>
@@ -1683,7 +1683,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             });
         };
 
-        window.answerUPANAHOOTQuestion = async (sessionId, answerIndex) => {
+        window.answerUPANAHOOTQuestion = async (sessionId, answerIndex, buttonEl = null) => {
+            if(buttonEl) {
+                buttonEl.disabled = true;
+                buttonEl.classList.add('ring-4', 'ring-white', 'scale-[1.01]');
+            }
             const session = localUPANAHOOTSessions.find(s => s.id === sessionId);
             if(!session || session.status !== 'question') return alert("La pregunta no está activa.");
             const k = localUPANAHOOTs.find(x => x.id === session.kahootId);
@@ -1695,14 +1699,21 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             const isCorrect = Number(q.correct) === Number(answerIndex);
             const basePoints = Number(q.points ?? 1000);
 
-            await updateDoc(doc(db, "kahootSessions", sessionId), {
-                [`responses.${qIdx}.${currentUser.id}`]: {
-                    answerIndex,
-                    isCorrect,
-                    points: isCorrect ? basePoints : 0,
-                    userName: currentUser.name || currentUser.email || 'Agente',
-                    answeredAt: new Date().toISOString()
+            const responses = { ...(session.responses || {}) };
+            responses[qIdx] = { ...(responses[qIdx] || {}) };
+            responses[qIdx][currentUser.id] = {
+                answerIndex,
+                isCorrect,
+                points: isCorrect ? basePoints : 0,
+                userName: currentUser.name || currentUser.email || 'Agente',
+                answeredAt: new Date().toISOString()
+            };
+            await updateDoc(doc(db, "kahootSessions", sessionId), { responses, updatedAt: new Date().toISOString() }).catch(e => {
+                if(buttonEl) {
+                    buttonEl.disabled = false;
+                    buttonEl.classList.remove('ring-4', 'ring-white', 'scale-[1.01]');
                 }
+                alert("No se pudo registrar la respuesta: " + (e?.message || e));
             });
         };
         window.leaveUPANAHOOTSession = async (sessionId) => {
